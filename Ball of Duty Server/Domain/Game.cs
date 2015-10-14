@@ -39,11 +39,6 @@ namespace Ball_of_Duty_Server.Domain
             }
         }
 
-        private Map CreateMap()
-        {
-            throw new System.NotImplementedException();
-        }
-
         public void AddPlayer(Player player)
         {
             _players.Add(player);

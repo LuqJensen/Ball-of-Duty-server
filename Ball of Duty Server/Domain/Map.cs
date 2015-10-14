@@ -20,5 +20,27 @@ namespace Ball_of_Duty_Server.Domain
             {
             }
         }
+
+        public Broker Broker
+        {
+            get
+            {
+                throw new System.NotImplementedException();
+            }
+
+            set
+            {
+            }
+        }
+
+        public void Activate()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Deactivate()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

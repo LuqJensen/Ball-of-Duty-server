@@ -3,16 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ball_of_Duty_Server.Domain
+namespace Ball_of_Duty_Server
 {
-    public class Character : GameObject
+    public class Body
     {
-        public Character()
+        public Domain.GameObject GameObject
         {
-            throw new System.NotImplementedException();
+            get
+            {
+                throw new System.NotImplementedException();
+            }
+
+            set
+            {
+            }
         }
 
-        public int MovementSpeed
+        public Point Position
         {
             get
             {

@@ -1,19 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 
-namespace Ball_of_Duty_Server.Domain
+namespace Ball_of_Duty_Server
 {
-    public abstract class GameObject
+    public class View
     {
-        public GameObject()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public int Id
+        public double Scale
         {
             get
             {
@@ -25,7 +19,7 @@ namespace Ball_of_Duty_Server.Domain
             }
         }
 
-        public View View
+        public System.Drawing.Color Color
         {
             get
             {
@@ -37,19 +31,7 @@ namespace Ball_of_Duty_Server.Domain
             }
         }
 
-        public Physics Physics
-        {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-
-            set
-            {
-            }
-        }
-
-        public Body Body
+        public Domain.GameObject GameObject
         {
             get
             {

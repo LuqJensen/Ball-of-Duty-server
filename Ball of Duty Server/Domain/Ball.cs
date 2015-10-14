@@ -6,14 +6,20 @@ using System.Windows;
 
 namespace Ball_of_Duty_Server.Domain
 {
-    public class Ball : GameObject
+    public class Physics
     {
-        protected Ball()
+        public Physics()
         {
             throw new System.NotImplementedException();
         }
 
-        public int Radius
+        public Vector Velocity
+        {
+            get { throw new NotImplementedException(); }
+            set { }
+        }
+
+        public GameObject GameObject
         {
             get
             {
@@ -25,10 +31,14 @@ namespace Ball_of_Duty_Server.Domain
             }
         }
 
-        public Vector Velocity
+        public void Update()
         {
-            get { throw new NotImplementedException();}
-            set { }
+            throw new System.NotImplementedException();
+        }
+
+        public void ChangeVelocity()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }
