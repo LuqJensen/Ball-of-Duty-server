@@ -15,7 +15,7 @@ namespace Ball_of_Duty_Server.Domain
             throw new System.NotImplementedException();
         }
 
-        public Map GameMap
+        public int Id
         {
             get
             {
@@ -27,7 +27,7 @@ namespace Ball_of_Duty_Server.Domain
             }
         }
 
-        public int Id
+        public Map GameMap
         {
             get
             {
@@ -41,12 +41,12 @@ namespace Ball_of_Duty_Server.Domain
 
         public void AddPlayer(Player player)
         {
-            _players.Add(player);
+            _players.Add(player.Id, player);
         }
 
         public void RemovePlayer(Player player)
         {
-            _players.Remove(player);
+            _players.Remove(player.Id);
         }
     }
 }
