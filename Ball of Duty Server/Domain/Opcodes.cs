@@ -2,6 +2,7 @@
 {
     public enum Opcodes
     {
-        POSITION_UPDATE = 1
+        BROADCAST_POSITION_UPDATE = 1,
+        POSITION_UPDATE
     }
 }
