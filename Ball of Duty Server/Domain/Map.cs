@@ -10,6 +10,7 @@ namespace Ball_of_Duty_Server.Domain
         public Map()
         {
             Broker = new Broker(this);
+            GameObjects = new ConcurrentDictionary<int, GameObject>();
         }
 
         public ConcurrentDictionary<int, GameObject> GameObjects { get; set; }
@@ -30,7 +31,7 @@ namespace Ball_of_Duty_Server.Domain
 
         public void Update()
         {
-            Broker.SendPositionUpdate(GetPositions(), Game.Id);
+            Broker.SendPositionUpdate(GetPositions(), 1/*Game.Id*/);
         }
 
         public List<ObjectPosition> GetPositions()
