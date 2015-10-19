@@ -8,36 +8,16 @@ namespace Ball_of_Duty_Server.Domain
 {
     public class Game
     {
-        private System.Collections.Generic.Dictionary<int, Ball_of_Duty_Server.Persistence.Player> _players;
+        private System.Collections.Generic.Dictionary<int, Player> _players;
 
         public Game()
         {
             GameMap = new Map();
         }
 
-        public int Id
-        {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
+        public int Id { get; set; }
 
-            set
-            {
-            }
-        }
-
-        public Map GameMap
-        {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-
-            set
-            {
-            }
-        }
+        public Map GameMap { get; set; }
 
         public void AddPlayer(Player player)
         {

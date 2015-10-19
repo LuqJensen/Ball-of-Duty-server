@@ -12,24 +12,11 @@ namespace Ball_of_Duty_Server.Domain
             Broker = new Broker(this);
         }
 
-        public ConcurrentDictionary<int, GameObject> GameObjects
-        {
-            get;
+        public ConcurrentDictionary<int, GameObject> GameObjects { get; set; }
 
-            set;
-        }
+        public Broker Broker { get; set; }
 
-        public Broker Broker
-        {
-            get; set;
-        }
-
-        public Game Game
-        {
-            get;
-
-            set;
-        }
+        public Game Game { get; set; }
 
         public void Activate()
         {

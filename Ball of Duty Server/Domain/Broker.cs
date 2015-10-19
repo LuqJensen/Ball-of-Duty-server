@@ -19,12 +19,7 @@ namespace Ball_of_Duty_Server.Domain
             
         }
 
-        public Map Map
-        {
-            get;
-
-            set;
-        }
+        public Map Map { get; set; }
 
         public void SendPositionUpdate(List<ObjectPosition> positions, int gameId)
         {
@@ -34,12 +29,11 @@ namespace Ball_of_Duty_Server.Domain
             bw.Write((byte)Opcodes.BROADCAST_POSITION_UPDATE);
             bw.Write((byte)2); //ASCII Standard for Start of text
             for (int i = 0; i < positions.Count; ++i)
-
             {
                 ObjectPosition op = positions[i];
-                bw.Write((int)op.Id);
-                bw.Write((double)op.Position.X);
-                bw.Write((double)op.Position.Y);
+                bw.Write(op.Id);
+                bw.Write(op.Position.X);
+                bw.Write(op.Position.Y);
 
                 if (i != positions.Count - 1)
                 {
@@ -47,9 +41,8 @@ namespace Ball_of_Duty_Server.Domain
                 }   
             }
             bw.Write((byte)4); //ASCII Standard for End of transmission
-
-            byte[] b = ms.ToArray();
-            Send(b);
+            
+            Send(ms.ToArray());
         }
 
         public void Receive()
@@ -64,18 +57,15 @@ namespace Ball_of_Duty_Server.Domain
                     {
                         return;
                     }
-                    byte opcode = br.ReadByte();
+                    Opcodes opcode = (Opcodes)br.ReadByte();
                     br.ReadByte();
 
-                    int id = br.ReadByte();
-                    double x = br.ReadByte();
-                    double y = br.ReadByte();
-                    Point position = new Point(x, y);
+                    int id = br.ReadInt32();
+                    double x = br.ReadDouble();
+                    double y = br.ReadDouble();
 
-                    Map.UpdatePosition(position, id);
+                    Map.UpdatePosition(new Point(x, y), id);
                 }
-
-
             }
         }
 

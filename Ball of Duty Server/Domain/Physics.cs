@@ -13,23 +13,9 @@ namespace Ball_of_Duty_Server.Domain
             throw new System.NotImplementedException();
         }
 
-        public Vector Velocity
-        {
-            get { throw new NotImplementedException(); }
-            set { }
-        }
+        public Vector Velocity { get; set; }
 
-        public GameObject GameObject
-        {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-
-            set
-            {
-            }
-        }
+        public GameObject GameObject { get; set; }
 
         public void Update()
         {

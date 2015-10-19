@@ -2,30 +2,30 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows;
 
-namespace Ball_of_Duty_Server
+namespace Ball_of_Duty_Server.Domain
 {
-    public class View
+    public class Body
     {
-        public double Scale
+        public GameObject GameObject
         {
             get;
 
             set;
         }
 
-        public System.Drawing.Color Color
+        public Point Position
         {
             get;
 
             set;
         }
 
-        public Domain.GameObject GameObject
+        public Body(Point position)
         {
-            get;
-
-            set;
+            Position = position;
         }
+
     }
 }
