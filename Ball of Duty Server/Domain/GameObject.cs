@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Windows;
 using System.Linq;
 using System.Text;
 
@@ -8,10 +8,6 @@ namespace Ball_of_Duty_Server.Domain
 {
     public abstract class GameObject
     {
-        public GameObject()
-        {
-            throw new System.NotImplementedException();
-        }
 
         public int Id
         {

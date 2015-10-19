@@ -4,26 +4,22 @@ namespace Ball_of_Duty_Server.Domain
 {
     public class BoDServer
     {
+        
+
         public BoDServer()
         {
-            throw new System.NotImplementedException();
+            Games = new List<Game>();
+            
         }
 
-        public List<Ball_of_Duty_Server.Domain.Game> Games
+        public List<Game> Games
         {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-
-            set
-            {
-            }
+            get; set;
         }
 
         public Game CreateGame()
         {
-            throw new System.NotImplementedException();
+            return null;
         }
 
         public void CreatePlayer()
