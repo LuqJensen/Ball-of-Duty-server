@@ -10,26 +10,22 @@ namespace Ball_of_Duty_Server
     {
         public Domain.GameObject GameObject
         {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
+            get;
 
-            set
-            {
-            }
+            set;
         }
 
         public Point Position
         {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
+            get;
 
-            set
-            {
-            }
+            set;
         }
+
+        public Body(Point position)
+        {
+            Position = position;
+        }
+
     }
 }

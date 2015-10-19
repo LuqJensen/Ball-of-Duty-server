@@ -9,38 +9,23 @@ namespace Ball_of_Duty_Server
     {
         public double Scale
         {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
+            get;
 
-            set
-            {
-            }
+            set;
         }
 
         public System.Drawing.Color Color
         {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
+            get;
 
-            set
-            {
-            }
+            set;
         }
 
         public Domain.GameObject GameObject
         {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
+            get;
 
-            set
-            {
-            }
+            set;
         }
     }
 }

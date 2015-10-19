@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Windows;
 
 namespace Ball_of_Duty_Server.Domain
 {
@@ -11,14 +12,24 @@ namespace Ball_of_Duty_Server.Domain
         private UdpClient _broadcastSocket;
         private IPEndPoint _ip = new IPEndPoint(/*IPAddress.Broadcast*/IPAddress.Parse("127.0.0.1"), 15000);
 
-        public Broker()
+        public Broker(Map map)
         {
-            _broadcastSocket = new UdpClient();
+            Map = map;
+            _broadcastSocket = new UdpClient(_ip);
+            
         }
+
+        public Map Map
+        {
+            get;
+
+            set;
+        }
+
         public void SendPositionUpdate(List<ObjectPosition> positions, int gameId)
         {
-            Stream s = new MemoryStream();
-            BinaryWriter bw = new BinaryWriter(s);
+            MemoryStream ms = new MemoryStream();
+            BinaryWriter bw = new BinaryWriter(ms);
             bw.Write((byte)1); //ASCII Standard for Start of heading
             bw.Write((byte)Opcodes.BROADCAST_POSITION_UPDATE);
             bw.Write((byte)2); //ASCII Standard for Start of text
@@ -36,14 +47,43 @@ namespace Ball_of_Duty_Server.Domain
                 }   
             }
             bw.Write((byte)4); //ASCII Standard for End of transmission
-            
 
-
+            byte[] b = ms.ToArray();
+            Send(b);
         }
 
-        public void Send()
+        public void Receive()
         {
+            while (true)
+            {
+                byte[] b =_broadcastSocket.Receive(ref _ip);
+                using (MemoryStream ms = new MemoryStream(b))
+                using (BinaryReader br = new BinaryReader(ms))
+                {
+                    if (br.ReadByte() != 1)
+                    {
+                        return;
+                    }
+                    byte opcode = br.ReadByte();
+                    br.ReadByte();
 
+                    int id = br.ReadByte();
+                    double x = br.ReadByte();
+                    double y = br.ReadByte();
+                    Point position = new Point(x, y);
+
+                    Map.UpdatePosition(position, id);
+                }
+
+
+            }
+        }
+
+
+
+        public void Send(byte[] b)
+        {
+            _broadcastSocket.Send(b, b.Length);
         }
     }
 }

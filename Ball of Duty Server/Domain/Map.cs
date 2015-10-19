@@ -9,43 +9,26 @@ namespace Ball_of_Duty_Server.Domain
     {
         public Map()
         {
-            throw new System.NotImplementedException();
+            Broker = new Broker(this);
         }
 
         public ConcurrentDictionary<int, GameObject> GameObjects
         {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
+            get;
 
-            set
-            {
-            }
+            set;
         }
 
         public Broker Broker
         {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-
-            set
-            {
-            }
+            get; set;
         }
 
         public Game Game
         {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
+            get;
 
-            set
-            {
-            }
+            set;
         }
 
         public void Activate()

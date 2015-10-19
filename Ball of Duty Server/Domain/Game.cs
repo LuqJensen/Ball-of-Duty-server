@@ -12,7 +12,7 @@ namespace Ball_of_Duty_Server.Domain
 
         public Game()
         {
-            throw new System.NotImplementedException();
+            GameMap = new Map();
         }
 
         public int Id
