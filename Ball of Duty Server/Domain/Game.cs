@@ -1,32 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Ball_of_Duty_Server.Persistence;
 
 namespace Ball_of_Duty_Server.Domain
 {
     public class Game
     {
-        private System.Collections.Generic.Dictionary<int, Player> _players;
+        private Dictionary<int, ServerPlayer> _players;
 
         public Game()
         {
             GameMap = new Map();
+
         }
 
         public int Id { get; set; }
 
         public Map GameMap { get; set; }
 
-        public void AddPlayer(Player player)
+        public void AddPlayer(ServerPlayer serverPlayer)
         {
-            _players.Add(player.Id, player);
+            _players.Add(serverPlayer.Id, serverPlayer);
         }
 
-        public void RemovePlayer(Player player)
+        public void RemovePlayer(ServerPlayer serverPlayer)
         {
-            _players.Remove(player.Id);
+            _players.Remove(serverPlayer.Id);
+        }
+
+        public bool isFull()
+        {
+            return false;
         }
     }
 }

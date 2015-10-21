@@ -19,6 +19,6 @@ namespace Ball_of_Duty_Server.Persistence
         public string Salt { get; set; }
         public string Hash { get; set; }
     
-        public virtual Player Player { get; set; }
+        public virtual ServerPlayer ServerPlayer { get; set; }
     }
 }

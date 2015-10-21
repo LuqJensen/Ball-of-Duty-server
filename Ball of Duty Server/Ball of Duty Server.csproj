@@ -65,7 +65,7 @@
     <Compile Include="Domain\Character.cs" />
     <Compile Include="Domain\CharacterManager.cs" />
     <Compile Include="Domain\Game.cs" />
-    <Compile Include="Domain\GameObject.cs" />
+    <Compile Include="Domain\ServerGameObject.cs" />
     <Compile Include="Domain\IBroker.cs" />
     <Compile Include="Domain\Map.cs" />
     <Compile Include="Domain\Opcodes.cs" />
@@ -91,17 +91,18 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Database.edmx</DependentUpon>
     </Compile>
-    <Compile Include="Persistence\Player.cs">
+    <Compile Include="Persistence\ServerPlayer.cs">
       <DependentUpon>Database.tt</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\IPlayerService.cs" />
-    <Compile Include="Services\PlayerService.cs" />
     <Compile Include="Domain\View.cs" />
+    <Compile Include="Services\IBoDServer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <EntityDeploy Include="Persistence\Database.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>Database.Designer.cs</LastGenOutput>

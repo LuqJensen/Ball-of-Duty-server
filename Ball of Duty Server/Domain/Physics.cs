@@ -6,6 +6,7 @@ using System.Windows;
 
 namespace Ball_of_Duty_Server.Domain
 {
+    [Serializable]
     public class Physics
     {
         public Physics()
@@ -15,7 +16,7 @@ namespace Ball_of_Duty_Server.Domain
 
         public Vector Velocity { get; set; }
 
-        public GameObject GameObject { get; set; }
+        public ServerGameObject GameObject { get; set; }
 
         public void Update()
         {
