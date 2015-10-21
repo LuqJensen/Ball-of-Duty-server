@@ -14,8 +14,8 @@ namespace Ball_of_Duty_Server.Services
     {
         [OperationContract]
         ServerPlayer newGuest();
-
+     
         [OperationContract]
-        List<ServerGameObject> joinGame(ServerPlayer clientPlayer);
+        ServerGameObject[] joinGame(ServerPlayer clientPlayer);
     }
 }
