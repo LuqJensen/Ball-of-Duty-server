@@ -7,7 +7,7 @@ using System.Text;
 namespace Ball_of_Duty_Server.Domain
 {
     [Serializable]
-    public abstract class ServerGameObject
+    public  class ServerGameObject
     {
 
         protected ServerBody body;
@@ -16,9 +16,9 @@ namespace Ball_of_Duty_Server.Domain
         public ServerGameObject(int id)
         {
             this.id = id;
+            body = new ServerBody(new Point(0,0));
         }
 
-       
 
         public int getID()
         {

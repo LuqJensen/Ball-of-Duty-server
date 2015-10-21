@@ -43,7 +43,7 @@ namespace Ball_of_Duty_Server.Domain
                     bw.Write(op.Id);
                     bw.Write(op.Position.X);
                     bw.Write(op.Position.Y);
-                    Console.WriteLine("send:" + op.Position.X + "  " + op.Position.Y + "  " + op.Id);
+                  // Console.WriteLine("send:" + op.Position.X + "  " + op.Position.Y + "  " + op.Id);
                     if (i != positions.Count - 1)
                     {
                         bw.Write((byte) 31); //ASCII Standard for Unit seperator
@@ -74,7 +74,7 @@ namespace Ball_of_Duty_Server.Domain
                     double x = br.ReadDouble();
                     double y = br.ReadDouble();
 
-                   Console.WriteLine("receive:" + x +"  "+y+"  "+id);
+                  //Console.WriteLine("receive:" + x +"  "+y+"  "+id);
                     Map.UpdatePosition(new Point(x, y), id);
                 }
             }

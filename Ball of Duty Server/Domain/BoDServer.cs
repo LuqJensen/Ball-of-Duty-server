@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using Ball_of_Duty_Server.Persistence;
 using Ball_of_Duty_Server.Services;
 
@@ -41,16 +42,28 @@ namespace Ball_of_Duty_Server.Domain
             return new Game();
         }
 
-        public List<ServerGameObject> joinGame(ServerPlayer clientPlayer)
+        public ServerGameObject[] joinGame(ServerPlayer clientPlayer)
         {
-            Console.Write("id: "+clientPlayer.Id+" Tried to join game.");
+           
+            Console.WriteLine("id: "+clientPlayer.Id+" Tried to join game.");
             Game returnedGame = getGame();
             Games.Add(returnedGame);
             Map gameMap= returnedGame.GameMap;
 
-            // gameMap.GameObjects.TryAdd(clientPlayer.Id, new Character(clientPlayer.Id)); 
-            // Client cant handle it being a list for some reason. For now the return is null
-            return gameMap.GetObjects();
+             gameMap.GameObjects.TryAdd(clientPlayer.Id, new ServerCharacter(clientPlayer.Id));
+
+
+            Console.WriteLine("count: "+gameMap.GameObjects.Count);
+
+            ServerGameObject[] tempArray = gameMap.GameObjects.Values.ToArray();
+            ServerGameObject[] returnedValue = new ServerGameObject[gameMap.GameObjects.Values.ToArray().Length];
+            for (int i = 0; i< returnedValue.Length;i++)
+            {
+                returnedValue[i] = new ServerGameObject(tempArray[i].getID());
+
+            }
+
+            return returnedValue;
 
         }
 

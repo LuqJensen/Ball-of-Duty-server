@@ -9,11 +9,10 @@ namespace Ball_of_Duty_Server.Domain
     [Serializable]
     public class ServerBody
     {
-        public ServerGameObject gameObject;
         private Point position;
-        public ServerBody(ServerGameObject sgo, Point position)
+        public ServerBody(Point position)
         {
-            gameObject = sgo;
+            this.position = position;
         }
 
         public void setPosition(Point position)
