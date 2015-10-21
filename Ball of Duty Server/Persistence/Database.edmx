@@ -6,14 +6,14 @@
     <edmx:StorageModels>
     <Schema Namespace="Database.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2012" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
   <EntityContainer Name="DatabaseStoreContainer">
-    <EntitySet Name="Player" EntityType="Database.Store.Player" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="ServerPlayer" EntityType="Database.Store.ServerPlayer" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="Account" EntityType="Database.Store.Account" store:Type="Tables" Schema="dbo" />
-    <AssociationSet Name="PlayerAccount" Association="Database.Store.PlayerAccount">
-      <End Role="Player" EntitySet="Player" />
+    <AssociationSet Name="ServerPlayerAccount" Association="Database.Store.ServerPlayerAccount">
+      <End Role="ServerPlayer" EntitySet="ServerPlayer" />
       <End Role="Account" EntitySet="Account" />
     </AssociationSet>
   </EntityContainer>
-  <EntityType Name="Player">
+  <EntityType Name="ServerPlayer">
     <Key>
       <PropertyRef Name="Id" />
     </Key>
@@ -30,14 +30,14 @@
     <Property Name="Salt" Type="nvarchar(max)" Nullable="false" />
     <Property Name="Hash" Type="nvarchar(max)" Nullable="false" />
   </EntityType>
-  <Association Name="PlayerAccount">
-    <End Role="Player" Type="Database.Store.Player" Multiplicity="*" />
+  <Association Name="ServerPlayerAccount">
+    <End Role="ServerPlayer" Type="Database.Store.ServerPlayer" Multiplicity="*" />
     <End Role="Account" Type="Database.Store.Account" Multiplicity="1" />
     <ReferentialConstraint>
       <Principal Role="Account">
         <PropertyRef Name="Id" />
       </Principal>
-      <Dependent Role="Player">
+      <Dependent Role="ServerPlayer">
         <PropertyRef Name="Account_Id" />
       </Dependent>
     </ReferentialConstraint>
@@ -47,20 +47,20 @@
     <edmx:ConceptualModels>
       <Schema xmlns="http://schemas.microsoft.com/ado/2009/11/edm" xmlns:cg="http://schemas.microsoft.com/ado/2006/04/codegeneration" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" Namespace="Database" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" annotation:UseStrongSpatialTypes="false">
         <EntityContainer Name="DatabaseContainer" annotation:LazyLoadingEnabled="true">
-          <EntitySet Name="Player" EntityType="Database.Player" />
+          <EntitySet Name="ServerPlayer" EntityType="Database.ServerPlayer" />
           <EntitySet Name="Account" EntityType="Database.Account" />
-          <AssociationSet Name="PlayerAccount" Association="Database.PlayerAccount">
-            <End Role="Player" EntitySet="Player" />
+          <AssociationSet Name="ServerPlayerAccount" Association="Database.ServerPlayerAccount">
+            <End Role="ServerPlayer" EntitySet="ServerPlayer" />
             <End Role="Account" EntitySet="Account" />
           </AssociationSet>
           </EntityContainer>
-        <EntityType Name="Player">
+        <EntityType Name="ServerPlayer">
           <Key>
             <PropertyRef Name="Id" />
           </Key>
           <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Nickname" Type="String" Nullable="false" />
-          <NavigationProperty Name="Account" Relationship="Database.PlayerAccount" FromRole="Player" ToRole="Account" />
+          <NavigationProperty Name="Account" Relationship="Database.ServerPlayerAccount" FromRole="ServerPlayer" ToRole="Account" />
         </EntityType>
         <EntityType Name="Account">
           <Key>
@@ -70,10 +70,10 @@
           <Property Name="Username" Type="String" Nullable="false" />
           <Property Name="Salt" Type="String" Nullable="false" />
           <Property Name="Hash" Type="String" Nullable="false" />
-          <NavigationProperty Name="Player" Relationship="Database.PlayerAccount" FromRole="Account" ToRole="Player" />
+          <NavigationProperty Name="ServerPlayer" Relationship="Database.ServerPlayerAccount" FromRole="Account" ToRole="ServerPlayer" />
         </EntityType>
-        <Association Name="PlayerAccount">
-          <End Type="Database.Player" Role="Player" Multiplicity="1" />
+        <Association Name="ServerPlayerAccount">
+          <End Type="Database.ServerPlayer" Role="ServerPlayer" Multiplicity="1" />
           <End Type="Database.Account" Role="Account" Multiplicity="1" />
         </Association>
         </Schema>
@@ -82,9 +82,9 @@
     <edmx:Mappings>
     <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
   <EntityContainerMapping StorageEntityContainer="DatabaseStoreContainer" CdmEntityContainer="DatabaseContainer">
-    <EntitySetMapping Name="Player">
-      <EntityTypeMapping TypeName="IsTypeOf(Database.Player)">
-        <MappingFragment StoreEntitySet="Player">
+    <EntitySetMapping Name="ServerPlayer">
+      <EntityTypeMapping TypeName="IsTypeOf(Database.ServerPlayer)">
+        <MappingFragment StoreEntitySet="ServerPlayer">
           <ScalarProperty Name="Id" ColumnName="Id" />
           <ScalarProperty Name="Nickname" ColumnName="Nickname" />
         </MappingFragment>
@@ -100,11 +100,11 @@
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
-    <AssociationSetMapping Name="PlayerAccount" TypeName="Database.PlayerAccount" StoreEntitySet="Player">
+    <AssociationSetMapping Name="ServerPlayerAccount" TypeName="Database.ServerPlayerAccount" StoreEntitySet="ServerPlayer">
       <EndProperty Name="Account">
         <ScalarProperty Name="Id" ColumnName="Account_Id" />
       </EndProperty>
-      <EndProperty Name="Player">
+      <EndProperty Name="ServerPlayer">
         <ScalarProperty Name="Id" ColumnName="Id" />
       </EndProperty>
     </AssociationSetMapping>

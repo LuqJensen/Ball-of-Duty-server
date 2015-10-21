@@ -13,7 +13,7 @@ namespace Ball_of_Duty_Server.Domain
     {
         private UdpClient _broadcastSocket;
         private IPEndPoint _ip = new IPEndPoint(IPAddress.Parse("235.1.2.87"), 15000);
-        private IPEndPoint _ip2 = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 15001);
+        private IPEndPoint _ip2 = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 15001);// Needs new port for each game
         private UdpClient _listener;
 
         public Broker(Map map)
@@ -33,6 +33,7 @@ namespace Ball_of_Duty_Server.Domain
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
 
+                Thread.Sleep(20);
                 bw.Write((byte) 1); //ASCII Standard for Start of heading
                 bw.Write((byte) Opcodes.BROADCAST_POSITION_UPDATE);
                 bw.Write((byte) 2); //ASCII Standard for Start of text
@@ -42,7 +43,7 @@ namespace Ball_of_Duty_Server.Domain
                     bw.Write(op.Id);
                     bw.Write(op.Position.X);
                     bw.Write(op.Position.Y);
-
+                    Console.WriteLine("send:" + op.Position.X + "  " + op.Position.Y + "  " + op.Id);
                     if (i != positions.Count - 1)
                     {
                         bw.Write((byte) 31); //ASCII Standard for Unit seperator
@@ -72,7 +73,8 @@ namespace Ball_of_Duty_Server.Domain
                     int id = br.ReadInt32();
                     double x = br.ReadDouble();
                     double y = br.ReadDouble();
-                    Console.WriteLine(id);
+
+                   Console.WriteLine("receive:" + x +"  "+y+"  "+id);
                     Map.UpdatePosition(new Point(x, y), id);
                 }
             }

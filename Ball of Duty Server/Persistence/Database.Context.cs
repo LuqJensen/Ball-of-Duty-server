@@ -25,7 +25,7 @@ namespace Ball_of_Duty_Server.Persistence
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<Player> Player { get; set; }
+        public virtual DbSet<ServerPlayer> Player { get; set; }
         public virtual DbSet<Account> Account { get; set; }
     }
 }

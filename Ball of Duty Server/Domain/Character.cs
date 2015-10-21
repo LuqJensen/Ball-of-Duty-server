@@ -6,12 +6,11 @@ using System.Windows;
 
 namespace Ball_of_Duty_Server.Domain
 {
-    public class Character : GameObject
+    public class Character : ServerGameObject
     {
-        public Character(int id)
+        public Character(int id) : base (id)
         {
-            Id = id;
-            Body = new Body(new Point(0, 0));
+            setBody(new ServerBody(this,new Point(0, 0)));
         }
 
         public int MovementSpeed

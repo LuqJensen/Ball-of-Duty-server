@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Ball_of_Duty_Server.Domain
 {
+    [Serializable]
     public class View
     {
         public double Scale
@@ -21,7 +22,7 @@ namespace Ball_of_Duty_Server.Domain
             set;
         }
 
-        public Domain.GameObject GameObject
+        public Domain.ServerGameObject GameObject
         {
             get;
 

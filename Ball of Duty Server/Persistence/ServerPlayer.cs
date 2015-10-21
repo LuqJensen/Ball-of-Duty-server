@@ -12,11 +12,20 @@ namespace Ball_of_Duty_Server.Persistence
     using System;
     using System.Collections.Generic;
     
-    public partial class Player
+    [Serializable]
+    public partial class ServerPlayer
     {
         public int Id { get; set; }
         public string Nickname { get; set; }
     
         public virtual Account Account { get; set; }
+
+        private static int amountPlayers = 0; // Lige nu bliver det ikke persisteret..
+
+        public ServerPlayer()
+        {
+            Id = amountPlayers;
+            amountPlayers++;
+        }
     }
 }
