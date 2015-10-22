@@ -18,5 +18,8 @@ namespace Ball_of_Duty_Server.Services
      
         [OperationContract]
         MapDTO JoinGame(int clientPlayerId);
+
+        [OperationContract]
+        void QuitGame(int clientPlayerId);
     }
 }

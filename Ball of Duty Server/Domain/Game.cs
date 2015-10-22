@@ -23,9 +23,9 @@ namespace Ball_of_Duty_Server.Domain
             _players.Add(player.Id, player);
         }
 
-        public void RemovePlayer(Player player)
+        public void RemovePlayer(int playerID)
         {
-            _players.Remove(player.Id);
+            _players.Remove(playerID);
         }
 
         public bool IsFull()

@@ -14,14 +14,12 @@ namespace Ball_of_Duty_Server.Domain
     {
         public BoDService()
         {
-            if (Games == null)
-            {
-                Games = new List<Game>();
-            }
            
         }
 
-        public static List<Game> Games { get; set; }
+        public static List<Game> Games { get; set; } = new List<Game>();
+
+        private static Dictionary<int, Game> GameContainingPlayer { get; set; } = new Dictionary<int, Game>();
 
         private static string localIPAddress;
 
@@ -46,7 +44,7 @@ namespace Ball_of_Duty_Server.Domain
         public PlayerDTO NewGuest()
         {
             Player p = Player.CreatePlayer();
-            
+            //_playersConnected.Add(p.Id, p);
             return new PlayerDTO { Id = p.Id, Nickname = p.Nickname };
         }
 
@@ -71,9 +69,11 @@ namespace Ball_of_Duty_Server.Domain
             Console.WriteLine("id: "+ clientPlayerId + " Tried to join game.");
             Game returnedGame = GetGame();
             Map gameMap= returnedGame.GameMap;
-
+            if (!GameContainingPlayer.ContainsKey(clientPlayerId))
+            {
+                GameContainingPlayer.Add(clientPlayerId, returnedGame);
+            }
             gameMap.GameObjects.TryAdd(clientPlayerId, new Character(clientPlayerId));
-
 
             Console.WriteLine("count: "+gameMap.GameObjects.Count);
             
@@ -96,6 +96,35 @@ namespace Ball_of_Duty_Server.Domain
         public Game CreateGame()
         {
             return null;
+        }
+
+        public void QuitGame(int clientPlayerId)
+        {
+            Console.WriteLine("id: " + clientPlayerId + " Tried to quit game.");
+            Game returnedGame = GetGame();
+            Map gameMap = returnedGame.GameMap;
+
+            // Removes the player character from the map
+            GameObject go;
+            bool quit = gameMap.GameObjects.TryRemove(clientPlayerId, out go);
+            if (quit)
+            {
+                Console.WriteLine("id: " + clientPlayerId + " has quit game.");
+            }
+            else
+            {
+                Console.WriteLine("id: " + clientPlayerId + " tried but failed to quit game.");  
+            }
+
+            // Removes the player from the game
+            Game game;
+            if (GameContainingPlayer.TryGetValue(clientPlayerId, out game))
+            {
+                game.RemovePlayer(clientPlayerId);
+                GameContainingPlayer.Remove(clientPlayerId);
+            }
+
+            
         }
     }
 }
