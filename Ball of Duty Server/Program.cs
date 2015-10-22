@@ -19,7 +19,7 @@ namespace Ball_of_Duty_Server
                 Thread.Sleep(10);
             }*/
 
-             using (var sh = new ServiceHost(typeof (BoDServer)))
+             using (var sh = new ServiceHost(typeof (BoDService)))
              {
                  ServiceDebugBehavior debug = sh.Description.Behaviors.Find<ServiceDebugBehavior>();
 

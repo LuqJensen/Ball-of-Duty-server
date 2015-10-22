@@ -10,15 +10,15 @@ namespace Ball_of_Duty_Server.Domain
 {
     public class Map
     {
-        public Map()
+        public Map(string ip)
         {
-           Broker = new Broker(this);
-            GameObjects = new ConcurrentDictionary<int, ServerGameObject>();
+           Broker = new Broker(this, ip);
+            GameObjects = new ConcurrentDictionary<int, GameObject>();
             Thread t = new Thread(Activate);
             t.Start();
         }
 
-        public ConcurrentDictionary<int, ServerGameObject> GameObjects { get; set; }
+        public ConcurrentDictionary<int, GameObject> GameObjects { get; set; }
 
         public Broker Broker { get; set; }
 
@@ -45,23 +45,23 @@ namespace Ball_of_Duty_Server.Domain
         public List<ObjectPosition> GetPositions()
         {
             List<ObjectPosition> positions = new List<ObjectPosition>();
-            foreach (ServerGameObject go in GameObjects.Values)
+            foreach (GameObject go in GameObjects.Values)
             {
-                positions.Add(new ObjectPosition(go.getID(), go.getBody().getPosition()));
+                positions.Add(new ObjectPosition(go.Id, go.Body.Position));
             }
             return positions;
         }
 
         public void UpdatePosition(Point position, int goId)
         {
-            ServerGameObject go;
+            GameObject go;
             if (GameObjects.TryGetValue(goId, out go))
             {
-                go.getBody().setPosition(position);
+                go.Body.Position = position;
             }
         }
 
-        public List<ServerGameObject> GetObjects()
+        public List<GameObject> GetObjects()
         {
             return GameObjects.Values.ToList();
         }

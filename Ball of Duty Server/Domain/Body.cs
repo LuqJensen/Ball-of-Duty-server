@@ -6,14 +6,13 @@ using System.Windows;
 
 namespace Ball_of_Duty_Server.Domain
 {
-    [Serializable]
-    public class ServerCharacter : ServerGameObject
+    public class Body
     {
-        public ServerCharacter(int id) : base (id)
+        public Point Position { get; set; }
+
+        public Body(Point position)
         {
-
+            Position = position;
         }
-
-        
     }
 }

@@ -11,9 +11,8 @@ namespace Ball_of_Duty_Server.Persistence
 {
     using System;
     using System.Collections.Generic;
-    
-    [Serializable]
-    public partial class ServerPlayer
+
+    public partial class Player
     {
         public int Id { get; set; }
         public string Nickname { get; set; }
@@ -22,10 +21,14 @@ namespace Ball_of_Duty_Server.Persistence
 
         private static int amountPlayers = 0; // Lige nu bliver det ikke persisteret..
 
-        public ServerPlayer()
+        public Player(int id)
         {
-            Id = amountPlayers;
-            amountPlayers++;
+            Id = id;
+        }
+
+        public static Player CreatePlayer()
+        {
+            return new Player(amountPlayers++);
         }
     }
 }

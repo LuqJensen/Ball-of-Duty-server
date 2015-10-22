@@ -1,32 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 
 namespace Ball_of_Duty_Server.Domain
 {
-    [Serializable]
     public class View
     {
-        public double Scale
-        {
-            get;
+        public double Scale { get; set; }
 
-            set;
-        }
+        public Color Color { get; set; }
 
-        public System.Drawing.Color Color
-        {
-            get;
-
-            set;
-        }
-
-        public Domain.ServerGameObject GameObject
-        {
-            get;
-
-            set;
-        }
+        public GameObject GameObject { get; set; }
     }
 }

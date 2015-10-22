@@ -6,29 +6,29 @@ namespace Ball_of_Duty_Server.Domain
 {
     public class Game
     {
-        private Dictionary<int, ServerPlayer> _players;
-
-        public Game()
-        {
-            GameMap = new Map();
-
-        }
-
         public int Id { get; set; }
 
         public Map GameMap { get; set; }
 
-        public void AddPlayer(ServerPlayer serverPlayer)
+        private Dictionary<int, Player> _players;
+
+        public Game(string ip)
         {
-            _players.Add(serverPlayer.Id, serverPlayer);
+            GameMap = new Map(ip);
+            _players = new Dictionary<int, Player>();
         }
 
-        public void RemovePlayer(ServerPlayer serverPlayer)
+        public void AddPlayer(Player player)
         {
-            _players.Remove(serverPlayer.Id);
+            _players.Add(player.Id, player);
         }
 
-        public bool isFull()
+        public void RemovePlayer(Player player)
+        {
+            _players.Remove(player.Id);
+        }
+
+        public bool IsFull()
         {
             return false;
         }
