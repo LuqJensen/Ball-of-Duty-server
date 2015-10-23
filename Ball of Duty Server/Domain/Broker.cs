@@ -15,6 +15,7 @@ namespace Ball_of_Duty_Server.Domain
         private IPEndPoint _ip = new IPEndPoint(IPAddress.Parse("235.1.2.87"), 15000);
         private IPEndPoint _ip2; // Needs new port for each game
         private UdpClient _listener;
+        private static int portIncrement = 0;
 
         public Broker(Map map, string ip)
         {

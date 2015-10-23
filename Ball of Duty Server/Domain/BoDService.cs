@@ -76,7 +76,8 @@ namespace Ball_of_Duty_Server.Domain
             gameMap.GameObjects.TryAdd(clientPlayerId, new Character(clientPlayerId));
 
             Console.WriteLine("count: "+gameMap.GameObjects.Count);
-            
+            Console.WriteLine("count: " + gameMap.GameObjects.Values.Count);
+
             List<GameObjectDTO> gameObjects = new List<GameObjectDTO>();
 
             foreach (GameObject go in gameMap.GameObjects.Values)
@@ -113,7 +114,15 @@ namespace Ball_of_Duty_Server.Domain
             }
             else
             {
-                Console.WriteLine("id: " + clientPlayerId + " tried but failed to quit game.");  
+                if (!gameMap.GameObjects.ContainsKey(clientPlayerId))
+                {
+                    Console.WriteLine("id: " + clientPlayerId + " tried but failed to quit game because the id is not known on server.");
+                }
+                else
+                {
+                    Console.WriteLine("id: " + clientPlayerId + " tried but failed to quit game for unknown reason");
+                }
+               
             }
 
             // Removes the player from the game
