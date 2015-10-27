@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Windows;
 using System;
+using System.Collections.Concurrent;
 using System.Threading;
 
 namespace Ball_of_Duty_Server.Domain
@@ -12,16 +13,16 @@ namespace Ball_of_Duty_Server.Domain
     public class Broker : IBroker
     {
         private UdpClient _broadcastSocket;
-        private IPEndPoint _ip = new IPEndPoint(IPAddress.Parse("235.1.2.87"), 15000);
         private IPEndPoint _ip2; // Needs new port for each game
         private UdpClient _listener;
+        private ConcurrentDictionary<int, IPEndPoint> _targetEndPoints = new ConcurrentDictionary<int, IPEndPoint>();
         private static int portIncrement = 0;
 
-        public Broker(Map map, string ip)
+        public Broker(Map map)
         {
             Map = map;
             _broadcastSocket = new UdpClient();
-            _ip2 = new IPEndPoint(IPAddress.Parse(ip), 15001);
+            _ip2 = new IPEndPoint(IPAddress.Any, 15001);
             _listener = new UdpClient(_ip2);
             Thread t = new Thread(Receive);
             t.Start();
@@ -29,13 +30,22 @@ namespace Ball_of_Duty_Server.Domain
 
         public Map Map { get; set; }
 
+        public void AddTarget(int id, string ip, int preferedPort)
+        {
+            _targetEndPoints.TryAdd(id, new IPEndPoint(IPAddress.Parse(ip), preferedPort));
+        }
+
+        public void RemoveTarget(int id)
+        {
+            IPEndPoint ip;
+            _targetEndPoints.TryRemove(id, out ip);
+        }
+
         public void SendPositionUpdate(List<ObjectPosition> positions, int gameId)
         {
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
-
-                Thread.Sleep(20);
                 bw.Write((byte) 1); //ASCII Standard for Start of heading
                 bw.Write((byte) Opcodes.BROADCAST_POSITION_UPDATE);
                 bw.Write((byte) 2); //ASCII Standard for Start of text
@@ -84,7 +94,10 @@ namespace Ball_of_Duty_Server.Domain
 
         public void Send(byte[] b)
         {
-            _broadcastSocket.Send(b, b.Length, _ip);
+            foreach (IPEndPoint targetEndPoint in _targetEndPoints.Values)
+            {
+                _broadcastSocket.Send(b, b.Length, targetEndPoint);
+            }
         }
     }
 }

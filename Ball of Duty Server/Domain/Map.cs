@@ -12,14 +12,15 @@ namespace Ball_of_Duty_Server.Domain
 {
     public class Map
     {
-        public HashSet<int> gameObjectsActive;
+        private HashSet<int> _gameObjectsActive; // possible race conditions.
+        private Thread _updateThread;
 
-        public Map(string ip)
+        public Map()
         {
-            Broker = new Broker(this, ip);
+            Broker = new Broker(this);
             GameObjects = new ConcurrentDictionary<int, GameObject>();
-            var t = new Thread(Activate);
-            t.Start();
+            _updateThread = new Thread(Activate);
+            _updateThread.Start();
         }
 
         public ConcurrentDictionary<int, GameObject> GameObjects { get; set; }
@@ -31,19 +32,20 @@ namespace Ball_of_Duty_Server.Domain
         public void Activate()
         {
             var timeoutCheck = new Timer();
-            timeoutCheck.Elapsed += checkTimeouts;
+            timeoutCheck.Elapsed += CheckTimeouts;
             timeoutCheck.Interval = 10000;
             timeoutCheck.Enabled = true;
-            gameObjectsActive = new HashSet<int>();
+            _gameObjectsActive = new HashSet<int>();
             while (true)
             {
                 Update();
+                Thread.Sleep(20);
             }
         }
 
         public void Deactivate()
         {
-            throw new NotImplementedException();
+            _updateThread.Interrupt();
         }
 
         public void Update()
@@ -51,7 +53,8 @@ namespace Ball_of_Duty_Server.Domain
             Broker.SendPositionUpdate(GetPositions(), 1 /*Game.Id*/);
         }
 
-        public List<ObjectPosition> GetPositions()
+
+        private List<ObjectPosition> GetPositions()
         {
             var positions = new List<ObjectPosition>();
             foreach (var go in GameObjects.Values)
@@ -62,22 +65,24 @@ namespace Ball_of_Duty_Server.Domain
         }
 
 
-        private void checkTimeouts(object sender, ElapsedEventArgs e)
+        private void CheckTimeouts(object sender, ElapsedEventArgs e)
             // An idea to handle it, not sure i like it too much.
         {
+            if (_gameObjectsActive.Count == 0)
+                return;
+
             Console.WriteLine("Checking");
             var removeTimeoutObjects = new List<int>();
-            if (gameObjectsActive != null)
+
+            foreach (var go in GameObjects.Values)
             {
-                foreach (var go in GameObjects.Values)
+                if (!_gameObjectsActive.Contains(go.Id))
                 {
-                    if (!gameObjectsActive.Contains(go.Id))
-                    {
-                        removeTimeoutObjects.Add(go.Id);
-                        Console.WriteLine(go.Id + " Hasnt send messages for atleast 10 seconds");
-                    }
+                    removeTimeoutObjects.Add(go.Id);
+                    Console.WriteLine(go.Id + " Hasnt send messages for atleast 10 seconds");
                 }
             }
+
             foreach (var rto in removeTimeoutObjects)
             {
                 Console.WriteLine("removing "+rto);
@@ -85,7 +90,7 @@ namespace Ball_of_Duty_Server.Domain
                 GameObjects.TryRemove(rto, out go);
             }
 
-            gameObjectsActive = new HashSet<int>();
+            _gameObjectsActive.Clear();
         }
 
         public void UpdatePosition(Point position, int goId)
@@ -93,14 +98,9 @@ namespace Ball_of_Duty_Server.Domain
             GameObject go;
             if (GameObjects.TryGetValue(goId, out go))
             {
-                gameObjectsActive.Add(go.Id);
+                _gameObjectsActive.Add(go.Id);
                 go.Body.Position = position;
             }
-        }
-
-        public List<GameObject> GetObjects()
-        {
-            return GameObjects.Values.ToList();
         }
     }
 }

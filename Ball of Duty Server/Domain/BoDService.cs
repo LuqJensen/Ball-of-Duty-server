@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.ServiceModel;
+using System.ServiceModel.Channels;
 using System.Windows;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Persistence;
@@ -17,11 +20,13 @@ namespace Ball_of_Duty_Server.Domain
            
         }
 
-        public static List<Game> Games { get; set; } = new List<Game>();
+        public static Dictionary<int, Game> Games { get; set; } = new Dictionary<int, Game>();
 
-        private static Dictionary<int, Game> GameContainingPlayer { get; set; } = new Dictionary<int, Game>();
+        public static Dictionary<int, Game> PlayerIngame { get; set; } = new Dictionary<int, Game>(); // midlertidig
 
-        private static string localIPAddress;
+        public static Dictionary<int, Player> OnlinePlayers { get; set; } = new Dictionary<int, Player>();
+
+        /*private static string localIPAddress;
 
         public static string LocalIPAddress
         {
@@ -39,18 +44,19 @@ namespace Ball_of_Duty_Server.Domain
                 }
                 return localIPAddress;
             }
-        }
+        }*/
 
         public PlayerDTO NewGuest()
         {
             Player p = Player.CreatePlayer();
-            //_playersConnected.Add(p.Id, p);
+            OnlinePlayers.Add(p.Id, p);
+
             return new PlayerDTO { Id = p.Id, Nickname = p.Nickname };
         }
 
         public Game GetGame()
         {
-            foreach (var g in Games)
+            foreach (Game g in Games.Values)
             {
                 if (!g.IsFull())
                 {
@@ -58,82 +64,79 @@ namespace Ball_of_Duty_Server.Domain
                 }
             }
 
-            Game game = new Game(LocalIPAddress);
-            Games.Add(game);
+            Game game = new Game();
+            Games.Add(game.Id, game);
             return game;
         }
 
-        public MapDTO JoinGame(int clientPlayerId)
+        public MapDTO JoinGame(int clientPlayerId, int clientPort)
         {
-           
-            Console.WriteLine("id: "+ clientPlayerId + " Tried to join game.");
-            Game returnedGame = GetGame();
-            Map gameMap= returnedGame.GameMap;
-            if (!GameContainingPlayer.ContainsKey(clientPlayerId))
+            Player player;
+            Console.WriteLine(clientPlayerId);
+            if (!OnlinePlayers.TryGetValue(clientPlayerId, out player))
             {
-                GameContainingPlayer.Add(clientPlayerId, returnedGame);
+                return new MapDTO(); // probably not the smartest, but necessary.
             }
-            gameMap.GameObjects.TryAdd(clientPlayerId, new Character(clientPlayerId));
 
-            Console.WriteLine("count: "+gameMap.GameObjects.Count);
-            Console.WriteLine("count: " + gameMap.GameObjects.Values.Count);
+            Console.WriteLine("id: "+ clientPlayerId + " Tried to join game.");
+            Game game = GetGame();
+            Map map = game.GameMap;
+
+            #region GetClientIp
+            OperationContext context = OperationContext.Current;
+            MessageProperties properties = context.IncomingMessageProperties;
+            RemoteEndpointMessageProperty endpoint = properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
+            string clientIp = endpoint?.Address;
+
+            if (clientIp == null) // we cant operate with a null ip...
+            {
+                return new MapDTO();
+            }
+            #endregion
+
+            game.AddPlayer(player, clientIp, clientPort);
+            if (!PlayerIngame.ContainsKey(player.Id)) // midlertidig..
+            {
+                PlayerIngame.Add(player.Id, game);
+            }
+
+            map.GameObjects.TryAdd(clientPlayerId, new Character(clientPlayerId)); // det her burde ikke ligge her.
+
+            Console.WriteLine("count: "+map.GameObjects.Count);
+            Console.WriteLine("count: " + map.GameObjects.Values.Count);
 
             List<GameObjectDTO> gameObjects = new List<GameObjectDTO>();
 
-            foreach (GameObject go in gameMap.GameObjects.Values)
+            foreach (GameObject go in map.GameObjects.Values) // det her burde ikke ligge her...
             {
                 PointDTO point = new PointDTO {X = go.Body.Position.X, Y = go.Body.Position.Y};
                 BodyDTO body = new BodyDTO {Point = point};
                 gameObjects.Add(new GameObjectDTO {Id = go.Id, Body = body});
             }
 
-            MapDTO map = new MapDTO {GameObjects = gameObjects.ToArray(), IPAddress = LocalIPAddress};
-
-            return map;
-
+            return new MapDTO {GameObjects = gameObjects.ToArray()}; // det her virker kun mens vi tester lokalt!!!
         }
 
-
-        public Game CreateGame()
+        public void QuitGame(int clientPlayerId/*, int gameId*/) // synes gameId skal komme fra clienten.
         {
-            return null;
-        }
-
-        public void QuitGame(int clientPlayerId)
-        {
-            Console.WriteLine("id: " + clientPlayerId + " Tried to quit game.");
-            Game returnedGame = GetGame();
-            Map gameMap = returnedGame.GameMap;
-
-            // Removes the player character from the map
-            GameObject go;
-            bool quit = gameMap.GameObjects.TryRemove(clientPlayerId, out go);
-            if (quit)
+            
+            // Removes the player from the game
+            Game game;
+            if (PlayerIngame.TryGetValue(clientPlayerId, out game))
+            //if (Games.TryGetValue(gameId, out game))
             {
-                Console.WriteLine("id: " + clientPlayerId + " has quit game.");
+                PlayerIngame.Remove(clientPlayerId); // midlertidig...
+                game.RemovePlayer(clientPlayerId);
+                Console.WriteLine($"Player: {clientPlayerId} quit game: {game.Id}.");
+
+                // Removes the player character from the map - bør ikke ligge her, synes ikke Service skal kende til GameObject...
+                GameObject go;
+                game.GameMap.GameObjects.TryRemove(clientPlayerId, out go);
             }
             else
             {
-                if (!gameMap.GameObjects.ContainsKey(clientPlayerId))
-                {
-                    Console.WriteLine("id: " + clientPlayerId + " tried but failed to quit game because the id is not known on server.");
-                }
-                else
-                {
-                    Console.WriteLine("id: " + clientPlayerId + " tried but failed to quit game for unknown reason");
-                }
-               
+                Debug.WriteLine($"Player: {clientPlayerId} failed quitting game"/*: {gameId}."*/);
             }
-
-            // Removes the player from the game
-            Game game;
-            if (GameContainingPlayer.TryGetValue(clientPlayerId, out game))
-            {
-                game.RemovePlayer(clientPlayerId);
-                GameContainingPlayer.Remove(clientPlayerId);
-            }
-
-            
         }
     }
 }

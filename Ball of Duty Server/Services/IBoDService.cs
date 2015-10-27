@@ -17,7 +17,7 @@ namespace Ball_of_Duty_Server.Services
         PlayerDTO NewGuest();
      
         [OperationContract]
-        MapDTO JoinGame(int clientPlayerId);
+        MapDTO JoinGame(int clientPlayerId, int clientPort);
 
         [OperationContract]
         void QuitGame(int clientPlayerId);

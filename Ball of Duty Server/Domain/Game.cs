@@ -12,20 +12,22 @@ namespace Ball_of_Duty_Server.Domain
 
         private Dictionary<int, Player> _players;
 
-        public Game(string ip)
+        public Game()
         {
-            GameMap = new Map(ip);
+            GameMap = new Map();
             _players = new Dictionary<int, Player>();
         }
 
-        public void AddPlayer(Player player)
+        public void AddPlayer(Player player, string clientIp, int clientPort)
         {
             _players.Add(player.Id, player);
+            GameMap.Broker.AddTarget(player.Id, clientIp, clientPort);
         }
 
-        public void RemovePlayer(int playerID)
+        public void RemovePlayer(int playerId)
         {
-            _players.Remove(playerID);
+            _players.Remove(playerId);
+            GameMap.Broker.RemoveTarget(playerId);
         }
 
         public bool IsFull()
