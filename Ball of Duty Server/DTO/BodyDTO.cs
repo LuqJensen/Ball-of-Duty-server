@@ -8,8 +8,15 @@ using System.Windows;
 namespace Ball_of_Duty_Server.DTO
 {
     [Serializable]
+
+
     public struct BodyDTO
     {
-        public PointDTO Point;
+        public int _width;
+        public int _height;
+        public int _type;
+        public int CIRCLE;
+        public int RECTANGLE;
+        public PointDTO _point;
     }
 }

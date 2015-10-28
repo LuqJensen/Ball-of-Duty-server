@@ -17,7 +17,6 @@ namespace Ball_of_Duty_Server.Domain
     {
         public BoDService()
         {
-           
         }
 
         public static Dictionary<int, Game> Games { get; set; } = new Dictionary<int, Game>();
@@ -51,7 +50,7 @@ namespace Ball_of_Duty_Server.Domain
             Player p = Player.CreatePlayer();
             OnlinePlayers.Add(p.Id, p);
 
-            return new PlayerDTO { Id = p.Id, Nickname = p.Nickname };
+            return new PlayerDTO {Id = p.Id, Nickname = p.Nickname};
         }
 
         public Game GetGame()
@@ -60,7 +59,7 @@ namespace Ball_of_Duty_Server.Domain
             {
                 if (!g.IsFull())
                 {
-                    return g; 
+                    return g;
                 }
             }
 
@@ -78,20 +77,23 @@ namespace Ball_of_Duty_Server.Domain
                 return new MapDTO(); // probably not the smartest, but necessary.
             }
 
-            Console.WriteLine("id: "+ clientPlayerId + " Tried to join game.");
+            Console.WriteLine("id: " + clientPlayerId + " Tried to join game.");
             Game game = GetGame();
             Map map = game.GameMap;
 
             #region GetClientIp
+
             OperationContext context = OperationContext.Current;
             MessageProperties properties = context.IncomingMessageProperties;
-            RemoteEndpointMessageProperty endpoint = properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
+            RemoteEndpointMessageProperty endpoint =
+                properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
             string clientIp = endpoint?.Address;
 
             if (clientIp == null) // we cant operate with a null ip...
             {
                 return new MapDTO();
             }
+
             #endregion
 
             game.AddPlayer(player, clientIp, clientPort);
@@ -102,28 +104,44 @@ namespace Ball_of_Duty_Server.Domain
 
             map.GameObjects.TryAdd(clientPlayerId, new Character(clientPlayerId)); // det her burde ikke ligge her.
 
-            Console.WriteLine("count: "+map.GameObjects.Count);
+            Console.WriteLine("count: " + map.GameObjects.Count);
             Console.WriteLine("count: " + map.GameObjects.Values.Count);
 
             List<GameObjectDTO> gameObjects = new List<GameObjectDTO>();
 
             foreach (GameObject go in map.GameObjects.Values) // det her burde ikke ligge her...
             {
-                PointDTO point = new PointDTO {X = go.Body.Position.X, Y = go.Body.Position.Y};
-                BodyDTO body = new BodyDTO {Point = point};
+                PointDTO point = new PointDTO {X = go.ObjectBody.Position.X, Y = go.ObjectBody.Position.Y};
+                BodyDTO body = new BodyDTO {_point = point};
+                body.CIRCLE = (int)Body.Geometry.CIRCLE;
+                body.RECTANGLE = (int)Body.Geometry.RECTANGLE;
+                body._type = (int)go.ObjectBody.Type;
+
                 gameObjects.Add(new GameObjectDTO {Id = go.Id, Body = body});
             }
+            foreach (Wall go in map.Walls) // det her burde ikke ligge her...
+            {
+                PointDTO point = new PointDTO { X = go.ObjectBody.Position.X, Y = go.ObjectBody.Position.Y };
+                BodyDTO body = new BodyDTO { _point = point };
+                body.CIRCLE = (int)Body.Geometry.CIRCLE;
+                body.RECTANGLE = (int)Body.Geometry.RECTANGLE;
+                body._type = (int)go.ObjectBody.Type;
+                body._height = go.ObjectBody.Height;
+                body._width = go.ObjectBody.Width;
+
+                gameObjects.Add(new GameObjectDTO { Id = go.Id, Body = body });
+            }
+
 
             return new MapDTO {GameObjects = gameObjects.ToArray()}; // det her virker kun mens vi tester lokalt!!!
         }
 
-        public void QuitGame(int clientPlayerId/*, int gameId*/) // synes gameId skal komme fra clienten.
+        public void QuitGame(int clientPlayerId /*, int gameId*/) // synes gameId skal komme fra clienten.
         {
-            
             // Removes the player from the game
             Game game;
             if (PlayerIngame.TryGetValue(clientPlayerId, out game))
-            //if (Games.TryGetValue(gameId, out game))
+                //if (Games.TryGetValue(gameId, out game))
             {
                 PlayerIngame.Remove(clientPlayerId); // midlertidig...
                 game.RemovePlayer(clientPlayerId);
@@ -135,7 +153,7 @@ namespace Ball_of_Duty_Server.Domain
             }
             else
             {
-                Debug.WriteLine($"Player: {clientPlayerId} failed quitting game"/*: {gameId}."*/);
+                Debug.WriteLine($"Player: {clientPlayerId} failed quitting game" /*: {gameId}."*/);
             }
         }
     }
