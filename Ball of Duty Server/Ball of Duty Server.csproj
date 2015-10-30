@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Domain\Body.cs" />
+    <Compile Include="Domain\MapGenerator.cs" />
     <Compile Include="Domain\Physics.cs" />
     <Compile Include="Domain\BoDService.cs" />
     <Compile Include="Domain\Broker.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="Domain\IBroker.cs" />
     <Compile Include="Domain\Map.cs" />
     <Compile Include="Domain\Opcodes.cs" />
+    <Compile Include="Domain\Wall.cs" />
     <Compile Include="DTO\BodyDTO.cs" />
     <Compile Include="DTO\CharacterDTO.cs" />
     <Compile Include="DTO\GameObjectDTO.cs" />

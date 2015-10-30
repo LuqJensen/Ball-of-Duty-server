@@ -10,7 +10,8 @@ namespace Ball_of_Duty_Server.Domain
     {
         public Character(int id) : base (id)
         {
-
+            ObjectBody = new Body(this, new Point(0,0), 20, 20); // TODO should be dynamic
+            ObjectBody.Type = Body.Geometry.CIRCLE;
         }
     }
 }

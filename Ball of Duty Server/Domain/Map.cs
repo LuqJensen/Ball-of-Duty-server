@@ -15,8 +15,30 @@ namespace Ball_of_Duty_Server.Domain
         private HashSet<int> _gameObjectsActive; // possible race conditions.
         private Thread _updateThread;
 
+        public int Width { get; set; }
+
+        public int Height { get; set; }
+        public List<Wall> Walls { get; set; }
+
+
         public Map()
         {
+            Width = 1100;
+            Height = 650; // default
+            Walls = new List<Wall>();
+            MapGenerator.GenerateMap(this);
+            Broker = new Broker(this);
+            GameObjects = new ConcurrentDictionary<int, GameObject>();
+            _updateThread = new Thread(Activate);
+            _updateThread.Start();
+        }
+
+        public Map(int width, int height)
+        {
+            Width = width;
+            Height = height;
+            Walls = new List<Wall>();
+            MapGenerator.GenerateMap(this);
             Broker = new Broker(this);
             GameObjects = new ConcurrentDictionary<int, GameObject>();
             _updateThread = new Thread(Activate);
@@ -59,7 +81,7 @@ namespace Ball_of_Duty_Server.Domain
             var positions = new List<ObjectPosition>();
             foreach (var go in GameObjects.Values)
             {
-                positions.Add(new ObjectPosition(go.Id, go.Body.Position));
+                positions.Add(new ObjectPosition(go.Id, go.ObjectBody.Position));
             }
             return positions;
         }
@@ -85,7 +107,7 @@ namespace Ball_of_Duty_Server.Domain
 
             foreach (var rto in removeTimeoutObjects)
             {
-                Console.WriteLine("removing "+rto);
+                Console.WriteLine("removing " + rto);
                 GameObject go;
                 GameObjects.TryRemove(rto, out go);
             }
@@ -99,7 +121,7 @@ namespace Ball_of_Duty_Server.Domain
             if (GameObjects.TryGetValue(goId, out go))
             {
                 _gameObjectsActive.Add(go.Id);
-                go.Body.Position = position;
+                go.ObjectBody.Position = position;
             }
         }
     }
