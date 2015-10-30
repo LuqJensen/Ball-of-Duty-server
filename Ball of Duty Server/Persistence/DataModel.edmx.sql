@@ -2,8 +2,8 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, 2012 and Azure
 -- --------------------------------------------------
--- Date Created: 10/13/2015 14:56:29
--- Generated from EDMX file: C:\Users\lucas\Documents\BOD-Server\Ball of Duty Server\Persistence\Database.edmx
+-- Date Created: 10/30/2015 14:13:20
+-- Generated from EDMX file: C:\Users\lucas\Documents\BOD-Server\Ball of Duty Server\Persistence\DataModel.edmx
 -- --------------------------------------------------
 
 SET QUOTED_IDENTIFIER OFF;
@@ -18,38 +18,38 @@ GO
 -- --------------------------------------------------
 
 IF OBJECT_ID(N'[dbo].[FK_PlayerAccount]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[Player] DROP CONSTRAINT [FK_PlayerAccount];
+    ALTER TABLE [dbo].[Players] DROP CONSTRAINT [FK_PlayerAccount];
 GO
 
 -- --------------------------------------------------
 -- Dropping existing tables
 -- --------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[Player]', 'U') IS NOT NULL
-    DROP TABLE [dbo].[Player];
+IF OBJECT_ID(N'[dbo].[Accounts]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[Accounts];
 GO
-IF OBJECT_ID(N'[dbo].[Account]', 'U') IS NOT NULL
-    DROP TABLE [dbo].[Account];
+IF OBJECT_ID(N'[dbo].[Players]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[Players];
 GO
 
 -- --------------------------------------------------
 -- Creating all tables
 -- --------------------------------------------------
 
--- Creating table 'Player'
-CREATE TABLE [dbo].[Player] (
-    [Id] int IDENTITY(1,1) NOT NULL,
-    [Nickname] nvarchar(max)  NOT NULL,
-    [Account_Id] int  NOT NULL
-);
-GO
-
--- Creating table 'Account'
-CREATE TABLE [dbo].[Account] (
+-- Creating table 'Accounts'
+CREATE TABLE [dbo].[Accounts] (
     [Id] int IDENTITY(1,1) NOT NULL,
     [Username] nvarchar(max)  NOT NULL,
     [Salt] nvarchar(max)  NOT NULL,
-    [Hash] nvarchar(max)  NOT NULL
+    [Hash] nvarchar(max)  NOT NULL,
+    [Player_Id] int  NULL
+);
+GO
+
+-- Creating table 'Players'
+CREATE TABLE [dbo].[Players] (
+    [Id] int IDENTITY(1,1) NOT NULL,
+    [Nickname] nvarchar(max)  NOT NULL
 );
 GO
 
@@ -57,15 +57,15 @@ GO
 -- Creating all PRIMARY KEY constraints
 -- --------------------------------------------------
 
--- Creating primary key on [Id] in table 'Player'
-ALTER TABLE [dbo].[Player]
-ADD CONSTRAINT [PK_Player]
+-- Creating primary key on [Id] in table 'Accounts'
+ALTER TABLE [dbo].[Accounts]
+ADD CONSTRAINT [PK_Accounts]
     PRIMARY KEY CLUSTERED ([Id] ASC);
 GO
 
--- Creating primary key on [Id] in table 'Account'
-ALTER TABLE [dbo].[Account]
-ADD CONSTRAINT [PK_Account]
+-- Creating primary key on [Id] in table 'Players'
+ALTER TABLE [dbo].[Players]
+ADD CONSTRAINT [PK_Players]
     PRIMARY KEY CLUSTERED ([Id] ASC);
 GO
 
@@ -73,19 +73,19 @@ GO
 -- Creating all FOREIGN KEY constraints
 -- --------------------------------------------------
 
--- Creating foreign key on [Account_Id] in table 'Player'
-ALTER TABLE [dbo].[Player]
+-- Creating foreign key on [Player_Id] in table 'Accounts'
+ALTER TABLE [dbo].[Accounts]
 ADD CONSTRAINT [FK_PlayerAccount]
-    FOREIGN KEY ([Account_Id])
-    REFERENCES [dbo].[Account]
+    FOREIGN KEY ([Player_Id])
+    REFERENCES [dbo].[Players]
         ([Id])
     ON DELETE NO ACTION ON UPDATE NO ACTION;
 GO
 
 -- Creating non-clustered index for FOREIGN KEY 'FK_PlayerAccount'
 CREATE INDEX [IX_FK_PlayerAccount]
-ON [dbo].[Player]
-    ([Account_Id]);
+ON [dbo].[Accounts]
+    ([Player_Id]);
 GO
 
 -- --------------------------------------------------

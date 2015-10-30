@@ -48,7 +48,7 @@ namespace Ball_of_Duty_Server.Domain
 
         public PlayerDTO NewGuest()
         {
-            Player p = Player.CreatePlayer();
+            Player p = new Player();
             OnlinePlayers.Add(p.Id, p);
 
             return new PlayerDTO { Id = p.Id, Nickname = p.Nickname };

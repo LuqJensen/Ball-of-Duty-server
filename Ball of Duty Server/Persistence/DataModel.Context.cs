@@ -13,10 +13,10 @@ namespace Ball_of_Duty_Server.Persistence
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class DatabaseContainer : DbContext
+    public partial class BoDServerEntities : DbContext
     {
-        public DatabaseContainer()
-            : base("name=DatabaseContainer")
+        public BoDServerEntities()
+            : base("name=BoDServerEntities")
         {
         }
     
@@ -25,7 +25,7 @@ namespace Ball_of_Duty_Server.Persistence
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<Player> Player { get; set; }
-        public virtual DbSet<Account> Account { get; set; }
+        public virtual DbSet<Account> Accounts { get; set; }
+        public virtual DbSet<Player> Players { get; set; }
     }
 }
