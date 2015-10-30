@@ -13,10 +13,10 @@ namespace Ball_of_Duty_Server.Persistence
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class BoDServerEntities : DbContext
+    public partial class DatabaseContainer : DbContext
     {
-        public BoDServerEntities()
-            : base("name=BoDServerEntities")
+        public DatabaseContainer()
+            : base("name=DatabaseContainer")
         {
         }
     

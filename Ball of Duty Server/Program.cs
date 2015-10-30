@@ -41,7 +41,7 @@ namespace Ball_of_Duty_Server
                 //Console.WriteLine(RSA.KeySize);
             }
 
-            using (BoDServerEntities bse = new BoDServerEntities())
+            using (DatabaseContainer bse = new DatabaseContainer())
             {
                 for (int i = 0; i < 10; ++i)
                 {
@@ -50,7 +50,7 @@ namespace Ball_of_Duty_Server
                 bse.SaveChanges();
             }
 
-            using (BoDServerEntities bse = new BoDServerEntities())
+            using (DatabaseContainer bse = new DatabaseContainer())
             {
                 foreach (var v in bse.Players)
                 {

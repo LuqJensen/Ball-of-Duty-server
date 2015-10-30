@@ -4,10 +4,10 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="dedaf7cd1f69447ba0391f9ae60efba7" Name="Diagram1">
-        <EntityTypeShape EntityType="BoDServerModel.Account" Width="1.5" PointX="0.75" PointY="0.875" IsExpanded="true" />
-        <EntityTypeShape EntityType="BoDServerModel.Player" Width="1.5" PointX="3" PointY="1" IsExpanded="true" />
-        <AssociationConnector Association="BoDServerModel.PlayerAccount" />
+      <Diagram DiagramId="c4026edbcfb5468ab9eb6faa37d4f436" Name="Diagram1">
+        <EntityTypeShape EntityType="BoDServerDataModel.Account" Width="1.5" PointX="3" PointY="0.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="BoDServerDataModel.Player" Width="1.5" PointX="0.75" PointY="1.25" IsExpanded="true" />
+        <AssociationConnector Association="BoDServerDataModel.FK_PlayerAccount" ManuallyRouted="false" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
