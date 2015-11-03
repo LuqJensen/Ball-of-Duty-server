@@ -7,11 +7,11 @@ using System.Net.Sockets;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Windows;
+using Ball_of_Duty_Server.Domain;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Persistence;
-using Ball_of_Duty_Server.Services;
 
-namespace Ball_of_Duty_Server.Domain
+namespace Ball_of_Duty_Server.Services
 {
     public class BoDService : IBoDService
     {
@@ -50,7 +50,7 @@ namespace Ball_of_Duty_Server.Domain
             Player p = new Player();
             OnlinePlayers.Add(p.Id, p);
 
-            return new PlayerDTO {Id = p.Id, Nickname = p.Nickname};
+            return new PlayerDTO { Id = p.Id, Nickname = p.Nickname };
         }
 
         public Game GetGame()
@@ -72,14 +72,16 @@ namespace Ball_of_Duty_Server.Domain
         {
             Player player;
             Console.WriteLine(clientPlayerId);
+
             if (!OnlinePlayers.TryGetValue(clientPlayerId, out player))
             {
-                return new MapDTO(); // probably not the smartest, but necessary.
+                return new MapDTO(); //TODO: probably not the smartest, but necessary.
             }
 
-            Console.WriteLine("id: " + clientPlayerId + " Tried to join game.");
+            Console.WriteLine($"Player: {clientPlayerId} tried to join game.");
+
             Game game = GetGame();
-            Map map = game.GameMap;
+            Map map = game.Map;
 
             #region GetClientIp
 
@@ -89,7 +91,7 @@ namespace Ball_of_Duty_Server.Domain
                 properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
             string clientIp = endpoint?.Address;
 
-            if (clientIp == null) // we cant operate with a null ip...
+            if (clientIp == null) //TODO: probably not the smartest, but necessary.
             {
                 return new MapDTO();
             }
@@ -97,59 +99,28 @@ namespace Ball_of_Duty_Server.Domain
             #endregion
 
             game.AddPlayer(player, clientIp, clientPort);
-            if (!PlayerIngame.ContainsKey(player.Id)) // midlertidig..
+            if (!PlayerIngame.ContainsKey(player.Id)) //TODO: brug OnlinePlayers istedet
             {
                 PlayerIngame.Add(player.Id, game);
             }
 
-            map.GameObjects.TryAdd(clientPlayerId, new Character(clientPlayerId)); // det her burde ikke ligge her.
-
-            Console.WriteLine("count: " + map.GameObjects.Count);
-            Console.WriteLine("count: " + map.GameObjects.Values.Count);
-
-            List<GameObjectDTO> gameObjects = new List<GameObjectDTO>();
-
-            foreach (GameObject go in map.GameObjects.Values) // det her burde ikke ligge her...
-            {
-                PointDTO point = new PointDTO {X = go.ObjectBody.Position.X, Y = go.ObjectBody.Position.Y};
-                BodyDTO body = new BodyDTO {_point = point};
-                body.CIRCLE = (int)Body.Geometry.CIRCLE;
-                body.RECTANGLE = (int)Body.Geometry.RECTANGLE;
-                body._type = (int)go.ObjectBody.Type;
-
-                gameObjects.Add(new GameObjectDTO {Id = go.Id, Body = body});
-            }
-            foreach (Wall go in map.Walls) // det her burde ikke ligge her...
-            {
-                PointDTO point = new PointDTO { X = go.ObjectBody.Position.X, Y = go.ObjectBody.Position.Y };
-                BodyDTO body = new BodyDTO { _point = point };
-                body.CIRCLE = (int)Body.Geometry.CIRCLE;
-                body.RECTANGLE = (int)Body.Geometry.RECTANGLE;
-                body._type = (int)go.ObjectBody.Type;
-                body._height = go.ObjectBody.Height;
-                body._width = go.ObjectBody.Width;
-
-                gameObjects.Add(new GameObjectDTO { Id = go.Id, Body = body });
-            }
+            Console.WriteLine($"Count: {map.GameObjects.Count}");
 
 
-            return new MapDTO {GameObjects = gameObjects.ToArray()}; // det her virker kun mens vi tester lokalt!!!
+            return new MapDTO { GameObjects = map.ExportGameObjects(), CharacterId = player.CurrentCharacter };
+            //TODO: Add servers IP here -- maybe rename to GameDTO?
         }
 
-        public void QuitGame(int clientPlayerId /*, int gameId*/) // synes gameId skal komme fra clienten.
+        public void QuitGame(int clientPlayerId /*, int gameId*/) //TODO: brug OnlinePlayers istedet
         {
             // Removes the player from the game
             Game game;
             if (PlayerIngame.TryGetValue(clientPlayerId, out game))
-                //if (Games.TryGetValue(gameId, out game))
+                //if (Games.TryGetValue(gameId, out game)) //TODO: brug OnlinePlayers istedet
             {
-                PlayerIngame.Remove(clientPlayerId); // midlertidig...
+                PlayerIngame.Remove(clientPlayerId); //TODO: brug OnlinePlayers istedet
                 game.RemovePlayer(clientPlayerId);
                 Console.WriteLine($"Player: {clientPlayerId} quit game: {game.Id}.");
-
-                // Removes the player character from the map - bør ikke ligge her, synes ikke Service skal kende til GameObject...
-                GameObject go;
-                game.GameMap.GameObjects.TryRemove(clientPlayerId, out go);
             }
             else
             {

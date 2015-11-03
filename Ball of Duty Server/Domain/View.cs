@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using Ball_of_Duty_Server.Domain.Entities;
 
 namespace Ball_of_Duty_Server.Domain
 {

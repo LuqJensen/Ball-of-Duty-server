@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using Ball_of_Duty_Server.Domain.Entities;
 
 namespace Ball_of_Duty_Server.Domain
 {
     public class Body
     {
-        public GameObject gameObject;
+        public GameObject GameObject { get; set; }
         public Point Position { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
-
         public Geometry Type { get; set; }
 
         public enum Geometry
@@ -20,12 +20,12 @@ namespace Ball_of_Duty_Server.Domain
             CIRCLE = 0,
             RECTANGLE = 1
         }
-        
 
-        public Body(GameObject sgo, Point position, int width, int height)
+
+        public Body(GameObject go, Point position, int width, int height)
         {
             this.Position = position;
-            gameObject = sgo;
+            this.GameObject = go;
             this.Width = width;
             this.Height = height;
         }

@@ -8,31 +8,30 @@ namespace Ball_of_Duty_Server.Domain
     {
         public int Id { get; set; }
 
-        public Map GameMap { get; set; }
+        public Map Map { get; set; } = new Map();
 
-        private Dictionary<int, Player> _players;
-
-        public Game()
-        {
-            GameMap = new Map();
-            _players = new Dictionary<int, Player>();
-        }
+        private Dictionary<int, Player> _players = new Dictionary<int, Player>();
 
         public void AddPlayer(Player player, string clientIp, int clientPort)
         {
             _players.Add(player.Id, player);
-            GameMap.Broker.AddTarget(player.Id, clientIp, clientPort);
+            player.CurrentCharacter = Map.AddCharacter();
+            Map.Broker.AddTarget(player.Id, clientIp, clientPort);
         }
 
         public void RemovePlayer(int playerId)
         {
-            _players.Remove(playerId);
-            GameMap.Broker.RemoveTarget(playerId);
+            Player player;
+            if (_players.TryGetValue(playerId, out player))
+            {
+                Map.RemoveCharacter(player.CurrentCharacter);
+            }
+            Map.Broker.RemoveTarget(playerId);
         }
 
         public bool IsFull()
         {
-            return false;
+            return _players.Count >= 10;
         }
     }
 }

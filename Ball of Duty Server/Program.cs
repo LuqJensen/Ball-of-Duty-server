@@ -7,6 +7,7 @@ using Ball_of_Duty_Server.Domain;
 using System.Security.Cryptography;
 using System.Text;
 using Ball_of_Duty_Server.Persistence;
+using Ball_of_Duty_Server.Services;
 
 namespace Ball_of_Duty_Server
 {
@@ -45,7 +46,7 @@ namespace Ball_of_Duty_Server
             {
                 for (int i = 0; i < 10; ++i)
                 {
-                    bse.Players.Add(new Player() {Nickname = $"{i}"});
+                    bse.Players.Add(new Player() { Nickname = $"{i}" });
                 }
                 bse.SaveChanges();
             }
@@ -58,7 +59,7 @@ namespace Ball_of_Duty_Server
                 }
             }
 
-            using (var sh = new ServiceHost(typeof(BoDService)))
+            using (var sh = new ServiceHost(typeof (BoDService)))
             {
                 ServiceDebugBehavior debug = sh.Description.Behaviors.Find<ServiceDebugBehavior>();
 
@@ -66,7 +67,7 @@ namespace Ball_of_Duty_Server
                 if (debug == null)
                 {
                     sh.Description.Behaviors.Add(
-                         new ServiceDebugBehavior() { IncludeExceptionDetailInFaults = true });
+                        new ServiceDebugBehavior() { IncludeExceptionDetailInFaults = true });
                 }
                 else
                 {
