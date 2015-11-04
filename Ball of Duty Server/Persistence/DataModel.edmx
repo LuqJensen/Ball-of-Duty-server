@@ -4,46 +4,45 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="BoDServerDataModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
-        <EntityType Name="Accounts">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="Username" Type="nvarchar(max)" Nullable="false" />
-          <Property Name="Salt" Type="nvarchar(max)" Nullable="false" />
-          <Property Name="Hash" Type="nvarchar(max)" Nullable="false" />
-          <Property Name="Player_Id" Type="int" />
-        </EntityType>
-        <EntityType Name="Players">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="Nickname" Type="nvarchar(max)" Nullable="false" />
-        </EntityType>
-        <Association Name="FK_PlayerAccount">
-          <End Role="Players" Type="Self.Players" Multiplicity="0..1" />
-          <End Role="Accounts" Type="Self.Accounts" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Players">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="Accounts">
-              <PropertyRef Name="Player_Id" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <EntityContainer Name="BoDServerDataModelStoreContainer">
-          <EntitySet Name="Accounts" EntityType="Self.Accounts" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="Players" EntityType="Self.Players" Schema="dbo" store:Type="Tables" />
-          <AssociationSet Name="FK_PlayerAccount" Association="Self.FK_PlayerAccount">
-            <End Role="Players" EntitySet="Players" />
-            <End Role="Accounts" EntitySet="Accounts" />
-          </AssociationSet>
-        </EntityContainer>
-      </Schema>
-    </edmx:StorageModels>
+    <Schema Namespace="BoDServerDataModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2012" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+  <EntityContainer Name="BoDServerDataModelStoreContainer">
+    <EntitySet Name="Accounts" EntityType="BoDServerDataModel.Store.Accounts" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="Players" EntityType="BoDServerDataModel.Store.Players" store:Type="Tables" Schema="dbo" />
+    <AssociationSet Name="PlayerAccount" Association="BoDServerDataModel.Store.PlayerAccount">
+      <End Role="Player" EntitySet="Players" />
+      <End Role="Account" EntitySet="Accounts" />
+    </AssociationSet>
+  </EntityContainer>
+  <EntityType Name="Accounts">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="Username" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="Salt" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="Hash" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="Player_Id" Type="int" Nullable="true" />
+  </EntityType>
+  <EntityType Name="Players">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="Nickname" Type="nvarchar(max)" Nullable="false" />
+  </EntityType>
+  <Association Name="PlayerAccount">
+    <End Role="Player" Type="BoDServerDataModel.Store.Players" Multiplicity="0..1" />
+    <End Role="Account" Type="BoDServerDataModel.Store.Accounts" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Player">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Account">
+        <PropertyRef Name="Player_Id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+</Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="BoDServerDataModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
@@ -55,8 +54,7 @@
           <Property Name="Username" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="Salt" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="Hash" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="Player_Id" Type="Int32" />
-          <NavigationProperty Name="Player" Relationship="Self.FK_PlayerAccount" FromRole="Accounts" ToRole="Players" />
+          <NavigationProperty Name="Player" Relationship="BoDServerDataModel.PlayerAccount" FromRole="Account" ToRole="Player" />
         </EntityType>
         <EntityType Name="Player">
           <Key>
@@ -64,56 +62,55 @@
           </Key>
           <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Nickname" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
-          <NavigationProperty Name="Accounts" Relationship="Self.FK_PlayerAccount" FromRole="Players" ToRole="Accounts" />
+          <NavigationProperty Name="Account" Relationship="BoDServerDataModel.PlayerAccount" FromRole="Player" ToRole="Account" />
         </EntityType>
-        <Association Name="FK_PlayerAccount">
-          <End Role="Players" Type="Self.Player" Multiplicity="0..1" />
-          <End Role="Accounts" Type="Self.Account" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Players">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="Accounts">
-              <PropertyRef Name="Player_Id" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <EntityContainer Name="DatabaseContainer" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Accounts" EntityType="Self.Account" />
           <EntitySet Name="Players" EntityType="Self.Player" />
-          <AssociationSet Name="FK_PlayerAccount" Association="Self.FK_PlayerAccount">
-            <End Role="Players" EntitySet="Players" />
-            <End Role="Accounts" EntitySet="Accounts" />
+          <AssociationSet Name="PlayerAccount" Association="BoDServerDataModel.PlayerAccount">
+            <End Role="Player" EntitySet="Players" />
+            <End Role="Account" EntitySet="Accounts" />
           </AssociationSet>
         </EntityContainer>
+        <Association Name="PlayerAccount">
+          <End Type="BoDServerDataModel.Player" Role="Player" Multiplicity="0..1" />
+          <End Type="BoDServerDataModel.Account" Role="Account" Multiplicity="0..1" />
+        </Association>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
-      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-        <EntityContainerMapping StorageEntityContainer="BoDServerDataModelStoreContainer" CdmEntityContainer="DatabaseContainer">
-          <EntitySetMapping Name="Accounts">
-            <EntityTypeMapping TypeName="BoDServerDataModel.Account">
-              <MappingFragment StoreEntitySet="Accounts">
-                <ScalarProperty Name="Id" ColumnName="Id" />
-                <ScalarProperty Name="Username" ColumnName="Username" />
-                <ScalarProperty Name="Salt" ColumnName="Salt" />
-                <ScalarProperty Name="Hash" ColumnName="Hash" />
-                <ScalarProperty Name="Player_Id" ColumnName="Player_Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Players">
-            <EntityTypeMapping TypeName="BoDServerDataModel.Player">
-              <MappingFragment StoreEntitySet="Players">
-                <ScalarProperty Name="Id" ColumnName="Id" />
-                <ScalarProperty Name="Nickname" ColumnName="Nickname" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-        </EntityContainerMapping>
-      </Mapping>
-    </edmx:Mappings>
+    <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+  <EntityContainerMapping StorageEntityContainer="BoDServerDataModelStoreContainer" CdmEntityContainer="DatabaseContainer">
+    <EntitySetMapping Name="Accounts">
+      <EntityTypeMapping TypeName="IsTypeOf(BoDServerDataModel.Account)">
+        <MappingFragment StoreEntitySet="Accounts">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="Username" ColumnName="Username" />
+          <ScalarProperty Name="Salt" ColumnName="Salt" />
+          <ScalarProperty Name="Hash" ColumnName="Hash" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Players">
+      <EntityTypeMapping TypeName="IsTypeOf(BoDServerDataModel.Player)">
+        <MappingFragment StoreEntitySet="Players">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="Nickname" ColumnName="Nickname" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <AssociationSetMapping Name="PlayerAccount" TypeName="BoDServerDataModel.PlayerAccount" StoreEntitySet="Accounts">
+      <EndProperty Name="Player">
+        <ScalarProperty Name="Id" ColumnName="Player_Id" />
+      </EndProperty>
+      <EndProperty Name="Account">
+        <ScalarProperty Name="Id" ColumnName="Id" />
+      </EndProperty>
+      <Condition ColumnName="Player_Id" IsNull="false" />
+    </AssociationSetMapping>
+  </EntityContainerMapping>
+</Mapping></edmx:Mappings>
   </edmx:Runtime>
   <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
   <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
@@ -127,7 +124,7 @@
         <DesignerProperty Name="ValidateOnBuild" Value="true" />
         <DesignerProperty Name="EnablePluralization" Value="true" />
         <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
-        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="UseLegacyProvider" Value="False" />
         <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
       </DesignerInfoPropertySet>
     </Options>

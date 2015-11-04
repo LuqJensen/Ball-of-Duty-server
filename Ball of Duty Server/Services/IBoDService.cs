@@ -11,11 +11,11 @@ using Ball_of_Duty_Server.Persistence;
 namespace Ball_of_Duty_Server.Services
 {
     [ServiceContract]
-    interface IBoDService
+    public interface IBoDService
     {
         [OperationContract]
-        PlayerDTO NewGuest();
-     
+        PlayerDTO NewGuest(string nickname);
+
         [OperationContract]
         MapDTO JoinGame(int clientPlayerId, int clientPort);
 

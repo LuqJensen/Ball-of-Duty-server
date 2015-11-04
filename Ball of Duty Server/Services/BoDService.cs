@@ -45,15 +45,15 @@ namespace Ball_of_Duty_Server.Services
             }
         }*/
 
-        public PlayerDTO NewGuest()
+        public PlayerDTO NewGuest(string nickname)
         {
-            Player p = new Player();
+            Player p = DataModelFacade.CreatePlayer(nickname);
             OnlinePlayers.Add(p.Id, p);
 
             return new PlayerDTO { Id = p.Id, Nickname = p.Nickname };
         }
 
-        public Game GetGame()
+        private Game GetGame()
         {
             foreach (Game g in Games.Values)
             {

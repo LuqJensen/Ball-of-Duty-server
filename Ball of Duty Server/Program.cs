@@ -42,23 +42,6 @@ namespace Ball_of_Duty_Server
                 //Console.WriteLine(RSA.KeySize);
             }
 
-            using (DatabaseContainer bse = new DatabaseContainer())
-            {
-                for (int i = 0; i < 10; ++i)
-                {
-                    bse.Players.Add(new Player() { Nickname = $"{i}" });
-                }
-                bse.SaveChanges();
-            }
-
-            using (DatabaseContainer bse = new DatabaseContainer())
-            {
-                foreach (var v in bse.Players)
-                {
-                    Console.WriteLine(v.Id);
-                }
-            }
-
             using (var sh = new ServiceHost(typeof (BoDService)))
             {
                 ServiceDebugBehavior debug = sh.Description.Behaviors.Find<ServiceDebugBehavior>();

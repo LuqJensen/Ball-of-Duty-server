@@ -18,7 +18,6 @@ namespace Ball_of_Duty_Server.Persistence
         public string Username { get; set; }
         public string Salt { get; set; }
         public string Hash { get; set; }
-        public Nullable<int> Player_Id { get; set; }
     
         public virtual Player Player { get; set; }
     }

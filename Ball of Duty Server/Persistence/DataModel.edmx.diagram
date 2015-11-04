@@ -7,7 +7,7 @@
       <Diagram DiagramId="c4026edbcfb5468ab9eb6faa37d4f436" Name="Diagram1">
         <EntityTypeShape EntityType="BoDServerDataModel.Account" Width="1.5" PointX="3" PointY="0.875" IsExpanded="true" />
         <EntityTypeShape EntityType="BoDServerDataModel.Player" Width="1.5" PointX="0.75" PointY="1.25" IsExpanded="true" />
-        <AssociationConnector Association="BoDServerDataModel.FK_PlayerAccount" ManuallyRouted="false" />
+        <AssociationConnector Association="BoDServerDataModel.PlayerAccount" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
