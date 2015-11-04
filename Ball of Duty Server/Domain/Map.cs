@@ -98,6 +98,8 @@ namespace Ball_of_Duty_Server.Domain
                 BodyDTO body = new BodyDTO
                 {
                     Position = new PointDTO { X = go.Body.Position.X, Y = go.Body.Position.Y },
+                    Width = go.Body.Width,
+                    Height = go.Body.Height,
                     Type = (int)go.Body.Type
                 };
 
