@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Timers;
 using System.Windows;
+using Ball_of_Duty_Server.Domain.Communication;
 using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.DTO;
 using Timer = System.Timers.Timer;

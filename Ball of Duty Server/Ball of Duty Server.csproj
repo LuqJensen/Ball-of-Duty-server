@@ -64,6 +64,8 @@
   <ItemGroup>
     <Compile Include="Domain\Account.cs" />
     <Compile Include="Domain\Body.cs" />
+    <Compile Include="Domain\Communication\AsynchronousSocketListener.cs" />
+    <Compile Include="Domain\Communication\StateObject.cs" />
     <Compile Include="Domain\Entities\GameObject.cs" />
     <Compile Include="Domain\Entities\Wall.cs" />
     <Compile Include="Domain\Entities\Character.cs" />
@@ -73,7 +75,7 @@
     <Compile Include="Domain\Physics.cs" />
     <Compile Include="Persistence\DataModelFacade.cs" />
     <Compile Include="Services\BoDService.cs" />
-    <Compile Include="Domain\Broker.cs" />
+    <Compile Include="Domain\Communication\Broker.cs" />
     <Compile Include="Domain\CharacterManager.cs" />
     <Compile Include="Domain\Game.cs" />
     <Compile Include="Domain\IBroker.cs" />
