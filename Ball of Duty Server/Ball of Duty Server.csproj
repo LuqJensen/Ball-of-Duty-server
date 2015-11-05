@@ -67,7 +67,9 @@
     <Compile Include="Domain\Entities\GameObject.cs" />
     <Compile Include="Domain\Entities\Wall.cs" />
     <Compile Include="Domain\Entities\Character.cs" />
+    <Compile Include="Domain\IObserver.cs" />
     <Compile Include="Domain\MapGenerator.cs" />
+    <Compile Include="Domain\Observable.cs" />
     <Compile Include="Domain\Physics.cs" />
     <Compile Include="Persistence\DataModelFacade.cs" />
     <Compile Include="Services\BoDService.cs" />

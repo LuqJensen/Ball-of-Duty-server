@@ -11,7 +11,7 @@ using Timer = System.Timers.Timer;
 
 namespace Ball_of_Duty_Server.Domain
 {
-    public class Map
+    public class Map : IObserver
     {
         private HashSet<int> _gameObjectsActive; //TODO: possible race conditions.
         private Thread _updateThread;
@@ -38,6 +38,7 @@ namespace Ball_of_Duty_Server.Domain
             GameObjects = new ConcurrentDictionary<int, GameObject>();
             _updateThread = new Thread(Activate);
             _updateThread.Start();
+            
         }
 
         public Map(int width, int height)
@@ -80,6 +81,7 @@ namespace Ball_of_Duty_Server.Domain
         {
             Character c = new Character();
             GameObjects.TryAdd(c.Id, c);
+            c.Register(this);
             return c.Id;
         }
 
@@ -87,6 +89,7 @@ namespace Ball_of_Duty_Server.Domain
         {
             GameObject character;
             GameObjects.TryRemove(characterId, out character);
+            character.UnRegister(this);
         }
 
         public GameObjectDTO[] ExportGameObjects()
@@ -167,6 +170,36 @@ namespace Ball_of_Duty_Server.Domain
             {
                 _gameObjectsActive.Add(go.Id);
                 go.Body.Position = position;
+            }
+        }
+        /*
+
+        */
+        public void Update(Observable observable)
+        {
+            throw new NotImplementedException();
+        }
+        /*
+        Called when an observable object calls the overloaded NotifyObservers which takes data. 
+        If observable.hp<1, killer is found using data (which should be killerID) 
+        On the killer character AddKill is then called
+        */
+        public void Update(Observable observable, object data)
+        {
+            Character victim = observable as Character;
+            if (victim != null && victim.HP < 1)
+            {
+                int killerID = Convert.ToInt32(data);
+                GameObject killer;
+                if (GameObjects.TryGetValue(killerID, out killer))
+                {
+                    Character killerFinal = killer as Character;
+                    killerFinal?.AddKill(victim); // (?) kræver at killer ikke er null, for at metoden bliver kaldt.
+                }
+                else
+                {
+                    Console.WriteLine("FINDING KILLER ERROR: Map was notified of a death as an observer, but failed to find the killer.");
+                }
             }
         }
     }

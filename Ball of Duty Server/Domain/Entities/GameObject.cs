@@ -1,6 +1,6 @@
 ﻿namespace Ball_of_Duty_Server.Domain.Entities
 {
-    public class GameObject
+    public class GameObject : Observable
     {
         private static int _gameObjectsCreated;
         public Body Body { get; set; }
