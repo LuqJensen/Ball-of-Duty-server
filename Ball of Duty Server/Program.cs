@@ -6,6 +6,7 @@ using System.Threading;
 using Ball_of_Duty_Server.Domain;
 using System.Security.Cryptography;
 using System.Text;
+using Ball_of_Duty_Server.Domain.Communication;
 using Ball_of_Duty_Server.Persistence;
 using Ball_of_Duty_Server.Services;
 
@@ -50,7 +51,7 @@ namespace Ball_of_Duty_Server
                 if (debug == null)
                 {
                     sh.Description.Behaviors.Add(
-                        new ServiceDebugBehavior() { IncludeExceptionDetailInFaults = true });
+                        new ServiceDebugBehavior() {IncludeExceptionDetailInFaults = true});
                 }
                 else
                 {
@@ -62,9 +63,16 @@ namespace Ball_of_Duty_Server
                 }
 
                 sh.Open();
+                new Thread(() =>
+                {
+                    AsynchronousSocketListener.StartTCPListening(); 
+                }
+                    ).Start();
+
                 Console.WriteLine("Server is up and running");
                 Console.WriteLine("Press any key to terminate");
                 Console.ReadLine();
+
                 sh.Close();
             }
         }

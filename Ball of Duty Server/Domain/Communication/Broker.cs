@@ -6,9 +6,10 @@ using System.Net.Sockets;
 using System.Windows;
 using System;
 using System.Collections.Concurrent;
+using System.Text;
 using System.Threading;
 
-namespace Ball_of_Duty_Server.Domain
+namespace Ball_of_Duty_Server.Domain.Communication
 {
     public class Broker : IBroker
     {
@@ -16,6 +17,7 @@ namespace Ball_of_Duty_Server.Domain
         private IPEndPoint _ip; // Needs new port for each game
         private UdpClient _listener;
         private ConcurrentDictionary<int, IPEndPoint> _targetEndPoints = new ConcurrentDictionary<int, IPEndPoint>();
+       
 
         private readonly Dictionary<Opcodes, Action<BinaryReader>> _opcodeMapping =
             new Dictionary<Opcodes, Action<BinaryReader>>();
@@ -33,6 +35,7 @@ namespace Ball_of_Duty_Server.Domain
             _listener = new UdpClient(_ip);
             Thread t = new Thread(Receive);
             t.Start();
+
         }
 
         private void ReadPositionUpdate(BinaryReader reader)
@@ -60,9 +63,9 @@ namespace Ball_of_Duty_Server.Domain
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
-                bw.Write((byte)1); //ASCII Standard for Start of heading
-                bw.Write((byte)Opcodes.BROADCAST_POSITION_UPDATE);
-                bw.Write((byte)2); //ASCII Standard for Start of text
+                bw.Write((byte) 1); //ASCII Standard for Start of heading
+                bw.Write((byte) Opcodes.BROADCAST_POSITION_UPDATE);
+                bw.Write((byte) 2); //ASCII Standard for Start of text
                 for (int i = 0; i < positions.Count; ++i)
                 {
                     ObjectPosition op = positions[i];
@@ -71,10 +74,10 @@ namespace Ball_of_Duty_Server.Domain
                     bw.Write(op.Position.Y);
                     if (i != positions.Count - 1)
                     {
-                        bw.Write((byte)31); //ASCII Standard for Unit seperator
+                        bw.Write((byte) 31); //ASCII Standard for Unit seperator
                     }
                 }
-                bw.Write((byte)4); //ASCII Standard for End of transmission
+                bw.Write((byte) 4); //ASCII Standard for End of transmission
 
                 Send(ms.ToArray());
             }
@@ -99,7 +102,7 @@ namespace Ball_of_Duty_Server.Domain
                     return;
                 }
 
-                Opcodes opcode = (Opcodes)br.ReadByte();
+                Opcodes opcode = (Opcodes) br.ReadByte();
                 br.ReadByte();
 
                 Action<BinaryReader> readMethod;
@@ -117,5 +120,7 @@ namespace Ball_of_Duty_Server.Domain
                 _broadcastSocket.Send(b, b.Length, targetEndPoint);
             }
         }
+
     }
+
 }
