@@ -7,8 +7,10 @@ namespace Ball_of_Duty_Server.Domain.Entities
         private double _score { get; set; }
         public int HP { get; set; } // PLACEHOLDER FOR THE HP CLASS
 
-        private double _scoreUP = 100;
-        private double _scoreFactor = 0.1;
+        private double _scoreUP = 100;           
+        private double _scoreUPFactor = 0.1;     
+        private double _scoreDecayFactor = 0.01;
+        private double _allowedScoreBeforeDecay = 400;
 
         public int _killCount;
         
@@ -29,9 +31,18 @@ namespace Ball_of_Duty_Server.Domain.Entities
         public void AddKill(Character victim)
         {
             _killCount++;
-            _score = _score + _scoreUP + (victim._score*_scoreFactor);
+            _score += _scoreUP + (victim._score * _scoreUPFactor);
             NotifyObservers(victim);
         }
-
+        /*
+        "Decays" (decreases) the _score by 1 percent IF the score is greater than 400
+        */
+        public void DecayScore()
+        {
+            if (_score > _allowedScoreBeforeDecay)
+            {
+                _score -= (_score * _scoreDecayFactor);
+            }
+        }
     }
 }
