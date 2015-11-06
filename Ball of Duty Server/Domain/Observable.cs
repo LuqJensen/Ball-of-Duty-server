@@ -11,6 +11,11 @@ namespace Ball_of_Duty_Server.Domain
     {
         private List<IObserver> _observers;
 
+        public Observable()
+        {
+            _observers = new List<IObserver>();
+        }
+
         public void Register(IObserver observer)
         {
             _observers.Add(observer);

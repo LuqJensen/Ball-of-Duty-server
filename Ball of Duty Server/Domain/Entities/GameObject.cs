@@ -6,7 +6,7 @@
         public Body Body { get; set; }
         public int Id { get; private set; }
 
-        public GameObject()
+        public GameObject() 
         {
             Id = ++_gameObjectsCreated; // Important to start at 1. 0 will be used as default value.
         }
