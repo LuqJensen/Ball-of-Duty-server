@@ -37,11 +37,14 @@ namespace Ball_of_Duty_Server.Domain
 
         private void ReadPositionUpdate(BinaryReader reader)
         {
-            int id = reader.ReadInt32();
-            double x = reader.ReadDouble();
-            double y = reader.ReadDouble();
+            do
+            {
+                int id = reader.ReadInt32();
+                double x = reader.ReadDouble();
+                double y = reader.ReadDouble();
 
-            Map.UpdatePosition(new Point(x, y), id);
+                Map.UpdatePosition(new Point(x, y), id);
+            } while (reader.Read() == 31);
         }
 
         public void AddTarget(int id, string ip, int preferedPort)

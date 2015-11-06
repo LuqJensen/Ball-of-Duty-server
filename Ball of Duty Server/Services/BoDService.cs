@@ -64,18 +64,20 @@ namespace Ball_of_Duty_Server.Services
             }
 
             Game game = new Game();
+            Console.WriteLine("lllGame id: "+game.Id);
             Games.Add(game.Id, game);
             return game;
         }
 
-        public MapDTO JoinGame(int clientPlayerId, int clientPort)
+        public GameDTO JoinGame(int clientPlayerId, int clientPort)
         {
             Player player;
             Console.WriteLine(clientPlayerId);
 
+
             if (!OnlinePlayers.TryGetValue(clientPlayerId, out player))
             {
-                return new MapDTO(); //TODO: probably not the smartest, but necessary.
+                return new GameDTO(); //TODO: probably not the smartest, but necessary.
             }
 
             Console.WriteLine($"Player: {clientPlayerId} tried to join game.");
@@ -93,7 +95,7 @@ namespace Ball_of_Duty_Server.Services
 
             if (clientIp == null) //TODO: probably not the smartest, but necessary.
             {
-                return new MapDTO();
+                return new GameDTO();
             }
 
             #endregion
@@ -106,8 +108,8 @@ namespace Ball_of_Duty_Server.Services
 
             Console.WriteLine($"Count: {map.GameObjects.Count}");
 
-
-            return new MapDTO { GameObjects = map.ExportGameObjects(), CharacterId = player.CurrentCharacter };
+            Console.WriteLine("uuGame id: "+game.Id);
+            return new GameDTO { GameObjects = map.ExportGameObjects(), CharacterId = player.CurrentCharacter.Id, GameId = game.Id};
             //TODO: Add servers IP here -- maybe rename to GameDTO?
         }
 
@@ -116,7 +118,7 @@ namespace Ball_of_Duty_Server.Services
             // Removes the player from the game
             Game game;
             if (PlayerIngame.TryGetValue(clientPlayerId, out game))
-                //if (Games.TryGetValue(gameId, out game)) //TODO: brug OnlinePlayers istedet
+            //if (Games.TryGetValue(gameId, out game)) //TODO: brug OnlinePlayers i stedet
             {
                 PlayerIngame.Remove(clientPlayerId); //TODO: brug OnlinePlayers istedet
                 game.RemovePlayer(clientPlayerId);
@@ -127,5 +129,18 @@ namespace Ball_of_Duty_Server.Services
                 Debug.WriteLine($"Player: {clientPlayerId} failed quitting game" /*: {gameId}."*/);
             }
         }
+
+        public int RequestBulletCreation(double x, double y, double radius, double damage, int ownerId, int gameId)
+        {
+
+            Console.WriteLine("Bullet creation game id: "+gameId);
+            Game game;
+            if (!Games.TryGetValue(gameId, out game))
+            {
+                return -1;
+            }
+            return game.Map.AddBullet(x,y,radius,damage, ownerId);
+        }
+
     }
 }

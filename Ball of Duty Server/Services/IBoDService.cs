@@ -17,9 +17,11 @@ namespace Ball_of_Duty_Server.Services
         PlayerDTO NewGuest(string nickname);
 
         [OperationContract]
-        MapDTO JoinGame(int clientPlayerId, int clientPort);
+        GameDTO JoinGame(int clientPlayerId, int clientPort);
 
         [OperationContract]
         void QuitGame(int clientPlayerId);
+        [OperationContract]
+        int RequestBulletCreation(double x, double y, double radius, double damage, int ownerId, int gameId);
     }
 }

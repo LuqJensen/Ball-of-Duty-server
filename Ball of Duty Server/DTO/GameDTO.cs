@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace Ball_of_Duty_Server.DTO
 {
-    public class MapDTO
+    public class GameDTO
     {
         public GameObjectDTO[] GameObjects;
+        public int GameId;
         public int CharacterId;
         public string IPAddress;
     }

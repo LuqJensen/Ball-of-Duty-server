@@ -83,12 +83,20 @@ namespace Ball_of_Duty_Server.Domain
             Broker.SendPositionUpdate(GetPositions(), 1 /*Game.Id*/);
         }
 
-        public int AddCharacter()
+        public int AddBullet(double x, double y, double radius, double damage, int ownerId)
+        {
+            Bullet bullet = new Bullet(new Point(x,y),radius,damage, ownerId);
+            GameObjects.TryAdd(bullet.Id, bullet);
+            return bullet.Id;
+        }
+
+
+        public Character AddCharacter()
         {
             Character c = new Character();
             GameObjects.TryAdd(c.Id, c);
             c.Register(this);
-            return c.Id;
+            return c;
         }
 
         public void RemoveCharacter(int characterId)

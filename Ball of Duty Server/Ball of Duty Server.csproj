@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="Domain\Account.cs" />
     <Compile Include="Domain\Body.cs" />
+    <Compile Include="Domain\Entities\Bullet.cs" />
     <Compile Include="Domain\Entities\GameObject.cs" />
     <Compile Include="Domain\Entities\Wall.cs" />
     <Compile Include="Domain\Entities\Character.cs" />
@@ -83,7 +84,7 @@
     <Compile Include="DTO\BodyDTO.cs" />
     <Compile Include="DTO\CharacterDTO.cs" />
     <Compile Include="DTO\GameObjectDTO.cs" />
-    <Compile Include="DTO\MapDTO.cs" />
+    <Compile Include="DTO\GameDTO.cs" />
     <Compile Include="DTO\ObjectPosition.cs" />
     <Compile Include="DTO\PlayerDTO.cs" />
     <Compile Include="DTO\PointDTO.cs" />

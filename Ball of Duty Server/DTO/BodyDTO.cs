@@ -10,8 +10,8 @@ namespace Ball_of_Duty_Server.DTO
     [Serializable]
     public class BodyDTO
     {
-        public int Width;
-        public int Height;
+        public double Width;
+        public double Height;
         public int Type;
         public PointDTO Position;
     }

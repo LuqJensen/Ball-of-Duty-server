@@ -24,7 +24,7 @@ namespace Ball_of_Duty_Server.Domain
             Player player;
             if (_players.TryGetValue(playerId, out player))
             {
-                Map.RemoveCharacter(player.CurrentCharacter);
+                Map.RemoveCharacter(player.CurrentCharacter.Id);
             }
             Map.Broker.RemoveTarget(playerId);
         }
