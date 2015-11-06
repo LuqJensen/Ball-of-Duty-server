@@ -59,6 +59,12 @@ namespace Ball_of_Duty_Server.Domain
             timeoutCheck.Elapsed += CheckTimeouts;
             timeoutCheck.Interval = 10000;
             timeoutCheck.Enabled = true;
+
+            Timer decayCheck = new Timer();
+            decayCheck.Elapsed += DecayScores;
+            decayCheck.Interval = 5000;
+            decayCheck.Enabled = true;
+
             _gameObjectsActive = new HashSet<int>();
             while (true)
             {
@@ -202,5 +208,21 @@ namespace Ball_of_Duty_Server.Domain
                 }
             }
         }
+        /*
+        Checks for each GameObject in GameObjects, if it's a Character.
+        If it is, the DecayScore is called on the Character object.
+        */
+        public void DecayScores(object sender, ElapsedEventArgs e)
+        {
+            foreach (var go in GameObjects.Values)
+            {
+                if (go is Character)
+                {
+                    Character character = go as Character;
+                    character.DecayScore();
+                }
+            }
+        }
+
     }
 }
