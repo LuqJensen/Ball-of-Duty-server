@@ -6,7 +6,10 @@ using System.Net.Sockets;
 using System.Windows;
 using System;
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
+using SocketExtensions;
 
 namespace Ball_of_Duty_Server.Domain
 {
@@ -16,6 +19,9 @@ namespace Ball_of_Duty_Server.Domain
         private IPEndPoint _ip; // Needs new port for each game
         private UdpClient _listener;
         private ConcurrentDictionary<int, IPEndPoint> _targetEndPoints = new ConcurrentDictionary<int, IPEndPoint>();
+        private ConcurrentBag<AsyncSocket> _connectedClients = new ConcurrentBag<AsyncSocket>();
+        // TODO: make use of this.
+        private TcpListener _tcpListener = TcpListener.Create(15010);
 
         private readonly Dictionary<Opcodes, Action<BinaryReader>> _opcodeMapping =
             new Dictionary<Opcodes, Action<BinaryReader>>();
@@ -26,13 +32,15 @@ namespace Ball_of_Duty_Server.Domain
         public Broker(Map map)
         {
             _opcodeMapping.Add(Opcodes.POSITION_UPDATE, this.ReadPositionUpdate);
-
+            _tcpListener.Start();
             Map = map;
             _broadcastSocket = new UdpClient();
             _ip = new IPEndPoint(IPAddress.Any, 15001);
             _listener = new UdpClient(_ip);
             Thread t = new Thread(Receive);
             t.Start();
+            Thread t2 = new Thread(() => { AcceptClientAsync().Wait(); });
+            t2.Start();
         }
 
         private void ReadPositionUpdate(BinaryReader reader)
@@ -90,6 +98,30 @@ namespace Ball_of_Duty_Server.Domain
                 byte[] b = _listener.Receive(ref _ip);
                 Read(ref b);
             }
+        }
+
+        public async Task AcceptClientAsync()
+        {
+            while (true)
+            {
+                var v = await _tcpListener.AcceptTcpClientAsync();
+                AsyncSocket s = new AsyncSocket(v.Client);
+                _connectedClients.Add(s);
+
+                await Task.Run(async () =>
+                {
+                    await Task.Yield();
+                    while (true)
+                    {
+                        ReceiveTcp(await s.ReceiveAsync());
+                    }
+                });
+            }
+        }
+
+        public void ReceiveTcp(AsyncSocket.ReadResult rr)
+        {
+            // read result
         }
 
         private void Read(ref byte[] buffer)
