@@ -9,13 +9,14 @@ using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Ball_of_Duty_Server.DAO;
 using SocketExtensions;
 
 namespace Ball_of_Duty_Server.Domain
 {
     public class Broker : IBroker
     {
-        private UdpClient _broadcastSocket;
+        private UdpClient _udpBroadcastSocket;
         private IPEndPoint _ip; // Needs new port for each game
         private UdpClient _listener;
         private ConcurrentDictionary<int, IPEndPoint> _targetEndPoints = new ConcurrentDictionary<int, IPEndPoint>();
@@ -32,15 +33,52 @@ namespace Ball_of_Duty_Server.Domain
         public Broker(Map map)
         {
             _opcodeMapping.Add(Opcodes.POSITION_UPDATE, this.ReadPositionUpdate);
+            _opcodeMapping.Add(Opcodes.REQUEST_BULLET, this.BulletCreationRequest);
             _tcpListener.Start();
             Map = map;
-            _broadcastSocket = new UdpClient();
+            _udpBroadcastSocket = new UdpClient();
             _ip = new IPEndPoint(IPAddress.Any, 15001);
             _listener = new UdpClient(_ip);
             Thread t = new Thread(Receive);
             t.Start();
-            Thread t2 = new Thread(() => { AcceptClientAsync().Wait(); });
+            Thread t2 = new Thread(() => { AcceptClientsAsync().Wait(); });
             t2.Start();
+        }
+
+        private void BulletCreationRequest(BinaryReader reader)
+        {
+            double x = reader.ReadDouble();
+            double y = reader.ReadDouble();
+            double radius = reader.ReadDouble();
+            double velocityX = reader.ReadDouble();
+            double velocityY = reader.ReadDouble();
+            int bulletType = reader.ReadInt32();
+            double damage = reader.ReadDouble();
+            int ownerId = reader.ReadInt32();
+            int entityType = reader.ReadInt32();
+
+            int bulletId = Map.AddBullet(x, y, radius, damage, ownerId);
+            Console.WriteLine(bulletId);
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.Write((byte)1); //ASCII Standard for Start of heading
+                bw.Write((byte)Opcodes.REQUEST_BULLET);
+                bw.Write((byte)2); //ASCII Standard for Start of text
+                bw.Write(x);
+                bw.Write(y);
+                bw.Write(radius);
+                bw.Write(velocityX);
+                bw.Write(velocityY);
+                bw.Write(bulletType);
+                bw.Write(damage);
+                bw.Write(ownerId);
+                bw.Write(bulletId);
+                bw.Write(entityType);
+
+                bw.Write((byte)4); //ASCII Standard for End of transmission
+                SendTcp(ms.ToArray());
+            }
         }
 
         private void ReadPositionUpdate(BinaryReader reader)
@@ -49,15 +87,57 @@ namespace Ball_of_Duty_Server.Domain
             {
                 int id = reader.ReadInt32();
                 double x = reader.ReadDouble();
+
                 double y = reader.ReadDouble();
 
                 Map.UpdatePosition(new Point(x, y), id);
             } while (reader.Read() == 31);
         }
 
-        public void AddTarget(int id, string ip, int preferedPort)
+        public void AddPlayer(int playerId, GameObjectDAO charData, string ip, int preferedPort)
         {
-            _targetEndPoints.TryAdd(id, new IPEndPoint(IPAddress.Parse(ip), preferedPort));
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.Write((byte)1); //ASCII Standard for Start of heading
+                bw.Write((byte)Opcodes.NEW_PLAYER);
+                bw.Write((byte)2); //ASCII Standard for Start of text
+                bw.Write(playerId);
+                bw.Write(charData.Id);
+                bw.Write(charData.X);
+                bw.Write(charData.Y);
+                bw.Write(charData.Width);
+                bw.Write(charData.Height);
+                bw.Write(0); // Temporary till EntityType enum is implemented on server.
+
+                bw.Write((byte)4); //ASCII Standard for End of transmission
+                SendTcp(ms.ToArray());
+            }
+
+            addTarget(playerId, ip, preferedPort);
+        }
+
+        private void addTarget(int playerId, string ip, int preferedPort)
+        {
+            _targetEndPoints.TryAdd(playerId, new IPEndPoint(IPAddress.Parse(ip), preferedPort));
+        }
+
+        public void RemovePlayer(int playerId, int characterId)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.Write((byte)1); //ASCII Standard for Start of heading
+                bw.Write((byte)Opcodes.DISCONNECTED_PLAYER);
+                bw.Write((byte)2); //ASCII Standard for Start of text
+                bw.Write(playerId);
+                bw.Write(characterId);
+
+                bw.Write((byte)4); //ASCII Standard for End of transmission
+                SendTcp(ms.ToArray());
+            }
+
+            RemoveTarget(playerId);
         }
 
         public void RemoveTarget(int id)
@@ -87,7 +167,7 @@ namespace Ball_of_Duty_Server.Domain
                 }
                 bw.Write((byte)4); //ASCII Standard for End of transmission
 
-                Send(ms.ToArray());
+                SendUdp(ms.ToArray());
             }
         }
 
@@ -100,28 +180,60 @@ namespace Ball_of_Duty_Server.Domain
             }
         }
 
-        public async Task AcceptClientAsync()
+        private async Task AcceptClientsAsync()
         {
-            while (true)
+            await Task.Run(async () =>
+            {
+                await Task.Yield();
+                while (true) // TODO while less than max clients
+                {
+                    AcceptClientAsync();
+                }
+            });
+        }
+
+        private async void AcceptClientAsync()
+        {
+            AsyncSocket s = null;
+            try
             {
                 var v = await _tcpListener.AcceptTcpClientAsync();
-                AsyncSocket s = new AsyncSocket(v.Client);
+                s = new AsyncSocket(v.Client);
+                Console.WriteLine("Client connected: " + s.GetIpAddress());
                 _connectedClients.Add(s);
-
                 await Task.Run(async () =>
                 {
                     await Task.Yield();
-                    while (true)
+                    try
                     {
-                        ReceiveTcp(await s.ReceiveAsync());
+                        while (true)
+                        {
+                            ReceiveTcp(await s.ReceiveAsync());
+                        }
+                    }
+                    catch (SocketException e)
+                    {
+                        Console.WriteLine("Client disconnected: " + s.GetIpAddress());
+                        _connectedClients.TryTake(out s);
                     }
                 });
+            }
+            catch (Exception e)
+            {
+                if (e is SocketException || e is EndOfStreamException)
+                {
+                    if (s != null)
+                    {
+                        Console.WriteLine("Client disconnected: " + s.GetIpAddress());
+                        _connectedClients.TryTake(out s);
+                    }
+                }
             }
         }
 
         public void ReceiveTcp(AsyncSocket.ReadResult rr)
         {
-            // read result
+            Read(ref rr.Buffer);
         }
 
         private void Read(ref byte[] buffer)
@@ -145,11 +257,19 @@ namespace Ball_of_Duty_Server.Domain
             }
         }
 
-        public void Send(byte[] b)
+        public void SendTcp(byte[] b)
+        {
+            foreach (AsyncSocket client in _connectedClients)
+            {
+                client.SendMessage(b);
+            }
+        }
+
+        public void SendUdp(byte[] b)
         {
             foreach (IPEndPoint targetEndPoint in _targetEndPoints.Values)
             {
-                _broadcastSocket.Send(b, b.Length, targetEndPoint);
+                _udpBroadcastSocket.Send(b, b.Length, targetEndPoint);
             }
         }
     }

@@ -143,6 +143,10 @@ namespace Ball_of_Duty_Server.Domain
             var positions = new List<ObjectPosition>();
             foreach (var go in GameObjects.Values)
             {
+                if (go is Bullet)
+                {
+                    continue;
+                }
                 positions.Add(new ObjectPosition(go.Id, go.Body.Position));
             }
             return positions;
@@ -155,7 +159,6 @@ namespace Ball_of_Duty_Server.Domain
             if (_gameObjectsActive.Count == 0)
                 return;
 
-            Console.WriteLine("Checking");
             var removeTimeoutObjects = new List<int>();
 
             foreach (var go in GameObjects.Values)

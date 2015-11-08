@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -60,10 +61,18 @@ namespace SocketExtensions
             }
         }
 
-        public void GetResult()
+        public void GetResult() 
         {
-            if (m_eventArgs.SocketError != SocketError.Success)
-                throw new SocketException((int)m_eventArgs.SocketError);
+//            try
+//            {
+                if (m_eventArgs.SocketError != SocketError.Success)
+                    throw new SocketException((int)m_eventArgs.SocketError);
+//            }
+//            catch (SocketException)
+//            {
+//               // tried to do something when the socket was not connected
+//            }
+           
         }
     }
 }
