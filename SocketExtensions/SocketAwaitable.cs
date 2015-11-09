@@ -61,18 +61,10 @@ namespace SocketExtensions
             }
         }
 
-        public void GetResult() 
+        public void GetResult()
         {
-//            try
-//            {
-                if (m_eventArgs.SocketError != SocketError.Success)
-                    throw new SocketException((int)m_eventArgs.SocketError);
-//            }
-//            catch (SocketException)
-//            {
-//               // tried to do something when the socket was not connected
-//            }
-           
+            if (m_eventArgs.SocketError != SocketError.Success)
+                throw new SocketException((int)m_eventArgs.SocketError);
         }
     }
 }

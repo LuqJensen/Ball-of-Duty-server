@@ -110,7 +110,6 @@ namespace Ball_of_Duty_Server.Domain
                         break;
                     }
                 }
-                Console.WriteLine($"WallAmount: {wallCount}");
                 if (wallCount >= _wallAmount)
                 {
                     break;

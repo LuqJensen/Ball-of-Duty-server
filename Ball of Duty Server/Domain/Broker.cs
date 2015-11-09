@@ -58,7 +58,6 @@ namespace Ball_of_Duty_Server.Domain
             int entityType = reader.ReadInt32();
 
             int bulletId = Map.AddBullet(x, y, radius, damage, ownerId);
-            Console.WriteLine(bulletId);
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
@@ -201,32 +200,34 @@ namespace Ball_of_Duty_Server.Domain
                 s = new AsyncSocket(v.Client);
                 Console.WriteLine("Client connected: " + s.GetIpAddress());
                 _connectedClients.Add(s);
-                await Task.Run(async () =>
+
+                try
                 {
-                    await Task.Yield();
-                    try
+                    while (true)
                     {
-                        while (true)
-                        {
-                            ReceiveTcp(await s.ReceiveAsync());
-                        }
+                        ReceiveTcp(await s.ReceiveAsync());
                     }
-                    catch (SocketException e)
-                    {
-                        Console.WriteLine("Client disconnected: " + s.GetIpAddress());
-                        _connectedClients.TryTake(out s);
-                    }
-                });
+                }
+                catch (SocketException e)
+                {
+                    Console.WriteLine("Client disconnected: " + s.GetIpAddress());
+                    _connectedClients.TryTake(out s);
+                }
             }
-            catch (Exception e)
+            catch (SocketException e)
             {
-                if (e is SocketException || e is EndOfStreamException)
+                if (s != null)
                 {
-                    if (s != null)
-                    {
-                        Console.WriteLine("Client disconnected: " + s.GetIpAddress());
-                        _connectedClients.TryTake(out s);
-                    }
+                    Console.WriteLine("Client disconnected: " + s.GetIpAddress());
+                    _connectedClients.TryTake(out s);
+                }
+            }
+            catch (EndOfStreamException e)
+            {
+                if (s != null)
+                {
+                    Console.WriteLine("Client disconnected: " + s.GetIpAddress());
+                    _connectedClients.TryTake(out s);
                 }
             }
         }
