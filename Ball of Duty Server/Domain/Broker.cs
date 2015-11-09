@@ -41,7 +41,7 @@ namespace Ball_of_Duty_Server.Domain
             _listener = new UdpClient(_ip);
             Thread t = new Thread(Receive);
             t.Start();
-            Thread t2 = new Thread(() => { AcceptClientsAsync().Wait(); });
+            Thread t2 = new Thread(() => { AcceptClientsAsync(); });
             t2.Start();
         }
 
@@ -179,16 +179,12 @@ namespace Ball_of_Duty_Server.Domain
             }
         }
 
-        private async Task AcceptClientsAsync()
+        private void AcceptClientsAsync()
         {
-            await Task.Run(async () =>
+            while (true) // TODO while less than max clients
             {
-                await Task.Yield();
-                while (true) // TODO while less than max clients
-                {
-                    AcceptClientAsync();
-                }
-            });
+                AcceptClientAsync();
+            }
         }
 
         private async void AcceptClientAsync()
@@ -200,19 +196,22 @@ namespace Ball_of_Duty_Server.Domain
                 s = new AsyncSocket(v.Client);
                 Console.WriteLine("Client connected: " + s.GetIpAddress());
                 _connectedClients.Add(s);
-
-                try
+                await Task.Run(async () =>
                 {
-                    while (true)
+                    await Task.Yield();
+                    try
                     {
-                        ReceiveTcp(await s.ReceiveAsync());
+                        while (true)
+                        {
+                            ReceiveTcp(await s.ReceiveAsync());
+                        }
                     }
-                }
-                catch (SocketException e)
-                {
-                    Console.WriteLine("Client disconnected: " + s.GetIpAddress());
-                    _connectedClients.TryTake(out s);
-                }
+                    catch (SocketException e)
+                    {
+                        Console.WriteLine("Client disconnected: " + s.GetIpAddress());
+                        _connectedClients.TryTake(out s);
+                    }
+                });
             }
             catch (SocketException e)
             {

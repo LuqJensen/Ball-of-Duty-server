@@ -105,7 +105,7 @@ namespace Ball_of_Duty_Server.Services
                 PlayerIngame.Add(player.Id, game);
             }
 
-            Console.WriteLine($"Count: {map.GameObjects.Count}");
+            Console.WriteLine($"Current gameobjects: {map.GameObjects.Count}");
 
             return new GameDTO { GameObjects = map.ExportGameObjects(), CharacterId = player.CurrentCharacter.Id, GameId = game.Id};
             //TODO: Add servers IP here -- maybe rename to GameDTO?
