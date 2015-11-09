@@ -38,7 +38,6 @@ namespace Ball_of_Duty_Server.Domain
             GameObjects = new ConcurrentDictionary<int, GameObject>();
             _updateThread = new Thread(Activate);
             _updateThread.Start();
-            
         }
 
         public Map(int width, int height)
@@ -85,7 +84,7 @@ namespace Ball_of_Duty_Server.Domain
 
         public int AddBullet(double x, double y, double radius, double damage, int ownerId)
         {
-            Bullet bullet = new Bullet(new Point(x,y),radius,damage, ownerId);
+            Bullet bullet = new Bullet(new Point(x, y), radius, damage, ownerId);
             GameObjects.TryAdd(bullet.Id, bullet);
             return bullet.Id;
         }
@@ -102,8 +101,10 @@ namespace Ball_of_Duty_Server.Domain
         public void RemoveCharacter(int characterId)
         {
             GameObject character;
-            GameObjects.TryRemove(characterId, out character);
-            character.UnRegister(this);
+            if (GameObjects.TryRemove(characterId, out character))
+            {
+                character.UnRegister(this);
+            }
         }
 
         public GameObjectDTO[] ExportGameObjects()
@@ -189,18 +190,22 @@ namespace Ball_of_Duty_Server.Domain
                 go.Body.Position = position;
             }
         }
+
         /*
 
         */
+
         public void Update(Observable observable)
         {
             throw new NotImplementedException();
         }
+
         /*
         Called when an observable object calls the overloaded NotifyObservers which takes data. 
         If observable.hp<1, killer is found using data (which should be killerID) 
         On the killer character AddKill is then called
         */
+
         public void Update(Observable observable, object data)
         {
             Character victim = observable as Character;
@@ -215,14 +220,17 @@ namespace Ball_of_Duty_Server.Domain
                 }
                 else
                 {
-                    Console.WriteLine("FINDING KILLER ERROR: Map was notified of a death as an observer, but failed to find the killer.");
+                    Console.WriteLine(
+                        "FINDING KILLER ERROR: Map was notified of a death as an observer, but failed to find the killer.");
                 }
             }
         }
+
         /*
         Checks for each GameObject in GameObjects, if it's a Character.
         If it is, the DecayScore is called on the Character object.
         */
+
         public void DecayScores(object sender, ElapsedEventArgs e)
         {
             foreach (var go in GameObjects.Values)
@@ -234,6 +242,5 @@ namespace Ball_of_Duty_Server.Domain
                 }
             }
         }
-
     }
 }

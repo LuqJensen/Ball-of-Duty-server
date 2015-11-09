@@ -46,12 +46,11 @@ namespace SocketExtensions
             return new ReadResult(bytesRead, buffer);
         }
 
-        public async void SendMessage(byte[] buffer)
+        public async Task SendMessage(byte[] buffer)
         {
-            _sender = new SocketAwaitableEventWrapper();
+            await Task.Yield();
+            _sender = new SocketAwaitableEventWrapper(); // TODO fix this, its bad for performance.
             _sender.EventArgs.SetBuffer(buffer, 0, buffer.Length);
-            
-            
 
             await _socket.SendAsync(_sender.SocketAwaitable);
         }

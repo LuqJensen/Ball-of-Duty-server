@@ -20,12 +20,17 @@ namespace Ball_of_Duty_Server.Domain
         private IPEndPoint _ip; // Needs new port for each game
         private UdpClient _listener;
         private ConcurrentDictionary<int, IPEndPoint> _targetEndPoints = new ConcurrentDictionary<int, IPEndPoint>();
-        private ConcurrentBag<AsyncSocket> _connectedClients = new ConcurrentBag<AsyncSocket>();
+
+        private ConcurrentDictionary<AsyncSocket, bool> _connectedClients =
+            new ConcurrentDictionary<AsyncSocket, bool>();
+
         // TODO: make use of this.
         private TcpListener _tcpListener = TcpListener.Create(15010);
 
         private readonly Dictionary<Opcodes, Action<BinaryReader>> _opcodeMapping =
             new Dictionary<Opcodes, Action<BinaryReader>>();
+
+        private BlockingCollection<byte[]> _tcpQueue = new BlockingCollection<byte[]>();
 
         private static int portIncrement = 0;
         public Map Map { get; set; }
@@ -41,8 +46,40 @@ namespace Ball_of_Duty_Server.Domain
             _listener = new UdpClient(_ip);
             Thread t = new Thread(Receive);
             t.Start();
-            Thread t2 = new Thread(() => { AcceptClientsAsync(); });
+            Thread t2 = new Thread(() => { AcceptClientsAsync().Wait(); });
             t2.Start();
+            Thread t3 = new Thread(() => { BroadcastTcpAsync().Wait(); });
+            t3.Start();
+        }
+
+        private Task BroadcastTcpAsync()
+        {
+            return Task.Run(async () =>
+            {
+                while (true)
+                {
+                    byte[] message;
+                    if (_tcpQueue.TryTake(out message, Timeout.Infinite))
+                    {
+                        foreach (var v in _connectedClients.Keys)
+                        {
+                            try
+                            {
+                                await v.SendMessage(message);
+                                    // TODO find out if each iteration is waiting for "ack" from the client.
+                            }
+                            catch (SocketException)
+                            {
+                                v.Dispose();
+                            }
+                            catch (ObjectDisposedException ex)
+                            {
+                                Console.WriteLine(ex.StackTrace);
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         private void BulletCreationRequest(BinaryReader reader)
@@ -113,10 +150,10 @@ namespace Ball_of_Duty_Server.Domain
                 SendTcp(ms.ToArray());
             }
 
-            addTarget(playerId, ip, preferedPort);
+            AddTarget(playerId, ip, preferedPort);
         }
 
-        private void addTarget(int playerId, string ip, int preferedPort)
+        private void AddTarget(int playerId, string ip, int preferedPort)
         {
             _targetEndPoints.TryAdd(playerId, new IPEndPoint(IPAddress.Parse(ip), preferedPort));
         }
@@ -179,55 +216,63 @@ namespace Ball_of_Duty_Server.Domain
             }
         }
 
-        private void AcceptClientsAsync()
+        private Task AcceptClientsAsync()
         {
-            while (true) // TODO while less than max clients
+            return Task.Run(async () =>
             {
-                AcceptClientAsync();
-            }
+                while (true) // TODO while less than max clients
+                {
+                    TcpClient client = null;
+                    try
+                    {
+                        client = await _tcpListener.AcceptTcpClientAsync();
+                        Task t = AcceptClientAsync(client.Client);
+
+                        if (t.IsFaulted)
+                            t.Wait();
+                    }
+                    catch (SocketException)
+                    {
+                        client?.Close();
+                    }
+                }
+            });
         }
 
-        private async void AcceptClientAsync()
+        private async Task AcceptClientAsync(Socket socket)
         {
+            await Task.Yield();
+
             AsyncSocket s = null;
             try
             {
-                var v = await _tcpListener.AcceptTcpClientAsync();
-                s = new AsyncSocket(v.Client);
+                s = new AsyncSocket(socket);
+                _connectedClients.TryAdd(s, true);
                 Console.WriteLine("Client connected: " + s.GetIpAddress());
-                _connectedClients.Add(s);
-                await Task.Run(async () =>
+
+                while (true)
                 {
-                    await Task.Yield();
-                    try
-                    {
-                        while (true)
-                        {
-                            ReceiveTcp(await s.ReceiveAsync());
-                        }
-                    }
-                    catch (SocketException e)
-                    {
-                        Console.WriteLine("Client disconnected: " + s.GetIpAddress());
-                        _connectedClients.TryTake(out s);
-                    }
-                });
+                    Task<AsyncSocket.ReadResult> receive = s.ReceiveAsync();
+                    await receive;
+                    ReceiveTcp(receive.Result);
+                }
             }
-            catch (SocketException e)
+            catch (SocketException)
+            {
+                Console.WriteLine("dongoofed");
+            }
+            finally
             {
                 if (s != null)
                 {
-                    Console.WriteLine("Client disconnected: " + s.GetIpAddress());
-                    _connectedClients.TryTake(out s);
+                    bool b;
+                    if (_connectedClients.TryRemove(s, out b))
+                    {
+                        Console.WriteLine($"Client: {s.GetIpAddress()} disconnected.");
+                    }
+                    s.Dispose();
                 }
-            }
-            catch (EndOfStreamException e)
-            {
-                if (s != null)
-                {
-                    Console.WriteLine("Client disconnected: " + s.GetIpAddress());
-                    _connectedClients.TryTake(out s);
-                }
+                socket?.Close();
             }
         }
 
@@ -259,10 +304,7 @@ namespace Ball_of_Duty_Server.Domain
 
         public void SendTcp(byte[] b)
         {
-            foreach (AsyncSocket client in _connectedClients)
-            {
-                client.SendMessage(b);
-            }
+            _tcpQueue.TryAdd(b);
         }
 
         public void SendUdp(byte[] b)
