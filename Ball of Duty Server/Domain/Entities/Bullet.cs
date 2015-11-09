@@ -16,7 +16,6 @@ namespace Ball_of_Duty_Server.Domain.Entities
         {
             OwnerId = ownerId;
             Damage = damage;
-            Console.WriteLine($"Bullet created: {this}");
             Body = new Body(this, position, radius, radius) { Type = Body.Geometry.RECTANGLE };
         }
 

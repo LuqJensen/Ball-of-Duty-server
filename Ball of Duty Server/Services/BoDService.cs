@@ -64,7 +64,7 @@ namespace Ball_of_Duty_Server.Services
             }
 
             Game game = new Game();
-            Console.WriteLine("lllGame id: "+game.Id);
+            Console.WriteLine("Newly created game id: "+game.Id);
             Games.Add(game.Id, game);
             return game;
         }
@@ -72,7 +72,6 @@ namespace Ball_of_Duty_Server.Services
         public GameDTO JoinGame(int clientPlayerId, int clientPort)
         {
             Player player;
-            Console.WriteLine(clientPlayerId);
 
 
             if (!OnlinePlayers.TryGetValue(clientPlayerId, out player))
@@ -106,9 +105,8 @@ namespace Ball_of_Duty_Server.Services
                 PlayerIngame.Add(player.Id, game);
             }
 
-            Console.WriteLine($"Count: {map.GameObjects.Count}");
+            Console.WriteLine($"Current gameobjects: {map.GameObjects.Count}");
 
-            Console.WriteLine("uuGame id: "+game.Id);
             return new GameDTO { GameObjects = map.ExportGameObjects(), CharacterId = player.CurrentCharacter.Id, GameId = game.Id};
             //TODO: Add servers IP here -- maybe rename to GameDTO?
         }
@@ -132,8 +130,6 @@ namespace Ball_of_Duty_Server.Services
 
         public int RequestBulletCreation(double x, double y, double radius, double damage, int ownerId, int gameId)
         {
-
-            Console.WriteLine("Bullet creation game id: "+gameId);
             Game game;
             if (!Games.TryGetValue(gameId, out game))
             {

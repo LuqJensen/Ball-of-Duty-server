@@ -62,6 +62,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DAO\GameObjectDAO.cs" />
     <Compile Include="Domain\Account.cs" />
     <Compile Include="Domain\Body.cs" />
     <Compile Include="Domain\Entities\Bullet.cs" />
@@ -146,6 +147,12 @@
       <DependentUpon>DataModel.edmx</DependentUpon>
       <LastGenOutput>DataModel.cs</LastGenOutput>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SocketExtensions\SocketExtensions.csproj">
+      <Project>{D772F60F-61B9-46AA-8C9D-3B1FAF576D34}</Project>
+      <Name>SocketExtensions</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,14 +15,26 @@ namespace SocketExtensions
         private bool _disposed = false;
         private Socket _socket;
 
+
         private SocketAwaitableEventWrapper _sender, _receiver;
 
         public AsyncSocket(Socket s)
         {
             this._socket = s;
-            this._sender = new SocketAwaitableEventWrapper();
+            this._socket.NoDelay = true;
+//            this._sender = new SocketAwaitableEventWrapper();
             this._receiver = new SocketAwaitableEventWrapper();
             this._receiver.EventArgs.SetBuffer(new byte[BUFFER_LENGTH], 0, BUFFER_LENGTH);
+        }
+
+        public string GetIpAddress()
+        {
+            IPEndPoint remoteIpEndPoint = _socket.RemoteEndPoint as IPEndPoint;
+            if (remoteIpEndPoint != null)
+            {
+                return remoteIpEndPoint.Address + ":" + remoteIpEndPoint.Port;
+            }
+            return null;
         }
 
         public async Task<ReadResult> ReceiveAsync()
@@ -33,9 +46,12 @@ namespace SocketExtensions
             return new ReadResult(bytesRead, buffer);
         }
 
-        public async Task SendMessage(byte[] buffer)
+        public async void SendMessage(byte[] buffer)
         {
+            _sender = new SocketAwaitableEventWrapper();
             _sender.EventArgs.SetBuffer(buffer, 0, buffer.Length);
+            
+            
 
             await _socket.SendAsync(_sender.SocketAwaitable);
         }
@@ -61,6 +77,7 @@ namespace SocketExtensions
                 _disposed = true;
             }
         }
+
 
         /* ~AsyncSocket() // Enable if AsyncSocket is to contain unmanaged resources.
          {
