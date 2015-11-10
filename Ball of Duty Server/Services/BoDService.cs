@@ -128,15 +128,6 @@ namespace Ball_of_Duty_Server.Services
             }
         }
 
-        public int RequestBulletCreation(double x, double y, double radius, double damage, int ownerId, int gameId)
-        {
-            Game game;
-            if (!Games.TryGetValue(gameId, out game))
-            {
-                return -1;
-            }
-            return game.Map.AddBullet(x,y,radius,damage, ownerId);
-        }
 
     }
 }

@@ -31,7 +31,6 @@ namespace Ball_of_Duty_Server.Persistence
 
         public void Update(Observable observable)
         {
-            
             throw new NotImplementedException();
         }
         /*

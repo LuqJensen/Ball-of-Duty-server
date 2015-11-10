@@ -61,8 +61,8 @@ namespace Ball_of_Duty_Server.Domain
                 Wall tempWall;
                 while (true)
                 {
-                    Point p = new Point(_rand.Next(1, mapGridX) * wallSizeReal, _rand.Next(1, mapGridY) * wallSizeReal);
-                    tempWall = new Wall(p, _wallSize);
+                    position = new Point(_rand.Next(1, mapGridX) * wallSizeReal, _rand.Next(1, mapGridY) * wallSizeReal);
+                    tempWall = new Wall(position, _wallSize);
                     if (checkValidWall(tempWall, map.Walls))
                     {
                         map.Walls.Add(tempWall);

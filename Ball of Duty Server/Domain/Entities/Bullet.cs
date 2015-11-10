@@ -9,14 +9,15 @@ namespace Ball_of_Duty_Server.Domain.Entities
 {
     public class Bullet : GameObject
     {
-        public double Damage { get; set; }
-        public double OwnerId { get; set; }
+        public int Damage { get; set; }
+        public int OwnerId { get; set; }
 
-        public Bullet(Point position, double radius, double damage, int ownerId)
+        public Bullet(Point position, Vector velocity, double radius, int damage, int ownerId)
         {
             OwnerId = ownerId;
             Damage = damage;
             Body = new Body(this, position, radius, radius) { Type = Body.Geometry.RECTANGLE };
+            Physics = new Physics(this, 200, velocity);
         }
 
         public override string ToString()

@@ -21,7 +21,5 @@ namespace Ball_of_Duty_Server.Services
 
         [OperationContract]
         void QuitGame(int clientPlayerId);
-        [OperationContract]
-        int RequestBulletCreation(double x, double y, double radius, double damage, int ownerId, int gameId);
     }
 }

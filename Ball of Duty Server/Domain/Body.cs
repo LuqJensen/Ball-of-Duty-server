@@ -12,6 +12,7 @@ namespace Ball_of_Duty_Server.Domain
         public GameObject GameObject { get; set; }
         public Point Position { get; set; }
         public double Width { get; set; }
+        public Point Center => new Point(Position.X + Width / 2, Position.Y + Height / 2);
         public double Height { get; set; }
         public Geometry Type { get; set; }
 
@@ -29,6 +30,7 @@ namespace Ball_of_Duty_Server.Domain
             this.Width = width;
             this.Height = height;
         }
+
 
         public override string ToString()
         {
