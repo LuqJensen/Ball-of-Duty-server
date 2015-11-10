@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Timers;
 using System.Windows;
+using Ball_of_Duty_Server.Domain.Communication;
 using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.DTO;
 using Timer = System.Timers.Timer;
@@ -13,7 +14,7 @@ namespace Ball_of_Duty_Server.Domain
 {
     public class Map : IObserver
     {
-        private HashSet<int> _gameObjectsActive; //TODO: possible race conditions.
+        private ConcurrentDictionary<int, bool> _gameObjectsActive;
         private Thread _updateThread;
 
         public int Width { get; set; }
@@ -64,7 +65,7 @@ namespace Ball_of_Duty_Server.Domain
             decayCheck.Interval = 5000;
             decayCheck.Enabled = true;
 
-            _gameObjectsActive = new HashSet<int>();
+            _gameObjectsActive = new ConcurrentDictionary<int, bool>();
             while (true)
             {
                 Update();
@@ -79,14 +80,14 @@ namespace Ball_of_Duty_Server.Domain
 
         public void Update()
         {
-            foreach (var go in GameObjects.Values)
+            foreach (GameObject go in GameObjects.Values)
             {
                 if (go is Bullet)
                 {
                     go.UpdateWithCollision(GameObjects.Values);
                 }
             }
-            Broker.SendPositionUpdate(GetPositions(), 1 /*Game.Id*/);
+            Broker.SendPositionUpdate(GetPositions());
         }
 
         public int AddBullet(double x, double y, double velocityX, double velocityY, double radius, int damage,
@@ -132,6 +133,7 @@ namespace Ball_of_Duty_Server.Domain
 
                 gameObjects.Add(new GameObjectDTO { Id = go.Id, Body = body });
             }
+
             foreach (Wall go in Walls) //TODO: remove this along with the Walls property.
             {
                 BodyDTO body = new BodyDTO
@@ -162,7 +164,6 @@ namespace Ball_of_Duty_Server.Domain
             return positions;
         }
 
-
         private void CheckTimeouts(object sender, ElapsedEventArgs e)
             // An idea to handle it, not sure i like it too much.
         {
@@ -173,7 +174,7 @@ namespace Ball_of_Duty_Server.Domain
 
             foreach (var go in GameObjects.Values)
             {
-                if (!_gameObjectsActive.Contains(go.Id))
+                if (!_gameObjectsActive.Keys.Contains(go.Id))
                 {
                     removeTimeoutObjects.Add(go.Id);
                     Console.WriteLine(go.Id + " Hasnt send messages for atleast 10 seconds");
@@ -195,14 +196,10 @@ namespace Ball_of_Duty_Server.Domain
             GameObject go;
             if (GameObjects.TryGetValue(goId, out go))
             {
-                _gameObjectsActive.Add(go.Id);
+                _gameObjectsActive.TryAdd(go.Id, true);
                 go.Body.Position = position;
             }
         }
-
-        /*
-
-        */
 
         public void Update(Observable observable)
         {
@@ -212,37 +209,39 @@ namespace Ball_of_Duty_Server.Domain
             Console.WriteLine("GameObjects after count: " + GameObjects.Count);
         }
 
-        /*
-        Called when an observable object calls the overloaded NotifyObservers which takes data. 
-        If observable.hp<1, killer is found using data (which should be killerID) 
-        On the killer character AddKill is then called
-        */
-
+        /// <summary>
+        /// Called when an observable object calls the overloaded NotifyObservers which takes data.
+        /// If observable.hp is below 1, killer is found using data (which should be killerID)
+        /// On the killer character AddKill is then called
+        /// </summary>
+        /// <param name="observable"></param>
+        /// <param name="data"></param>
         public void Update(Observable observable, object data)
         {
             Character victim = observable as Character;
+            // TODO normal cast, we want an exception if we pass an invalid object to this method.
             if (victim != null && victim.Health.Value < 1)
             {
-                int killerID = Convert.ToInt32(data);
-                GameObject killer;
-                if (GameObjects.TryGetValue(killerID, out killer))
+                int killerId = Convert.ToInt32(data);
+                GameObject go;
+                if (GameObjects.TryGetValue(killerId, out go))
                 {
-                    Character killerFinal = killer as Character;
-                    killerFinal?.AddKill(victim); // (?) kræver at killer ikke er null, for at metoden bliver kaldt.
+                    Character killer = (Character)go;
+                    killer.AddKill(victim);
                 }
                 else
                 {
-                    Console.WriteLine(
-                        "FINDING KILLER ERROR: Map was notified of a death as an observer, but failed to find the killer.");
+                    Console.WriteLine($"Map observed the death of {victim.Id}, but failed to find the killer.");
                 }
             }
         }
 
-        /*
-        Checks for each GameObject in GameObjects, if it's a Character.
-        If it is, the DecayScore is called on the Character object.
-        */
-
+        /// <summary>
+        /// Checks for each GameObject in GameObjects, if it's a Character.
+        /// If it is, the DecayScore is called on the Character object.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void DecayScores(object sender, ElapsedEventArgs e)
         {
             foreach (var go in GameObjects.Values)

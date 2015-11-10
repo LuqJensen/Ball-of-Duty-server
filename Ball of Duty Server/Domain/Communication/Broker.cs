@@ -12,11 +12,10 @@ using System.Threading.Tasks;
 using Ball_of_Duty_Server.DAO;
 using Ball_of_Duty_Server.Domain.Entities;
 using SocketExtensions;
-using Ball_of_Duty_Server.Persistence;
 
-namespace Ball_of_Duty_Server.Domain
+namespace Ball_of_Duty_Server.Domain.Communication
 {
-    public class Broker : IBroker
+    public class Broker
     {
         private UdpClient _udpBroadcastSocket;
         private IPEndPoint _ip; // Needs new port for each game
@@ -26,8 +25,7 @@ namespace Ball_of_Duty_Server.Domain
         private ConcurrentDictionary<AsyncSocket, bool> _connectedClients =
             new ConcurrentDictionary<AsyncSocket, bool>();
 
-        // TODO: make use of this.
-        private TcpListener _tcpListener = TcpListener.Create(15010);
+        private TcpListener _tcpListener = TcpListener.Create(15010); // TODO dynamic port
 
         private readonly Dictionary<Opcodes, Action<BinaryReader>> _opcodeMapping =
             new Dictionary<Opcodes, Action<BinaryReader>>();
@@ -39,14 +37,17 @@ namespace Ball_of_Duty_Server.Domain
 
         public Broker(Map map)
         {
+            Map = map;
+
             _opcodeMapping.Add(Opcodes.POSITION_UPDATE, this.ReadPositionUpdate);
             _opcodeMapping.Add(Opcodes.REQUEST_BULLET, this.BulletCreationRequest);
+
             _tcpListener.Start();
-            Map = map;
             _udpBroadcastSocket = new UdpClient();
             _ip = new IPEndPoint(IPAddress.Any, 15001);
             _listener = new UdpClient(_ip);
-            Thread t = new Thread(Receive);
+
+            Thread t = new Thread(ReceiveUdp);
             t.Start();
             Thread t2 = new Thread(() => { AcceptClientsAsync().Wait(); });
             t2.Start();
@@ -183,7 +184,7 @@ namespace Ball_of_Duty_Server.Domain
             _targetEndPoints.TryRemove(id, out ip);
         }
 
-        public void SendPositionUpdate(List<ObjectPosition> positions, int gameId)
+        public void SendPositionUpdate(List<ObjectPosition> positions)
         {
             if (positions.Count == 0)
             {
@@ -229,7 +230,7 @@ namespace Ball_of_Duty_Server.Domain
                         bw.Write((byte)31); //ASCII Standard for Unit seperator
                     }
                 }
-                
+
 
                 bw.Write((byte)4); //ASCII Standard for End of transmission
 
@@ -239,15 +240,13 @@ namespace Ball_of_Duty_Server.Domain
 
         public void SendHealthUpdate()
         {
-            
         }
 
-        public void Receive()
+        public void ReceiveUdp()
         {
             while (true)
             {
-                byte[] b = _listener.Receive(ref _ip);
-                Read(ref b);
+                Read(_listener.Receive(ref _ip));
             }
         }
 
@@ -313,10 +312,10 @@ namespace Ball_of_Duty_Server.Domain
 
         public void ReceiveTcp(AsyncSocket.ReadResult rr)
         {
-            Read(ref rr.Buffer);
+            Read(rr.Buffer);
         }
 
-        private void Read(ref byte[] buffer)
+        private void Read(byte[] buffer)
         {
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))

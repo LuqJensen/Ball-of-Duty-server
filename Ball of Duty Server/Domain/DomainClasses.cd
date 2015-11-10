@@ -10,29 +10,11 @@
       <Property Name="Map" />
     </ShowAsAssociation>
   </Class>
-  <Class Name="Ball_of_Duty_Server.Domain.Broker">
-    <Position X="8.5" Y="2.25" Width="4.75" />
-    <TypeIdentifier>
-      <HashCode>AAAAgAgAABACAAAAAEJAAAggAQAgAAEQAAQAAAAAAAA=</HashCode>
-      <FileName>Domain\Broker.cs</FileName>
-    </TypeIdentifier>
-    <ShowAsAssociation>
-      <Property Name="Map" />
-    </ShowAsAssociation>
-    <Lollipop Position="0.2" />
-  </Class>
   <Class Name="Ball_of_Duty_Server.Domain.Physics" Collapsed="true">
     <Position X="14.25" Y="1.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJEAAA=</HashCode>
+      <HashCode>AAAAACAABAAAAAAAAAAAAAAAAACAAAAAAAAAAAYEAAA=</HashCode>
       <FileName>Domain\Physics.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="Ball_of_Duty_Server.Domain.CharacterManager" Collapsed="true">
-    <Position X="16" Y="0.75" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Domain\CharacterManager.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Ball_of_Duty_Server.Domain.View" Collapsed="true">
@@ -45,32 +27,25 @@
   <Class Name="Ball_of_Duty_Server.Domain.Map">
     <Position X="6" Y="2.75" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAQAAEIEBCBAACBAAAAABEAAAAgAAAAEAAAAAECgAAA=</HashCode>
+      <HashCode>AAQAgEIEBCBAACBAAAAABEAAAAgAAAAEAAAAAECgAIA=</HashCode>
       <FileName>Domain\Map.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
-      <Property Name="Broker" />
       <Property Name="Game" />
     </ShowAsAssociation>
+    <Lollipop Position="0.2" />
   </Class>
   <Class Name="Ball_of_Duty_Server.Domain.Body" Collapsed="true">
     <Position X="14.25" Y="0.75" Width="1.5" />
-    <NestedTypes>
-      <Enum Name="Ball_of_Duty_Server.Domain.Body.Geometry" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>Domain\Body.cs</NewMemberFileName>
-        </TypeIdentifier>
-      </Enum>
-    </NestedTypes>
     <TypeIdentifier>
-      <HashCode>AAAAAAAABAAAAAAgAAAAAEAAAAAAAAAAAQAAAAIAAAA=</HashCode>
+      <HashCode>AAAAAAAABAAAAAAkAAAAAEAAAAAAAAAAAQAAAAIIAAA=</HashCode>
       <FileName>Domain\Body.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Enum Name="Ball_of_Duty_Server.Domain.Opcodes" Collapsed="true">
     <Position X="14.25" Y="3" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAQAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAQBAAAAAQAAAAAAAAFAAAAIAAAAAAAAAAAAAAAgAA=</HashCode>
       <FileName>Domain\Opcodes.cs</FileName>
     </TypeIdentifier>
   </Enum>

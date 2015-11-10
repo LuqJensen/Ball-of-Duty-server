@@ -10,7 +10,13 @@ using System.Threading.Tasks;
 namespace SocketExtensions
 {
     /// <summary>
-    /// @Auther: Stephen Toub - Microsoft MVP.
+    /// @Author: Stephen Toub - Microsoft Visual Studio team MVP
+    /// Socketawaitable provides awaitable socket operations along with reusable
+    /// SocketAsyncEventArgs. Socketawaitable provides an extreme high-performance
+    /// and great scaling wrapper compared to standard async socket operations.
+    /// http://blogs.msdn.com/b/pfxteam/archive/2011/12/15/10248293.aspx
+    /// https://social.msdn.microsoft.com/Profile/stephen%20toub%20-%20msft
+    /// https://github.com/stephentoub
     /// </summary>
     public sealed class SocketAwaitable : INotifyCompletion
     {
