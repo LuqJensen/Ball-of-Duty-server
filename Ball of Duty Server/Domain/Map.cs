@@ -79,13 +79,22 @@ namespace Ball_of_Duty_Server.Domain
 
         public void Update()
         {
+            foreach (var go in GameObjects.Values)
+            {
+                if (go is Bullet)
+                {
+                    go.UpdateWithCollision(GameObjects.Values);
+                }
+            }
             Broker.SendPositionUpdate(GetPositions(), 1 /*Game.Id*/);
         }
 
-        public int AddBullet(double x, double y, double radius, double damage, int ownerId)
+        public int AddBullet(double x, double y, double velocityX, double velocityY, double radius, int damage,
+            int ownerId)
         {
-            Bullet bullet = new Bullet(new Point(x, y), radius, damage, ownerId);
+            Bullet bullet = new Bullet(new Point(x, y), new Vector(velocityX, velocityY), radius, damage, ownerId);
             GameObjects.TryAdd(bullet.Id, bullet);
+            bullet.Register(this);
             return bullet.Id;
         }
 
@@ -197,7 +206,10 @@ namespace Ball_of_Duty_Server.Domain
 
         public void Update(Observable observable)
         {
-            throw new NotImplementedException();
+            GameObject destroyed = (GameObject)observable;
+            Console.WriteLine("GameObjects before count: " + GameObjects.Count);
+            GameObjects.TryRemove(destroyed.Id, out destroyed);
+            Console.WriteLine("GameObjects after count: " + GameObjects.Count);
         }
 
         /*
@@ -209,7 +221,7 @@ namespace Ball_of_Duty_Server.Domain
         public void Update(Observable observable, object data)
         {
             Character victim = observable as Character;
-            if (victim != null && victim.HP < 1)
+            if (victim != null && victim.Health.Value < 1)
             {
                 int killerID = Convert.ToInt32(data);
                 GameObject killer;

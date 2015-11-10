@@ -66,7 +66,7 @@ namespace Ball_of_Duty_Server.Domain
                             try
                             {
                                 await v.SendMessage(message);
-                                    // TODO find out if each iteration is waiting for "ack" from the client.
+                                // TODO find out if each iteration is waiting for "ack" from the client.
                             }
                             catch (SocketException)
                             {
@@ -90,11 +90,11 @@ namespace Ball_of_Duty_Server.Domain
             double velocityX = reader.ReadDouble();
             double velocityY = reader.ReadDouble();
             int bulletType = reader.ReadInt32();
-            double damage = reader.ReadDouble();
+            int damage = reader.ReadInt32();
             int ownerId = reader.ReadInt32();
             int entityType = reader.ReadInt32();
 
-            int bulletId = Map.AddBullet(x, y, radius, damage, ownerId);
+            int bulletId = Map.AddBullet(x, y, velocityX, velocityY, radius, damage, ownerId);
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
@@ -125,7 +125,6 @@ namespace Ball_of_Duty_Server.Domain
                 double x = reader.ReadDouble();
 
                 double y = reader.ReadDouble();
-
                 Map.UpdatePosition(new Point(x, y), id);
             } while (reader.Read() == 31);
         }
@@ -184,6 +183,10 @@ namespace Ball_of_Duty_Server.Domain
 
         public void SendPositionUpdate(List<ObjectPosition> positions, int gameId)
         {
+            if (positions.Count == 0)
+            {
+                return;
+            }
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
@@ -202,7 +205,6 @@ namespace Ball_of_Duty_Server.Domain
                     }
                 }
                 bw.Write((byte)4); //ASCII Standard for End of transmission
-
                 SendUdp(ms.ToArray());
             }
         }
