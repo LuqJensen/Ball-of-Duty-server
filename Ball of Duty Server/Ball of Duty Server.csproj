@@ -150,7 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SocketExtensions\SocketExtensions.csproj">
-      <Project>{D772F60F-61B9-46AA-8C9D-3B1FAF576D34}</Project>
+      <Project>{d772f60f-61b9-46aa-8c9d-3b1faf576d34}</Project>
       <Name>SocketExtensions</Name>
     </ProjectReference>
   </ItemGroup>

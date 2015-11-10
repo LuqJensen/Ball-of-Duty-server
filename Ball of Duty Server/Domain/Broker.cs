@@ -10,7 +10,9 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Ball_of_Duty_Server.DAO;
+using Ball_of_Duty_Server.Domain.Entities;
 using SocketExtensions;
+using Ball_of_Duty_Server.Persistence;
 
 namespace Ball_of_Duty_Server.Domain
 {
@@ -205,6 +207,37 @@ namespace Ball_of_Duty_Server.Domain
 
                 SendUdp(ms.ToArray());
             }
+        }
+
+        public void SendScoreUpdate(List<Character> characters)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.Write((byte)1); //ASCII Standard for Start of heading
+                bw.Write((byte)Opcodes.BROADCAST_SCORE_UPDATE);
+                bw.Write((byte)2); //ASCII Standard for Start of text
+                for (int i = 0; i < characters.Count; i++)
+                {
+                    Character character = characters[i];
+                    bw.Write(character.Id);
+                    bw.Write(character.Score);
+                    if (i != characters.Count - 1)
+                    {
+                        bw.Write((byte)31); //ASCII Standard for Unit seperator
+                    }
+                }
+                
+
+                bw.Write((byte)4); //ASCII Standard for End of transmission
+
+                SendUdp(ms.ToArray());
+            }
+        }
+
+        public void SendHealthUpdate()
+        {
+            
         }
 
         public void Receive()
