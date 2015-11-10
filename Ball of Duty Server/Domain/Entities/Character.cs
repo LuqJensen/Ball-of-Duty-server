@@ -4,7 +4,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
 {
     public class Character : GameObject
     {
-        private double _score { get; set; }
+        public double Score { get; set; }
         public int HP { get; set; } // PLACEHOLDER FOR THE HP CLASS
 
         private double _scoreUP = 100;           
@@ -18,7 +18,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
         public Character()
         {
             Body = new Body(this, new Point(0, 0), 50, 50) { Type = Body.Geometry.CIRCLE }; // TODO should be dynamic
-            _score = 0;
+            Score = 0;
             _killCount = 0;
             HP = 100;
         }
@@ -31,17 +31,17 @@ namespace Ball_of_Duty_Server.Domain.Entities
         public void AddKill(Character victim)
         {
             _killCount++;
-            _score += _scoreUP + (victim._score * _scoreUPFactor);
+            Score += _scoreUP + (victim.Score * _scoreUPFactor);
             NotifyObservers(victim);
         }
         /*
-        "Decays" (decreases) the _score by 1 percent IF the score is greater than 400
+        "Decays" (decreases) the Score by 1 percent IF the score is greater than 400
         */
         public void DecayScore()
         {
-            if (_score > _allowedScoreBeforeDecay)
+            if (Score > _allowedScoreBeforeDecay)
             {
-                _score -= (_score * _scoreDecayFactor);
+                Score -= (Score * _scoreDecayFactor);
             }
         }
     }
