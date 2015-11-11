@@ -22,7 +22,6 @@ namespace Ball_of_Duty_Server.Domain
             RECTANGLE = 1
         }
 
-
         public Body(GameObject go, Point position, double width, double height)
         {
             this.Position = position;
@@ -30,7 +29,6 @@ namespace Ball_of_Duty_Server.Domain
             this.Width = width;
             this.Height = height;
         }
-
 
         public override string ToString()
         {

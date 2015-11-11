@@ -13,7 +13,6 @@ namespace Ball_of_Duty_Server.Domain
         public int Value { get; set; }
         public GameObject GameObject { get; set; }
 
-
         public Health(GameObject gameObject, int maxHealth)
         {
             GameObject = gameObject;

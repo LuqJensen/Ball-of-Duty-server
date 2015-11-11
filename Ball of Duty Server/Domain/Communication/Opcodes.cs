@@ -1,4 +1,4 @@
-﻿namespace Ball_of_Duty_Server.Domain
+﻿namespace Ball_of_Duty_Server.Domain.Communication
 {
     public enum Opcodes : byte
     {

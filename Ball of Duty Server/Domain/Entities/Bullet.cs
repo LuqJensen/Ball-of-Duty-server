@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using Ball_of_Duty_Server.Domain.Physics.Collision;
 
 namespace Ball_of_Duty_Server.Domain.Entities
 {
-    public class Bullet : GameObject
+    public class Bullet : GameObject, ICollidable
     {
         public int Damage { get; set; }
         public int OwnerId { get; set; }
@@ -17,7 +18,29 @@ namespace Ball_of_Duty_Server.Domain.Entities
             OwnerId = ownerId;
             Damage = damage;
             Body = new Body(this, position, radius, radius) { Type = Body.Geometry.RECTANGLE };
-            Physics = new Physics(this, 200, velocity);
+            Physics = new Physics.Physics(this, 200, velocity);
+        }
+
+        public override void Update(ICollection<GameObject> values)
+        {
+            if (Destroyed)
+                return;
+
+            Physics.Update();
+            Physics.UpdateWithCollision(values);
+        }
+
+        public void CollideWith(ICollidable other)
+        {
+            if (other is Character)
+            {
+                Character victim = (Character)other;
+                if (victim.Id == OwnerId)
+                    return;
+
+                victim.Health.TakeDamage(Damage);
+                Destroy();
+            }
         }
 
         public override string ToString()

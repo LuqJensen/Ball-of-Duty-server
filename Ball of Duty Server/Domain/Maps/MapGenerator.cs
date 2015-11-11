@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Ball_of_Duty_Server.Domain.Entities;
 
-namespace Ball_of_Duty_Server.Domain
+namespace Ball_of_Duty_Server.Domain.Maps
 {
     public class MapGenerator
     {
@@ -63,7 +63,7 @@ namespace Ball_of_Duty_Server.Domain
                 {
                     position = new Point(_rand.Next(1, mapGridX) * wallSizeReal, _rand.Next(1, mapGridY) * wallSizeReal);
                     tempWall = new Wall(position, _wallSize);
-                    if (checkValidWall(tempWall, map.Walls))
+                    if (CheckValidWall(tempWall, map.Walls))
                     {
                         map.Walls.Add(tempWall);
                         ++wallCount;
@@ -98,7 +98,7 @@ namespace Ball_of_Duty_Server.Domain
                     }
 
                     tempWall = new Wall(newPosition, _wallSize);
-                    if (checkValidWall(tempWall, map.Walls))
+                    if (CheckValidWall(tempWall, map.Walls))
                     {
                         map.Walls.Add(tempWall);
                         position = newPosition;
@@ -117,7 +117,7 @@ namespace Ball_of_Duty_Server.Domain
             }
         }
 
-        private static bool checkValidWall(Wall newWall, List<Wall> walls) //TODO
+        private static bool CheckValidWall(Wall newWall, List<Wall> walls) //TODO
         {
             foreach (var wall in walls)
             {

@@ -8,6 +8,7 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Windows;
 using Ball_of_Duty_Server.Domain;
+using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Persistence;
 
@@ -64,7 +65,7 @@ namespace Ball_of_Duty_Server.Services
             }
 
             Game game = new Game();
-            Console.WriteLine("Newly created game id: "+game.Id);
+            Console.WriteLine("Newly created game id: " + game.Id);
             Games.Add(game.Id, game);
             return game;
         }
@@ -107,7 +108,12 @@ namespace Ball_of_Duty_Server.Services
 
             Console.WriteLine($"Current gameobjects: {map.GameObjects.Count}");
 
-            return new GameDTO { GameObjects = map.ExportGameObjects(), CharacterId = player.CurrentCharacter.Id, GameId = game.Id};
+            return new GameDTO
+            {
+                GameObjects = map.ExportGameObjects(),
+                CharacterId = player.CurrentCharacter.Id,
+                GameId = game.Id
+            };
             //TODO: Add servers IP here -- maybe rename to GameDTO?
         }
 
@@ -116,7 +122,7 @@ namespace Ball_of_Duty_Server.Services
             // Removes the player from the game
             Game game;
             if (PlayerIngame.TryGetValue(clientPlayerId, out game))
-            //if (Games.TryGetValue(gameId, out game)) //TODO: brug OnlinePlayers i stedet
+                //if (Games.TryGetValue(gameId, out game)) //TODO: brug OnlinePlayers i stedet
             {
                 PlayerIngame.Remove(clientPlayerId); //TODO: brug OnlinePlayers istedet
                 game.RemovePlayer(clientPlayerId);
@@ -127,7 +133,5 @@ namespace Ball_of_Duty_Server.Services
                 Debug.WriteLine($"Player: {clientPlayerId} failed quitting game" /*: {gameId}."*/);
             }
         }
-
-
     }
 }

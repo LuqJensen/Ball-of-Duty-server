@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Ball_of_Duty_Server.Domain;
 using Ball_of_Duty_Server.Domain.Entities;
+using Ball_of_Duty_Server.Utility;
 
-namespace Ball_of_Duty_Server
+namespace Ball_of_Duty_Server.Domain.Physics.Collision
 {
     public class CollisionHandler
     {
@@ -74,7 +75,7 @@ namespace Ball_of_Duty_Server
             double cornerDistanceSq = Math.Sqrt(
                 Math.Pow((circleDistanceX - (rect.Body.Width / 2)), 2) +
                 Math.Pow((circleDistanceY - (rect.Body.Height / 2)), 2));
-            
+
             return (cornerDistanceSq < circle.Body.Height / 2);
         }
 
@@ -89,14 +90,9 @@ namespace Ball_of_Duty_Server
             double r2H = rect2.Body.Width;
             double r2L = rect2.Body.Height;
 
-            bool xOverlap = ValueInRange(r1X, r2X, r2X + r2L) || ValueInRange(r2X, r1X, r1X + r1L);
-            bool yOverlap = ValueInRange(r1Y, r2Y, r2Y + r2H) || ValueInRange(r2Y, r1Y, r1Y + r1H);
+            bool xOverlap = r1X.IsInRange(r2X, r2X + r2L) || r2X.IsInRange(r1X, r1X + r1L);
+            bool yOverlap = r1Y.IsInRange(r2Y, r2Y + r2H) || r2Y.IsInRange(r1Y, r1Y + r1H);
             return xOverlap && yOverlap;
-        }
-        private static bool ValueInRange(double value, double start, double end)
-        {
-            // FIXME if more methods like these pop up around the application it should be put in a new Math class.
-            return (value >= start) && (value <= end);
         }
     }
 }

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ball_of_Duty_Server.Domain
+namespace Ball_of_Duty_Server.Utility
 {
     public class Observable
     {
@@ -32,7 +32,6 @@ namespace Ball_of_Duty_Server.Domain
             {
                 i.Update(this);
             }
-
         }
 
         protected void NotifyObservers(object data)

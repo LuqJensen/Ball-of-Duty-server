@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Ball_of_Duty_Server.DAO;
+using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.Persistence;
 
 namespace Ball_of_Duty_Server.Domain
@@ -18,15 +19,16 @@ namespace Ball_of_Duty_Server.Domain
             _players.Add(player.Id, player);
             player.CurrentCharacter = Map.AddCharacter(); // TODO data to character creation should be dynamic
 
-            GameObjectDAO data = new GameObjectDAO();
-            data.X = player.CurrentCharacter.Body.Position.X;
-            data.Y = player.CurrentCharacter.Body.Position.Y;
-            data.Width = player.CurrentCharacter.Body.Width;
-            data.Height = player.CurrentCharacter.Body.Height;
-            data.Id = player.CurrentCharacter.Id;
+            GameObjectDAO data = new GameObjectDAO
+            {
+                X = player.CurrentCharacter.Body.Position.X,
+                Y = player.CurrentCharacter.Body.Position.Y,
+                Width = player.CurrentCharacter.Body.Width,
+                Height = player.CurrentCharacter.Body.Height,
+                Id = player.CurrentCharacter.Id
+            };
 
-            Map.Broker.AddPlayer(player.Id, data, clientIp,
-                clientPort);
+            Map.Broker.WriteCreateCharacter(player.Id, data, clientIp, clientPort);
         }
 
         public void RemovePlayer(int playerId)
@@ -35,7 +37,10 @@ namespace Ball_of_Duty_Server.Domain
             if (_players.TryGetValue(playerId, out player))
             {
                 _players.Remove(playerId);
-                Map.RemoveCharacter(player.CurrentCharacter.Id);
+                if (player.CurrentCharacter != null)
+                {
+                    Map.RemoveCharacter(player.CurrentCharacter.Id);
+                }
             }
             Map.Broker.RemoveTarget(playerId);
         }

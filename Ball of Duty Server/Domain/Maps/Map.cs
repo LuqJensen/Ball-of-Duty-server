@@ -8,9 +8,10 @@ using System.Windows;
 using Ball_of_Duty_Server.Domain.Communication;
 using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.DTO;
+using Ball_of_Duty_Server.Utility;
 using Timer = System.Timers.Timer;
 
-namespace Ball_of_Duty_Server.Domain
+namespace Ball_of_Duty_Server.Domain.Maps
 {
     public class Map : IObserver
     {
@@ -80,14 +81,12 @@ namespace Ball_of_Duty_Server.Domain
 
         public void Update()
         {
-            foreach (GameObject go in GameObjects.Values)
+            var gameobjects = GameObjects.Values;
+            foreach (GameObject go in gameobjects)
             {
-                if (go is Bullet)
-                {
-                    go.UpdateWithCollision(GameObjects.Values);
-                }
+                go.Update(gameobjects);
             }
-            Broker.SendPositionUpdate(GetPositions());
+            Broker.WritePositionUpdate(GetPositions());
         }
 
         public int AddBullet(double x, double y, double velocityX, double velocityY, double radius, int damage,
