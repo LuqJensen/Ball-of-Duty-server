@@ -26,7 +26,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
             for (int i = 0; i < mapGridX; i++)
             {
-                map.Walls.Add(new Wall(position, _wallSize));
+                Wall wall = new Wall(position, _wallSize);
+                map.GameObjects.TryAdd(wall.Id, wall);
                 position.X += wallSizeReal;
             }
 
@@ -34,7 +35,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
             for (int i = 0; i < mapGridX; i++)
             {
-                map.Walls.Add(new Wall(position, _wallSize));
+                Wall wall = new Wall(position, _wallSize);
+                map.GameObjects.TryAdd(wall.Id, wall);
                 position.X += wallSizeReal;
             }
 
@@ -42,7 +44,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
             for (int i = 0; i < mapGridY - 2; i++)
             {
-                map.Walls.Add(new Wall(position, _wallSize));
+                Wall wall = new Wall(position, _wallSize);
+                map.GameObjects.TryAdd(wall.Id, wall);
                 position.Y += wallSizeReal;
             }
 
@@ -50,7 +53,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
             for (int i = 0; i < mapGridY - 2; i++)
             {
-                map.Walls.Add(new Wall(position, _wallSize));
+                Wall wall = new Wall(position, _wallSize);
+                map.GameObjects.TryAdd(wall.Id, wall);
                 position.Y += wallSizeReal;
             }
 
@@ -63,9 +67,9 @@ namespace Ball_of_Duty_Server.Domain.Maps
                 {
                     position = new Point(_rand.Next(1, mapGridX) * wallSizeReal, _rand.Next(1, mapGridY) * wallSizeReal);
                     tempWall = new Wall(position, _wallSize);
-                    if (CheckValidWall(tempWall, map.Walls))
+                    if (CheckValidWall(tempWall, map.GameObjects.Values))
                     {
-                        map.Walls.Add(tempWall);
+                        map.GameObjects.TryAdd(tempWall.Id, tempWall);
                         ++wallCount;
                         break;
                     }
@@ -98,9 +102,9 @@ namespace Ball_of_Duty_Server.Domain.Maps
                     }
 
                     tempWall = new Wall(newPosition, _wallSize);
-                    if (CheckValidWall(tempWall, map.Walls))
+                    if (CheckValidWall(tempWall, map.GameObjects.Values))
                     {
-                        map.Walls.Add(tempWall);
+                        map.GameObjects.TryAdd(tempWall.Id, tempWall);
                         position = newPosition;
                         ++wallCount;
                     }
@@ -117,7 +121,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
             }
         }
 
-        private static bool CheckValidWall(Wall newWall, List<Wall> walls) //TODO
+        private static bool CheckValidWall(Wall newWall, ICollection<GameObject> walls) 
         {
             foreach (var wall in walls)
             {

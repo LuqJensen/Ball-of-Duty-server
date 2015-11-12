@@ -37,7 +37,6 @@ namespace Ball_of_Duty_Server.Domain.Communication
         {
             Map = map;
             AddOpcodeMapping();
-
             _tcpListener.Start();
             _udpBroadcastSocket = new UdpClient();
             _ip = new IPEndPoint(IPAddress.Any, 15001);
@@ -143,7 +142,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
             catch (SocketException)
             {
-                Console.WriteLine("dongoofed");
+                Console.WriteLine("Someone disconnected");
             }
             finally
             {

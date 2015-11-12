@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using Ball_of_Duty_Server.Domain.Physics.Collision;
 
@@ -15,7 +16,6 @@ namespace Ball_of_Duty_Server.Domain.Entities
         private double _allowedScoreBeforeDecay = 400;
         private int _killCount = 0;
 
-
         public Character()
         {
             Body = new Body(this, new Point(0, 0), 50, 50) { Type = Body.Geometry.CIRCLE }; // TODO should be dynamic
@@ -23,12 +23,12 @@ namespace Ball_of_Duty_Server.Domain.Entities
         }
 
         /// <summary>
-        /// Called when character gets a kill 
-        /// Increment killCount 
-        /// Increment score with _scoreUP and _scoreFactor percent of the victims score 
-        /// Notifies its observers (only player should react)  
+        /// Called when character gets a kill. 
+        /// Increment killCount. 
+        /// Increment score with _scoreUP and _scoreFactor percent of the victims score. 
+        /// Notifies its observers (only player should react).  
         /// </summary>
-        /// <param name="victim"></param>
+        /// <param name="victim">The victim</param>
         public void AddKill(Character victim)
         {
             ++_killCount;
@@ -46,6 +46,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
                 Score -= (Score * _scoreDecayFactor);
             }
         }
+
 
         public void CollideWith(ICollidable other)
         {

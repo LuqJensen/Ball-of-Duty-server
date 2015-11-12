@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Timers;
 using System.Windows;
@@ -22,9 +21,9 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
         public int Height { get; set; }
 
-        public List<Wall> Walls { get; set; }
 
-        public ConcurrentDictionary<int, GameObject> GameObjects { get; set; }
+        public ConcurrentDictionary<int, GameObject> GameObjects { get; set; } =
+            new ConcurrentDictionary<int, GameObject>();
 
         public Broker Broker { get; set; }
 
@@ -34,10 +33,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
         {
             Width = 1100;
             Height = 650; // default
-            Walls = new List<Wall>();
             MapGenerator.GenerateMap(this);
             Broker = new Broker(this);
-            GameObjects = new ConcurrentDictionary<int, GameObject>();
             _updateThread = new Thread(Activate);
             _updateThread.Start();
         }
@@ -46,10 +43,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
         {
             Width = width;
             Height = height;
-            Walls = new List<Wall>();
             MapGenerator.GenerateMap(this);
             Broker = new Broker(this);
-            GameObjects = new ConcurrentDictionary<int, GameObject>();
             _updateThread = new Thread(Activate);
             _updateThread.Start();
         }
@@ -87,6 +82,21 @@ namespace Ball_of_Duty_Server.Domain.Maps
                 go.Update(gameobjects);
             }
             Broker.WritePositionUpdate(GetPositions());
+            Broker.SendScoreUpdate(GetCharacters());
+        }
+
+        private List<Character> GetCharacters()
+        {
+            List<Character> characters = new List<Character>();
+            foreach (var go in GameObjects.Values)
+            {
+                if (go is Character)
+                {
+                    Character character = (Character)go;
+                    characters.Add(character);
+                }
+            }
+            return characters;
         }
 
         public int AddBullet(double x, double y, double velocityX, double velocityY, double radius, int damage,
@@ -133,18 +143,6 @@ namespace Ball_of_Duty_Server.Domain.Maps
                 gameObjects.Add(new GameObjectDTO { Id = go.Id, Body = body });
             }
 
-            foreach (Wall go in Walls) //TODO: remove this along with the Walls property.
-            {
-                BodyDTO body = new BodyDTO
-                {
-                    Position = new PointDTO { X = go.Body.Position.X, Y = go.Body.Position.Y },
-                    Type = (int)go.Body.Type,
-                    Height = go.Body.Height,
-                    Width = go.Body.Width
-                };
-
-                gameObjects.Add(new GameObjectDTO { Id = go.Id, Body = body });
-            }
 
             return gameObjects.ToArray();
         }
@@ -154,7 +152,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
             var positions = new List<ObjectPosition>();
             foreach (var go in GameObjects.Values)
             {
-                if (go is Bullet)
+                if (go is Bullet || go is Wall)
                 {
                     continue;
                 }
@@ -173,6 +171,10 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
             foreach (var go in GameObjects.Values)
             {
+                if (go is Wall)
+                {
+                    continue;
+                }
                 if (!_gameObjectsActive.Keys.Contains(go.Id))
                 {
                     removeTimeoutObjects.Add(go.Id);
@@ -203,9 +205,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
         public void Update(Observable observable)
         {
             GameObject destroyed = (GameObject)observable;
-            Console.WriteLine("GameObjects before count: " + GameObjects.Count);
             GameObjects.TryRemove(destroyed.Id, out destroyed);
-            Console.WriteLine("GameObjects after count: " + GameObjects.Count);
         }
 
         /// <summary>
@@ -227,6 +227,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
                 {
                     Character killer = (Character)go;
                     killer.AddKill(victim);
+                    Broker.KillNotification(victim.Id, killer.Id);
+                    victim.Destroy();
                 }
                 else
                 {
@@ -243,13 +245,9 @@ namespace Ball_of_Duty_Server.Domain.Maps
         /// <param name="e"></param>
         public void DecayScores(object sender, ElapsedEventArgs e)
         {
-            foreach (var go in GameObjects.Values)
+            foreach (Character character in GetCharacters())
             {
-                if (go is Character)
-                {
-                    Character character = go as Character;
-                    character.DecayScore();
-                }
+                character.DecayScore();
             }
         }
     }
