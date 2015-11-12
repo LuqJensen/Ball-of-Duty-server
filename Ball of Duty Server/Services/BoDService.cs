@@ -54,6 +54,28 @@ namespace Ball_of_Duty_Server.Services
             return new PlayerDTO { Id = p.Id, Nickname = p.Nickname };
         }
 
+        public AccountDTO NewAccount(string username, string nickname, int playerId, byte[] salt, byte[] hash)
+        {
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(nickname) || salt.Length != 32 ||
+                hash.Length != 32)
+            {
+                return new AccountDTO();
+            }
+            try
+            {
+                Account a = DataModelFacade.CreateAccount(username, nickname, playerId, salt, hash);
+                return new AccountDTO()
+                {
+                    Id = a.Id,
+                    Player = new PlayerDTO() { Id = a.Player.Id, Nickname = a.Player.Nickname }
+                };
+            }
+            catch
+            {
+                return new AccountDTO();
+            }
+        }
+
         private Game GetGame()
         {
             foreach (Game g in Games.Values)

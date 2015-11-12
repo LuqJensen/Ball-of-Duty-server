@@ -20,6 +20,10 @@ namespace Ball_of_Duty_Server.Services
         GameDTO JoinGame(int clientPlayerId, int clientPort);
 
         [OperationContract]
+        AccountDTO NewAccount(string username, string nickname, int playerId, byte[] salt, byte[] hash);
+
+        [OperationContract]
         void QuitGame(int clientPlayerId);
+
     }
 }

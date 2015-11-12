@@ -18,5 +18,32 @@ namespace Ball_of_Duty_Server.Persistence
                 return p;
             }
         }
+
+        public static Account CreateAccount(string username, string nickname, int playerId, byte[] salt, byte[] hash)
+        {
+            using (DatabaseContainer dc = new DatabaseContainer())
+            {
+                if (dc.Accounts.FirstOrDefault(a => a.Username == username) != null)
+                {
+                    throw new ArgumentException($"Username: {username} is already taken");
+                }
+
+                Player player = dc.Players.FirstOrDefault(p => p.Id == playerId) ?? CreatePlayer(nickname);
+
+                Account account = new Account()
+                {
+                    Username = username,
+                    Player = player,
+                    Salt = Encoding.ASCII.GetString(salt),
+                    Hash = Encoding.ASCII.GetString(hash)
+                };
+
+                player.Account = account;
+
+                dc.Accounts.Add(account);
+                dc.SaveChanges();
+                return account;
+            }
+        }
     }
 }
