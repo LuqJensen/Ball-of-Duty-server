@@ -38,7 +38,11 @@ namespace Ball_of_Duty_Server.Domain.Entities
                 if (victim.Id == OwnerId)
                     return;
 
-                victim.Health.TakeDamage(Damage);
+                victim.Health.TakeDamage(Damage, OwnerId);
+                Destroy();
+            }
+            else if (other is Wall)
+            {
                 Destroy();
             }
         }

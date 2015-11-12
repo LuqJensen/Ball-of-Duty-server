@@ -187,5 +187,23 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 SendTcp(ms.ToArray());
             }
         }
+
+        public void KillNotification(int victimId, int killerId)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.Write((byte)ASCII.SOH);
+                bw.Write((byte)Opcodes.KILL_NOTIFICATION);
+                bw.Write((byte)ASCII.STX);
+                bw.Write(victimId);
+                bw.Write(killerId);
+
+                bw.Write((byte)ASCII.EOT);
+                SendTcp(ms.ToArray());
+            }
+        }
+
+
     }
 }
