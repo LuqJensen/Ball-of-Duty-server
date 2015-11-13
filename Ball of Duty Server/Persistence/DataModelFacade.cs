@@ -12,10 +12,10 @@ namespace Ball_of_Duty_Server.Persistence
         {
             using (DatabaseContainer dc = new DatabaseContainer())
             {
-                Player p = new Player() { Nickname = nickname }; // TODO: dynamic account.
-                dc.Players.Add(p);
+                Player player = new Player() { Nickname = nickname }; // TODO: dynamic account.
+                dc.Players.Add(player);
                 dc.SaveChanges();
-                return p;
+                return player;
             }
         }
 

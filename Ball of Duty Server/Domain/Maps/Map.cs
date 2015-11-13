@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Timers;
 using System.Windows;
+using Ball_of_Duty_Server.DAO;
 using Ball_of_Duty_Server.Domain.Communication;
 using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.DTO;
@@ -82,21 +84,28 @@ namespace Ball_of_Duty_Server.Domain.Maps
                 go.Update(gameobjects);
             }
             Broker.WritePositionUpdate(GetPositions());
-            Broker.SendScoreUpdate(GetCharacters());
+            Broker.WriteHealthUpdate(GetHealthObjects());
+            Broker.WriteScoreUpdate(GetScoreObjects());
+            //TODO Shouldnt be send each update, Health and score doesnt at all update that many times.
         }
 
-        private List<Character> GetCharacters()
+        private List<GameObjectDAO> GetHealthObjects()
         {
-            List<Character> characters = new List<Character>();
-            foreach (var go in GameObjects.Values)
+            return GameObjects.Values.OfType<Character>().Select(character => new GameObjectDAO()
             {
-                if (go is Character)
-                {
-                    Character character = (Character)go;
-                    characters.Add(character);
-                }
-            }
-            return characters;
+                MaxHealth = character.Health.Max, // Yes max health can/should change as you get higher score.
+                Health = character.Health.Value,
+                Id = character.Id
+            }).ToList();
+        }
+
+        private List<GameObjectDAO> GetScoreObjects()
+        {
+            return GameObjects.Values.OfType<Character>().Select(character => new GameObjectDAO()
+            {
+                Score = character.Score,
+                Id = character.Id
+            }).ToList();
         }
 
         public int AddBullet(double x, double y, double velocityX, double velocityY, double radius, int damage,
@@ -147,22 +156,20 @@ namespace Ball_of_Duty_Server.Domain.Maps
             return gameObjects.ToArray();
         }
 
-        private List<ObjectPosition> GetPositions()
+        private List<GameObjectDAO> GetPositions()
         {
-            var positions = new List<ObjectPosition>();
-            foreach (var go in GameObjects.Values)
-            {
-                if (go is Bullet || go is Wall)
+            return (
+                from go in GameObjects.Values
+                where !(go is Bullet) && !(go is Wall)
+                select new GameObjectDAO()
                 {
-                    continue;
-                }
-                positions.Add(new ObjectPosition(go.Id, go.Body.Position));
-            }
-            return positions;
+                    Id = go.Id,
+                    X = go.Body.Position.X,
+                    Y = go.Body.Position.Y
+                }).ToList();
         }
 
         private void CheckTimeouts(object sender, ElapsedEventArgs e)
-            // An idea to handle it, not sure i like it too much.
         {
             if (_gameObjectsActive.Count == 0)
                 return;
@@ -171,7 +178,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
             foreach (var go in GameObjects.Values)
             {
-                if (go is Wall)
+                if (go is Wall || go is Bullet) // Bullet needs anbother kind of timeout check
                 {
                     continue;
                 }
@@ -186,10 +193,26 @@ namespace Ball_of_Duty_Server.Domain.Maps
             {
                 Console.WriteLine("removing " + rto);
                 GameObject go;
-                GameObjects.TryRemove(rto, out go);
+                if (GameObjects.TryGetValue(rto, out go))
+                {
+                    if (go.Destroy())
+                    {
+                        RemoveObject(go.Id);
+                    }
+                }
             }
 
             _gameObjectsActive.Clear();
+        }
+
+        private void RemoveObject(int id)
+        {
+            GameObject go;
+            if (GameObjects.TryRemove(id, out go))
+            {
+                Broker.WriteObjectDestruction(go.Id);
+                go.UnRegister(this);
+            }
         }
 
         public void UpdatePosition(Point position, int goId)
@@ -205,7 +228,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
         public void Update(Observable observable)
         {
             GameObject destroyed = (GameObject)observable;
-            GameObjects.TryRemove(destroyed.Id, out destroyed);
+            RemoveObject(destroyed.Id);
         }
 
         /// <summary>
@@ -228,7 +251,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
                     Character killer = (Character)go;
                     killer.AddKill(victim);
                     Broker.KillNotification(victim.Id, killer.Id);
-                    victim.Destroy();
+                    RemoveObject(victim.Id);
+
                 }
                 else
                 {
@@ -245,9 +269,10 @@ namespace Ball_of_Duty_Server.Domain.Maps
         /// <param name="e"></param>
         public void DecayScores(object sender, ElapsedEventArgs e)
         {
-            foreach (Character character in GetCharacters())
+            foreach (GameObject go in GameObjects.Values)
             {
-                character.DecayScore();
+                Character character = go as Character;
+                character?.DecayScore();
             }
         }
     }

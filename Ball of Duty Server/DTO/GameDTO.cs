@@ -9,6 +9,7 @@ namespace Ball_of_Duty_Server.DTO
     public class GameDTO
     {
         public GameObjectDTO[] GameObjects;
+        public PlayerDTO[] Players;
         public int GameId;
         public int CharacterId;
         public string IPAddress;
