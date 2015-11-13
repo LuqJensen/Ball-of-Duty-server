@@ -14,15 +14,20 @@ using Timer = System.Timers.Timer;
 
 namespace Ball_of_Duty_Server.Domain.Maps
 {
-    public class Map : IObserver
+    public class Map
     {
         private ConcurrentDictionary<int, bool> _gameObjectsActive;
         private Thread _updateThread;
+        private long _lastUpdate;
+        // The precision of DateTime.Ticks is given in 100's of nanoseconds as stated here:
+        // https://msdn.microsoft.com/en-us/library/system.datetime.ticks(v=vs.110).aspx
+        private const long DATETIME_TICKS_TO_MILLISECONDS = 10000;
+        private LightEvent characterUpdateEvent;
+        private LightEvent timeoutEvent;
 
         public int Width { get; set; }
 
         public int Height { get; set; }
-
 
         public ConcurrentDictionary<int, GameObject> GameObjects { get; set; } =
             new ConcurrentDictionary<int, GameObject>();
@@ -53,16 +58,9 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
         public void Activate()
         {
-            Timer timeoutCheck = new Timer();
-            timeoutCheck.Elapsed += CheckTimeouts;
-            timeoutCheck.Interval = 10000;
-            timeoutCheck.Enabled = true;
-
-            Timer decayCheck = new Timer();
-            decayCheck.Elapsed += DecayScores;
-            decayCheck.Interval = 5000;
-            decayCheck.Enabled = true;
-
+            timeoutEvent = new LightEvent(10000, CheckTimeouts);
+            characterUpdateEvent = new LightEvent(300, CharacterStatUpdate); // every 300ms.
+            _lastUpdate = DateTime.Now.Ticks;
             _gameObjectsActive = new ConcurrentDictionary<int, bool>();
             while (true)
             {
@@ -76,17 +74,27 @@ namespace Ball_of_Duty_Server.Domain.Maps
             _updateThread.Interrupt();
         }
 
+        private void CharacterStatUpdate()
+        {
+            Broker.WriteHealthUpdate(GetHealthObjects());
+            Broker.WriteScoreUpdate(GetScoreObjects());
+        }
+
         public void Update()
         {
+            long currentTime = DateTime.Now.Ticks;
+            long deltaTime = (currentTime - _lastUpdate) / DATETIME_TICKS_TO_MILLISECONDS;
+            _lastUpdate = currentTime;
+
             var gameobjects = GameObjects.Values;
             foreach (GameObject go in gameobjects)
             {
-                go.Update(gameobjects);
+                go.Update(deltaTime, gameobjects);
             }
             Broker.WritePositionUpdate(GetPositions());
-            Broker.WriteHealthUpdate(GetHealthObjects());
-            Broker.WriteScoreUpdate(GetScoreObjects());
-            //TODO Shouldnt be send each update, Health and score doesnt at all update that many times.
+
+            characterUpdateEvent.Update(deltaTime);
+            timeoutEvent.Update(deltaTime);
         }
 
         private List<GameObjectDAO> GetHealthObjects()
@@ -111,49 +119,42 @@ namespace Ball_of_Duty_Server.Domain.Maps
         public int AddBullet(double x, double y, double velocityX, double velocityY, double radius, int damage,
             int ownerId)
         {
-            Bullet bullet = new Bullet(new Point(x, y), new Vector(velocityX, velocityY), radius, damage, ownerId);
-            GameObjects.TryAdd(bullet.Id, bullet);
-            bullet.Register(this);
-            return bullet.Id;
+            GameObject owner;
+            if (GameObjects.TryGetValue(ownerId, out owner))
+            {
+                Bullet bullet = new Bullet(new Point(x, y), new Vector(velocityX, velocityY), radius, damage, owner);
+                if (!GameObjects.TryAdd(bullet.Id, bullet))
+                {
+                    Console.WriteLine($"Bullet {bullet.Id} dongoofed");
+                    return 0;
+                }
+                bullet.Register(Observation.EXTERMINATION, this, ExterminationNotification);
+                return bullet.Id;
+            }
+            return 0;
         }
-
 
         public Character AddCharacter()
         {
             Character c = new Character();
-            GameObjects.TryAdd(c.Id, c);
-            c.Register(this);
-            return c;
-        }
-
-        public void RemoveCharacter(int characterId)
-        {
-            GameObject character;
-            if (GameObjects.TryRemove(characterId, out character))
+            if (GameObjects.TryAdd(c.Id, c))
             {
-                character.UnRegister(this);
+                c.Register(Observation.KILLING, this, ExterminationNotification);
             }
+            return c;
         }
 
         public GameObjectDTO[] ExportGameObjects()
         {
-            List<GameObjectDTO> gameObjects = new List<GameObjectDTO>();
-
-            foreach (GameObject go in GameObjects.Values)
-            {
-                BodyDTO body = new BodyDTO
+            return (from go in GameObjects.Values
+                let body = new BodyDTO
                 {
                     Position = new PointDTO { X = go.Body.Position.X, Y = go.Body.Position.Y },
                     Width = go.Body.Width,
                     Height = go.Body.Height,
                     Type = (int)go.Body.Type
-                };
-
-                gameObjects.Add(new GameObjectDTO { Id = go.Id, Body = body });
-            }
-
-
-            return gameObjects.ToArray();
+                }
+                select new GameObjectDTO { Id = go.Id, Body = body }).ToArray();
         }
 
         private List<GameObjectDAO> GetPositions()
@@ -169,7 +170,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
                 }).ToList();
         }
 
-        private void CheckTimeouts(object sender, ElapsedEventArgs e)
+        private void CheckTimeouts()
         {
             if (_gameObjectsActive.Count == 0)
                 return;
@@ -178,7 +179,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
             foreach (var go in GameObjects.Values)
             {
-                if (go is Wall || go is Bullet) // Bullet needs anbother kind of timeout check
+                if (!(go is Character))
                 {
                     continue;
                 }
@@ -205,13 +206,29 @@ namespace Ball_of_Duty_Server.Domain.Maps
             _gameObjectsActive.Clear();
         }
 
-        private void RemoveObject(int id)
+        public void ExterminationNotification(Observable observable, object data)
+        {
+            GameObject victim = (GameObject)observable;
+
+            GameObject killer = data as GameObject;
+            if (killer != null)
+            {
+                Broker.KillNotification(victim.Id, killer.Id);
+            }
+            else
+            {
+                Console.WriteLine($"Gameobject {victim.Id} died a natural death.");
+            }
+            RemoveObject(victim.Id);
+        }
+
+        public void RemoveObject(int id)
         {
             GameObject go;
             if (GameObjects.TryRemove(id, out go))
             {
                 Broker.WriteObjectDestruction(go.Id);
-                go.UnRegister(this);
+                go.UnregisterAll(this);
             }
         }
 
@@ -222,57 +239,6 @@ namespace Ball_of_Duty_Server.Domain.Maps
             {
                 _gameObjectsActive.TryAdd(go.Id, true);
                 go.Body.Position = position;
-            }
-        }
-
-        public void Update(Observable observable)
-        {
-            GameObject destroyed = (GameObject)observable;
-            RemoveObject(destroyed.Id);
-        }
-
-        /// <summary>
-        /// Called when an observable object calls the overloaded NotifyObservers which takes data.
-        /// If observable.hp is below 1, killer is found using data (which should be killerID)
-        /// On the killer character AddKill is then called
-        /// </summary>
-        /// <param name="observable"></param>
-        /// <param name="data"></param>
-        public void Update(Observable observable, object data)
-        {
-            Character victim = observable as Character;
-            // TODO normal cast, we want an exception if we pass an invalid object to this method.
-            if (victim != null && victim.Health.Value < 1)
-            {
-                int killerId = Convert.ToInt32(data);
-                GameObject go;
-                if (GameObjects.TryGetValue(killerId, out go))
-                {
-                    Character killer = (Character)go;
-                    killer.AddKill(victim);
-                    Broker.KillNotification(victim.Id, killer.Id);
-                    RemoveObject(victim.Id);
-
-                }
-                else
-                {
-                    Console.WriteLine($"Map observed the death of {victim.Id}, but failed to find the killer.");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Checks for each GameObject in GameObjects, if it's a Character.
-        /// If it is, the DecayScore is called on the Character object.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void DecayScores(object sender, ElapsedEventArgs e)
-        {
-            foreach (GameObject go in GameObjects.Values)
-            {
-                Character character = go as Character;
-                character?.DecayScore();
             }
         }
     }

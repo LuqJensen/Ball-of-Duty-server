@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using Ball_of_Duty_Server.Domain.Physics.Collision;
+using Ball_of_Duty_Server.Utility;
 
 namespace Ball_of_Duty_Server.Domain.Entities
 {
@@ -10,16 +11,19 @@ namespace Ball_of_Duty_Server.Domain.Entities
         public double Score { get; set; } = 0;
         public const int MAX_HP = 107;
 
-        private double _scoreUP = 100;
-        private double _scoreUPFactor = 0.1;
-        private double _scoreDecayFactor = 0.01;
-        private double _allowedScoreBeforeDecay = 400;
+        private const double SCORE_UP = 100;
+        private const double SCORE_UP_FACTOR = 0.1;
+        private const double SCORE_DECAY_FACTOR = 0.01;
+        private const double ALLOWED_SCORE_BEFORE_DECAY = 400;
         private int _killCount = 0;
+        private const long SCORE_DECAY_INTERVAL = 5000;
+        private readonly LightEvent _decayScoreEvent;
 
         public Character()
         {
             Body = new Body(this, new Point(0, 0), 50, 50) { Type = Body.Geometry.CIRCLE }; // TODO should be dynamic
             Health = new Health(this, MAX_HP);
+            _decayScoreEvent = new LightEvent(SCORE_DECAY_INTERVAL, DecayScore);
         }
 
         /// <summary>
@@ -32,8 +36,8 @@ namespace Ball_of_Duty_Server.Domain.Entities
         public void AddKill(Character victim)
         {
             ++_killCount;
-            Score += _scoreUP + (victim.Score * _scoreUPFactor);
-            NotifyObservers(victim);
+            Score += SCORE_UP + (victim.Score * SCORE_UP_FACTOR);
+            NotifyObservers(Observation.ACQUISITION_OF_GOLD, victim);
         }
 
         /// <summary>
@@ -41,15 +45,31 @@ namespace Ball_of_Duty_Server.Domain.Entities
         /// </summary>
         public void DecayScore()
         {
-            if (Score > _allowedScoreBeforeDecay)
+            if (Score > ALLOWED_SCORE_BEFORE_DECAY)
             {
-                Score -= (Score * _scoreDecayFactor);
+                Score -= (Score * SCORE_DECAY_FACTOR);
             }
         }
 
 
         public void CollideWith(ICollidable other)
         {
+        }
+
+        public override void Update(long deltaTime, ICollection<GameObject> values)
+        {
+            _decayScoreEvent.Update(deltaTime);
+        }
+
+        public override bool Destroy(GameObject exterminator)
+        {
+            if (base.Destroy(exterminator))
+            {
+                Character killer = exterminator as Character;
+                killer?.AddKill(this);
+                return true;
+            }
+            return false;
         }
     }
 }

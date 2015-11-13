@@ -72,8 +72,8 @@
     <Compile Include="Domain\Entities\Wall.cs" />
     <Compile Include="Domain\Entities\Character.cs" />
     <Compile Include="Domain\Health.cs" />
-    <Compile Include="Utility\IObserver.cs" />
     <Compile Include="Domain\Maps\MapGenerator.cs" />
+    <Compile Include="Utility\LightEvent.cs" />
     <Compile Include="Utility\Observable.cs" />
     <Compile Include="Utility\ComparisonExtensions.cs" />
     <Compile Include="DTO\AccountDTO.cs" />
@@ -118,6 +118,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Domain\View.cs" />
     <Compile Include="Services\IBoDService.cs" />
+    <Compile Include="Utility\Observation.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

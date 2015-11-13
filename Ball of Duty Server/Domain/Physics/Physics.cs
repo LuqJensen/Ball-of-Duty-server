@@ -12,7 +12,7 @@ namespace Ball_of_Duty_Server.Domain.Physics
     {
         private double _topSpeed;
         private long _lastUpdate;
-        private const int NANOSECOND_TO_SECOND = 10000000;
+        private const int MILLISECOND_TO_SECOND = 1000;
 
         public Vector Velocity { get; set; }
 
@@ -26,11 +26,9 @@ namespace Ball_of_Duty_Server.Domain.Physics
             Velocity = velocity;
         }
 
-        public void Update()
+        public void Update(long deltaTime)
         {
-            long currentTime = DateTime.Now.Ticks;
-            double deltaSeconds = ((double)currentTime - _lastUpdate) / NANOSECOND_TO_SECOND;
-            _lastUpdate = currentTime;
+            double deltaSeconds = ((double)deltaTime) / MILLISECOND_TO_SECOND;
 
             Point p = GameObject.Body.Position;
             p.Offset(Velocity.X * deltaSeconds, Velocity.Y * deltaSeconds);
@@ -46,7 +44,6 @@ namespace Ball_of_Duty_Server.Domain.Physics
 
             foreach (var other in gameObjects)
             {
-                // TODO: if we want players to be able to kill each other, then this optimization will break that "feature"
                 if (GameObject.Destroyed)
                 {
                     return;

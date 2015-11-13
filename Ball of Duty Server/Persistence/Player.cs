@@ -16,6 +16,7 @@ namespace Ball_of_Duty_Server.Persistence
     {
         public int Id { get; set; }
         public string Nickname { get; set; }
+        public int Gold { get; set; }
     
         public virtual Account Account { get; set; }
     }

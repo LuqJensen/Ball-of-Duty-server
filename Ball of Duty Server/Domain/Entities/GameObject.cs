@@ -18,26 +18,26 @@ namespace Ball_of_Duty_Server.Domain.Entities
             Id = ++_gameObjectsCreated; // Important to start at 1. 0 will be used as default value.
         }
 
-        public virtual void Update(ICollection<GameObject> values)
+        public virtual void Update(long deltaTime, ICollection<GameObject> values)
         {
         }
 
         public bool Destroy()
         {
             if (Destroyed)
-                return true;
+                return false;
 
-            NotifyObservers();
+            NotifyObservers(Observation.EXTERMINATION);
             Destroyed = true;
             return Destroyed;
         }
 
-        public bool Destroy(int killerId)
+        public virtual bool Destroy(GameObject exterminator)
         {
             if (Destroyed)
-                return true;
+                return false;
 
-            NotifyObservers(killerId);
+            NotifyObservers(Observation.KILLING, exterminator);
             Destroyed = true;
             return Destroyed;
         }

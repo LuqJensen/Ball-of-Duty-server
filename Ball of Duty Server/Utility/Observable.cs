@@ -10,37 +10,47 @@ namespace Ball_of_Duty_Server.Utility
 {
     public class Observable
     {
-        private ConcurrentDictionary<IObserver, bool> _observers;
+        private static readonly Observation[] _observations = (Observation[])Enum.GetValues(typeof (Observation));
+
+        private readonly ConcurrentDictionary<Observation, ConcurrentDictionary<object, Action<Observable, object>>>
+            _observers;
 
         public Observable()
         {
-            _observers = new ConcurrentDictionary<IObserver, bool>();
-        }
-
-        public void Register(IObserver observer)
-        {
-            _observers.TryAdd(observer, true);
-        }
-
-        public void UnRegister(IObserver observer)
-        {
-            bool b;
-            _observers.TryRemove(observer, out b);
-        }
-
-        protected void NotifyObservers()
-        {
-            foreach (IObserver i in _observers.Keys)
+            _observers =
+                new ConcurrentDictionary<Observation, ConcurrentDictionary<object, Action<Observable, object>>>();
+            foreach (Observation v in _observations)
             {
-                i.Update(this);
+                _observers.TryAdd(v, new ConcurrentDictionary<object, Action<Observable, object>>());
             }
         }
 
-        protected void NotifyObservers(object data)
+
+        public void Register(Observation observation, object observer, Action<Observable, object> action)
         {
-            foreach (IObserver i in _observers.Keys)
+            _observers[observation].TryAdd(observer, action);
+        }
+
+        public void Unregister(Observation observation, object observer)
+        {
+            Action<Observable, object> action;
+            _observers[observation].TryRemove(observer, out action);
+        }
+
+        public void UnregisterAll(object observer)
+        {
+            foreach (var v in _observers.Values)
             {
-                i.Update(this, data);
+                Action<Observable, object> action;
+                v.TryRemove(observer, out action);
+            }
+        }
+
+        protected void NotifyObservers(Observation observation, object data = null)
+        {
+            foreach (var i in _observers[observation])
+            {
+                i.Value(this, data);
             }
         }
     }

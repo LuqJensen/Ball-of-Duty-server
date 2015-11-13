@@ -5,28 +5,38 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Ball_of_Duty_Server.Domain.Physics.Collision;
+using Ball_of_Duty_Server.Utility;
 
 namespace Ball_of_Duty_Server.Domain.Entities
 {
     public class Bullet : GameObject, ICollidable
     {
+        private LightEvent _lifeTimeEvent;
         public int Damage { get; set; }
-        public int OwnerId { get; set; }
+        public GameObject Owner { get; set; }
 
-        public Bullet(Point position, Vector velocity, double radius, int damage, int ownerId)
+        public Bullet(Point position, Vector velocity, double radius, int damage, GameObject owner)
         {
-            OwnerId = ownerId;
+            Owner = owner;
             Damage = damage;
             Body = new Body(this, position, radius, radius) { Type = Body.Geometry.RECTANGLE };
             Physics = new Physics.Physics(this, 200, velocity);
+            _lifeTimeEvent = new LightEvent(5000, DestroyEvent);
         }
 
-        public override void Update(ICollection<GameObject> values)
+        private void DestroyEvent()
         {
+            Destroy();
+        }
+
+        public override void Update(long deltaTime, ICollection<GameObject> values)
+        {
+            _lifeTimeEvent.Update(deltaTime); // this may destroy the bullet.
+
             if (Destroyed)
                 return;
 
-            Physics.Update();
+            Physics.Update(deltaTime);
             Physics.UpdateWithCollision(values);
         }
 
@@ -35,10 +45,10 @@ namespace Ball_of_Duty_Server.Domain.Entities
             if (other is Character)
             {
                 Character victim = (Character)other;
-                if (victim.Id == OwnerId)
+                if (victim.Id == Owner.Id)
                     return;
 
-                victim.Health.TakeDamage(Damage, OwnerId);
+                victim.Health.TakeDamage(Damage, Owner);
                 Destroy();
             }
             else if (other is Wall)
@@ -49,7 +59,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
 
         public override string ToString()
         {
-            return $"[[Damage: {Damage}] [Owner: {OwnerId}] [Body: {Body}][Id: {Id}]";
+            return $"[[Damage: {Damage}] [Owner: {Owner}] [Body: {Body}][Id: {Id}]";
         }
     }
 }

@@ -20,12 +20,12 @@ namespace Ball_of_Duty_Server.Domain
             Value = maxHealth;
         }
 
-        public void TakeDamage(int amount, int shooterId)
+        public void TakeDamage(int amount, GameObject shooter)
         {
             Value -= amount;
             if (Value < 1)
             {
-                GameObject.Destroy(shooterId);
+                GameObject.Destroy(shooter);
             }
         }
 
