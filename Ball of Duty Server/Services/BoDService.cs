@@ -132,6 +132,7 @@ namespace Ball_of_Duty_Server.Services
 
             return new GameDTO
             {
+                Players = game.ExportPlayers(),
                 GameObjects = map.ExportGameObjects(),
                 CharacterId = player.CurrentCharacter.Id,
                 GameId = game.Id

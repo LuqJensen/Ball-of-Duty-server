@@ -91,7 +91,6 @@
     <Compile Include="DTO\CharacterDTO.cs" />
     <Compile Include="DTO\GameObjectDTO.cs" />
     <Compile Include="DTO\GameDTO.cs" />
-    <Compile Include="DTO\ObjectPosition.cs" />
     <Compile Include="DTO\PlayerDTO.cs" />
     <Compile Include="DTO\PointDTO.cs" />
     <Compile Include="Persistence\Account.cs">

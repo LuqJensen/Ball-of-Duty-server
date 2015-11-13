@@ -55,7 +55,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             } while (reader.ReadByte() == (byte)ASCII.US);
         }
 
-        public void WritePositionUpdate(List<ObjectPosition> positions)
+        public void WritePositionUpdate(List<GameObjectDAO> positions)
         {
             if (positions.Count == 0)
             {
@@ -69,10 +69,10 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write((byte)ASCII.STX);
                 for (int i = 0; i < positions.Count; ++i)
                 {
-                    ObjectPosition op = positions[i];
+                    GameObjectDAO op = positions[i];
                     bw.Write(op.Id);
-                    bw.Write(op.Position.X);
-                    bw.Write(op.Position.Y);
+                    bw.Write(op.X);
+                    bw.Write(op.Y);
                     if (i != positions.Count - 1)
                     {
                         bw.Write((byte)ASCII.US);
@@ -83,7 +83,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
-        public void SendScoreUpdate(List<Character> characters)
+        public void WriteScoreUpdate(List<GameObjectDAO> characters)
         {
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
@@ -93,7 +93,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write((byte)ASCII.STX);
                 for (int i = 0; i < characters.Count; i++)
                 {
-                    Character character = characters[i];
+                    GameObjectDAO character = characters[i];
                     bw.Write(character.Id);
                     bw.Write(character.Score);
                     if (i != characters.Count - 1)
@@ -108,8 +108,46 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
-        public void SendHealthUpdate()
+
+        public void WriteHealthUpdate(List<GameObjectDAO> characters)
         {
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.Write((byte)ASCII.SOH);
+                bw.Write((byte)Opcodes.BROADCAST_HEALTH_UPDATE);
+                bw.Write((byte)ASCII.STX);
+                for (int i = 0; i < characters.Count; i++)
+                {
+                    GameObjectDAO character = characters[i];
+                    bw.Write(character.Id);
+                    bw.Write(character.MaxHealth);
+                    bw.Write(character.Health);
+                    if (i != characters.Count - 1)
+                    {
+                        bw.Write((byte)ASCII.US);
+                    }
+                }
+
+                bw.Write((byte)ASCII.EOT);
+
+                SendUdp(ms.ToArray());
+            }
+        }
+
+        public void WriteObjectDestruction(int objectId)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.Write((byte)ASCII.SOH);
+                bw.Write((byte)Opcodes.OBJECT_DESTRUCTION);
+                bw.Write((byte)ASCII.STX);
+                bw.Write(objectId);
+
+                bw.Write((byte)ASCII.EOT);
+                SendTcp(ms.ToArray());
+            }
         }
 
         public void WriteCreateCharacter(int playerId, GameObjectDAO charData, string ip, int preferedPort)
@@ -203,7 +241,5 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 SendTcp(ms.ToArray());
             }
         }
-
-
     }
 }

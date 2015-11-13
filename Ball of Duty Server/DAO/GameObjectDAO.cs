@@ -10,8 +10,13 @@ namespace Ball_of_Duty_Server.DAO
     {
         public double X { get; set; }
         public double Y { get; set; }
+
+        public double Score { get; set; }
         public double Width { get; set; }
         public double Height { get; set; }
         public int Id { get; set; }
+
+        public int MaxHealth { get; set; }
+        public int Health { get; set; }
     }
 }

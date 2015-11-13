@@ -22,22 +22,24 @@ namespace Ball_of_Duty_Server.Domain.Entities
         {
         }
 
-        public void Destroy()
+        public bool Destroy()
         {
             if (Destroyed)
-                return;
+                return true;
 
-            Destroyed = true;
             NotifyObservers();
+            Destroyed = true;
+            return Destroyed;
         }
 
-        public void Destroy(int killerId)
+        public bool Destroy(int killerId)
         {
             if (Destroyed)
-                return;
+                return true;
 
-            Destroyed = true;
             NotifyObservers(killerId);
+            Destroyed = true;
+            return Destroyed;
         }
     }
 }

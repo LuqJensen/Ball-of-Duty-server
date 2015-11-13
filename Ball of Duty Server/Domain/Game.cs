@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Ball_of_Duty_Server.DAO;
 using Ball_of_Duty_Server.Domain.Maps;
+using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Persistence;
 
 namespace Ball_of_Duty_Server.Domain
@@ -29,6 +30,23 @@ namespace Ball_of_Duty_Server.Domain
             };
 
             Map.Broker.WriteCreateCharacter(player.Id, data, clientIp, clientPort);
+        }
+
+        public PlayerDTO[] ExportPlayers()
+        {
+            List<PlayerDTO> players = new List<PlayerDTO>();
+
+            foreach (Player p in _players.Values)
+            {
+                players.Add(new PlayerDTO
+                {
+                    Id = p.Id,
+                    Nickname = p.Nickname
+                });
+            }
+
+
+            return players.ToArray();
         }
 
         public void RemovePlayer(int playerId)
