@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -20,11 +21,11 @@ namespace Ball_of_Duty_Server.Services
         {
         }
 
-        public static Dictionary<int, Game> Games { get; set; } = new Dictionary<int, Game>();
+        public static ConcurrentDictionary<int, Game> Games { get; set; } = new ConcurrentDictionary<int, Game>();
 
-        public static Dictionary<int, Game> PlayerIngame { get; set; } = new Dictionary<int, Game>(); // midlertidig
+        public static ConcurrentDictionary<int, Game> PlayerIngame { get; set; } = new ConcurrentDictionary<int, Game>(); // midlertidig
 
-        public static Dictionary<int, Player> OnlinePlayers { get; set; } = new Dictionary<int, Player>();
+        public static ConcurrentDictionary<int, Player> OnlinePlayers { get; set; } = new ConcurrentDictionary<int, Player>();
 
         /*private static string localIPAddress;
 
@@ -49,7 +50,7 @@ namespace Ball_of_Duty_Server.Services
         public PlayerDTO NewGuest(string nickname)
         {
             Player p = DataModelFacade.CreatePlayer(nickname);
-            OnlinePlayers.Add(p.Id, p);
+            OnlinePlayers.TryAdd(p.Id, p);
 
             return new PlayerDTO { Id = p.Id, Nickname = p.Nickname };
         }
@@ -88,7 +89,7 @@ namespace Ball_of_Duty_Server.Services
 
             Game game = new Game();
             Console.WriteLine("Newly created game id: " + game.Id);
-            Games.Add(game.Id, game);
+            Games.TryAdd(game.Id, game);
             return game;
         }
 
@@ -125,7 +126,7 @@ namespace Ball_of_Duty_Server.Services
             game.AddPlayer(player, clientIp, clientPort);
             if (!PlayerIngame.ContainsKey(player.Id)) //TODO: brug OnlinePlayers istedet
             {
-                PlayerIngame.Add(player.Id, game);
+                PlayerIngame.TryAdd(player.Id, game);
             }
 
             Console.WriteLine($"Current gameobjects: {map.GameObjects.Count}");
@@ -144,10 +145,9 @@ namespace Ball_of_Duty_Server.Services
         {
             // Removes the player from the game
             Game game;
-            if (PlayerIngame.TryGetValue(clientPlayerId, out game))
+            if (PlayerIngame.TryRemove(clientPlayerId, out game))
                 //if (Games.TryGetValue(gameId, out game)) //TODO: brug OnlinePlayers i stedet
             {
-                PlayerIngame.Remove(clientPlayerId); //TODO: brug OnlinePlayers istedet
                 game.RemovePlayer(clientPlayerId);
                 Console.WriteLine($"Player: {clientPlayerId} quit game: {game.Id}.");
             }
