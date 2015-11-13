@@ -1,5 +1,6 @@
 ﻿using Ball_of_Duty_Server.Domain.Entities;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,26 +10,27 @@ namespace Ball_of_Duty_Server.Utility
 {
     public class Observable
     {
-        private List<IObserver> _observers;
+        private ConcurrentDictionary<IObserver, bool> _observers;
 
         public Observable()
         {
-            _observers = new List<IObserver>();
+            _observers = new ConcurrentDictionary<IObserver, bool>();
         }
 
         public void Register(IObserver observer)
         {
-            _observers.Add(observer);
+            _observers.TryAdd(observer, true);
         }
 
         public void UnRegister(IObserver observer)
         {
-            _observers.Remove(observer);
+            bool b;
+            _observers.TryRemove(observer, out b);
         }
 
         protected void NotifyObservers()
         {
-            foreach (IObserver i in _observers)
+            foreach (IObserver i in _observers.Keys)
             {
                 i.Update(this);
             }
@@ -36,7 +38,7 @@ namespace Ball_of_Duty_Server.Utility
 
         protected void NotifyObservers(object data)
         {
-            foreach (IObserver i in _observers)
+            foreach (IObserver i in _observers.Keys)
             {
                 i.Update(this, data);
             }
