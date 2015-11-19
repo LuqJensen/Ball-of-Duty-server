@@ -150,7 +150,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
-        public void WriteCreateCharacter(int playerId, GameObjectDAO charData, string ip, int preferedPort)
+        public void WriteCreateCharacter(int playerId, GameObjectDAO charData, string ip, int preferedPort, int tcpPort)
         {
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
@@ -170,7 +170,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 SendTcp(ms.ToArray());
             }
 
-            AddTarget(playerId, ip, preferedPort);
+            AddTarget(playerId, ip, preferedPort, tcpPort);
         }
 
         public void WriteRemoveCharacter(int playerId, int characterId)
@@ -187,8 +187,6 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write((byte)ASCII.EOT);
                 SendTcp(ms.ToArray());
             }
-
-            RemoveTarget(playerId);
         }
 
         private void BulletCreationRequest(BinaryReader reader) // TODO split this in read and write.

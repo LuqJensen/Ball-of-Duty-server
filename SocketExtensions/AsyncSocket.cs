@@ -14,8 +14,6 @@ namespace SocketExtensions
 
         private bool _disposed = false;
         private Socket _socket;
-
-
         private SocketAwaitableEventWrapper _sender, _receiver;
 
         public AsyncSocket(Socket s)
@@ -27,15 +25,7 @@ namespace SocketExtensions
             this._receiver.EventArgs.SetBuffer(new byte[BUFFER_LENGTH], 0, BUFFER_LENGTH);
         }
 
-        public string GetIpAddress()
-        {
-            IPEndPoint remoteIpEndPoint = _socket.RemoteEndPoint as IPEndPoint;
-            if (remoteIpEndPoint != null)
-            {
-                return remoteIpEndPoint.Address + ":" + remoteIpEndPoint.Port;
-            }
-            return null;
-        }
+        public IPEndPoint IpEndPoint => _socket.RemoteEndPoint as IPEndPoint;
 
         public async Task<ReadResult> ReceiveAsync()
         {

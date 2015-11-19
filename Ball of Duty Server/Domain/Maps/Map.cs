@@ -3,14 +3,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Timers;
 using System.Windows;
 using Ball_of_Duty_Server.DAO;
 using Ball_of_Duty_Server.Domain.Communication;
 using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Utility;
-using Timer = System.Timers.Timer;
 
 namespace Ball_of_Duty_Server.Domain.Maps
 {

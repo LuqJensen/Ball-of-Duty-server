@@ -6,27 +6,37 @@ using System.Net.Sockets;
 using System.Windows;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Ball_of_Duty_Server.DAO;
-using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.Domain.Maps;
+using Ball_of_Duty_Server.Services;
 using SocketExtensions;
+using Timer = System.Timers.Timer;
 
 namespace Ball_of_Duty_Server.Domain.Communication
 {
     public partial class Broker
     {
-        private UdpClient _udpBroadcastSocket;
+        private const int SERVER_UDP_PORT = 15001;
+        private const int SERVER_TCP_PORT = 15010;
+        private const int SIO_UDP_CONNRESET = -1744830452;
+
         private IPEndPoint _ip; // Needs new port for each game
         private UdpClient _listener;
-        private ConcurrentDictionary<int, IPEndPoint> _targetEndPoints = new ConcurrentDictionary<int, IPEndPoint>();
+
+        private ConcurrentDictionary<IPEndPoint, PlayerEndPoint> _playerEndPoints =
+            new ConcurrentDictionary<IPEndPoint, PlayerEndPoint>();
+
+        private ConcurrentDictionary<IPEndPoint, bool> _udpEndPoints =
+            new ConcurrentDictionary<IPEndPoint, bool>();
 
         private ConcurrentDictionary<AsyncSocket, bool> _connectedClients =
             new ConcurrentDictionary<AsyncSocket, bool>();
 
-        private TcpListener _tcpListener = TcpListener.Create(15010); // TODO dynamic port
+        private TcpListener _tcpListener = TcpListener.Create(SERVER_TCP_PORT); // TODO dynamic port
 
         private BlockingCollection<byte[]> _tcpQueue = new BlockingCollection<byte[]>();
 
@@ -38,9 +48,10 @@ namespace Ball_of_Duty_Server.Domain.Communication
             Map = map;
             AddOpcodeMapping();
             _tcpListener.Start();
-            _udpBroadcastSocket = new UdpClient();
-            _ip = new IPEndPoint(IPAddress.Any, 15001);
+            _ip = new IPEndPoint(IPAddress.Any, SERVER_UDP_PORT);
             _listener = new UdpClient(_ip);
+            // http://stackoverflow.com/questions/5199026/c-sharp-async-udp-listener-socketexception
+            _listener.Client.IOControl((IOControlCode)SIO_UDP_CONNRESET, new byte[] { 0, 0, 0, 0 }, null);
 
             Thread t = new Thread(ReceiveUdp);
             t.Start();
@@ -80,22 +91,37 @@ namespace Ball_of_Duty_Server.Domain.Communication
             });
         }
 
-        private void AddTarget(int playerId, string ip, int preferedPort)
+        private void AddTarget(int playerId, string ip, int udpPort, int tcpPort)
         {
-            _targetEndPoints.TryAdd(playerId, new IPEndPoint(IPAddress.Parse(ip), preferedPort));
-        }
+            IPAddress ipAddress = IPAddress.Parse(ip);
 
-        public void RemoveTarget(int id)
-        {
-            IPEndPoint ip;
-            _targetEndPoints.TryRemove(id, out ip);
-        }
+            IPEndPoint tcpIpEp = new IPEndPoint(ipAddress, tcpPort);
+            IPEndPoint udpIpEp = new IPEndPoint(ipAddress, udpPort);
 
-        public void ReceiveUdp()
-        {
-            while (true)
+            if (_playerEndPoints.TryAdd(tcpIpEp, new PlayerEndPoint(udpIpEp, playerId)))
             {
-                Read(_listener.Receive(ref _ip));
+                _udpEndPoints.TryAdd(udpIpEp, false);
+            }
+        }
+
+        /// <summary>
+        /// Removes a target based on its tcp end point.
+        /// </summary>
+        /// <param name="iPeP"></param>
+        public void RemoveTarget(IPEndPoint iPeP)
+        {
+            PlayerEndPoint endPoint;
+            if (_playerEndPoints.TryRemove(iPeP, out endPoint))
+            {
+                bool b;
+                _udpEndPoints.TryRemove(endPoint.IpEndPoint, out b);
+
+                Game game;
+                if (BoDService.PlayerIngame.TryRemove(endPoint.PlayerId, out game))
+                {
+                    game.RemovePlayer(endPoint.PlayerId);
+                    //Console.WriteLine($"Player: {id} quit game: {game.Id}.");
+                }
             }
         }
 
@@ -131,7 +157,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             {
                 s = new AsyncSocket(socket);
                 _connectedClients.TryAdd(s, true);
-                Console.WriteLine("Client connected: " + s.GetIpAddress());
+                Console.WriteLine($"Client connected: {s.IpEndPoint?.ToString().Replace("::ffff:", "")}");
 
                 while (true)
                 {
@@ -142,7 +168,6 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
             catch (SocketException)
             {
-                Console.WriteLine("Someone disconnected");
             }
             finally
             {
@@ -151,11 +176,31 @@ namespace Ball_of_Duty_Server.Domain.Communication
                     bool b;
                     if (_connectedClients.TryRemove(s, out b))
                     {
-                        Console.WriteLine($"Client: {s.GetIpAddress()} disconnected.");
+                        IPEndPoint ip = s.IpEndPoint;
+                        if (ip != null)
+                        {
+                            Console.WriteLine($"Client: {ip.ToString().Replace("::ffff:", "")} disconnected.");
+                            RemoveTarget(ip);
+                        }
                     }
                     s.Dispose();
                 }
                 socket?.Close();
+            }
+        }
+
+
+        public void ReceiveUdp()
+        {
+            while (true)
+            {
+                IPEndPoint ipEp = null;
+                Read(_listener.Receive(ref ipEp));
+
+                if (_udpEndPoints.ContainsKey(ipEp))
+                {
+                    _udpEndPoints[ipEp] = true;
+                }
             }
         }
 
@@ -171,9 +216,12 @@ namespace Ball_of_Duty_Server.Domain.Communication
 
         public void SendUdp(byte[] b)
         {
-            foreach (IPEndPoint targetEndPoint in _targetEndPoints.Values)
+            foreach (var targetEndPoint in _udpEndPoints)
             {
-                _udpBroadcastSocket.Send(b, b.Length, targetEndPoint);
+                if (targetEndPoint.Value)
+                {
+                    _listener.Send(b, b.Length, targetEndPoint.Key);
+                }
             }
         }
     }

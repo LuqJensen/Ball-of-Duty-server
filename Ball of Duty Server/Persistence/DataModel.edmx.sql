@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, 2012 and Azure
 -- --------------------------------------------------
--- Date Created: 11/14/2015 00:40:24
+-- Date Created: 11/20/2015 09:34:39
 -- Generated from EDMX file: C:\Users\lucas\Documents\BOD-Server\Ball of Duty Server\Persistence\DataModel.edmx
 -- --------------------------------------------------
 

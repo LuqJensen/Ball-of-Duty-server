@@ -17,10 +17,6 @@ namespace Ball_of_Duty_Server.Services
 {
     public class BoDService : IBoDService
     {
-        public BoDService()
-        {
-        }
-
         public static ConcurrentDictionary<int, Game> Games { get; set; } = new ConcurrentDictionary<int, Game>();
 
         public static ConcurrentDictionary<int, Game> PlayerIngame { get; set; } = new ConcurrentDictionary<int, Game>(); // midlertidig
@@ -47,12 +43,21 @@ namespace Ball_of_Duty_Server.Services
             }
         }*/
 
+        static BoDService()
+        {
+            GetGame();
+        }
+
         public PlayerDTO NewGuest(string nickname)
         {
             Player p = DataModelFacade.CreatePlayer(nickname);
             OnlinePlayers.TryAdd(p.Id, p);
 
-            return new PlayerDTO { Id = p.Id, Nickname = p.Nickname };
+            return new PlayerDTO
+            {
+                Id = p.Id,
+                Nickname = p.Nickname
+            };
         }
 
         public AccountDTO NewAccount(string username, string nickname, int playerId, byte[] salt, byte[] hash)
@@ -68,7 +73,11 @@ namespace Ball_of_Duty_Server.Services
                 return new AccountDTO()
                 {
                     Id = a.Id,
-                    Player = new PlayerDTO() { Id = a.Player.Id, Nickname = a.Player.Nickname }
+                    Player = new PlayerDTO()
+                    {
+                        Id = a.Player.Id,
+                        Nickname = a.Player.Nickname
+                    }
                 };
             }
             catch
@@ -77,7 +86,7 @@ namespace Ball_of_Duty_Server.Services
             }
         }
 
-        private Game GetGame()
+        private static Game GetGame()
         {
             foreach (Game g in Games.Values)
             {
@@ -93,17 +102,16 @@ namespace Ball_of_Duty_Server.Services
             return game;
         }
 
-        public GameDTO JoinGame(int clientPlayerId, int clientPort)
+        public GameDTO JoinGame(int clientPlayerId, int clientPort, int clientTcpPort)
+            //TODO Needs parameter for both client TCP port and UDP port, if we want several clients to be able to be on one computer.
         {
             Player player;
-
-
             if (!OnlinePlayers.TryGetValue(clientPlayerId, out player))
             {
                 return new GameDTO(); //TODO: probably not the smartest, but necessary.
             }
 
-            Console.WriteLine($"Player: {clientPlayerId} tried to join game.");
+//            Console.WriteLine($"Player: {clientPlayerId} tried to join game.");
 
             Game game = GetGame();
             Map map = game.Map;
@@ -112,8 +120,7 @@ namespace Ball_of_Duty_Server.Services
 
             OperationContext context = OperationContext.Current;
             MessageProperties properties = context.IncomingMessageProperties;
-            RemoteEndpointMessageProperty endpoint =
-                properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
+            RemoteEndpointMessageProperty endpoint = properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
             string clientIp = endpoint?.Address;
 
             if (clientIp == null) //TODO: probably not the smartest, but necessary.
@@ -123,7 +130,7 @@ namespace Ball_of_Duty_Server.Services
 
             #endregion
 
-            game.AddPlayer(player, clientIp, clientPort);
+            game.AddPlayer(player, clientIp, clientPort, clientTcpPort);
             if (!PlayerIngame.ContainsKey(player.Id)) //TODO: brug OnlinePlayers istedet
             {
                 PlayerIngame.TryAdd(player.Id, game);
@@ -149,7 +156,7 @@ namespace Ball_of_Duty_Server.Services
                 //if (Games.TryGetValue(gameId, out game)) //TODO: brug OnlinePlayers i stedet
             {
                 game.RemovePlayer(clientPlayerId);
-                Console.WriteLine($"Player: {clientPlayerId} quit game: {game.Id}.");
+//                Console.WriteLine($"Player: {clientPlayerId} quit game: {game.Id}.");
             }
             else
             {
