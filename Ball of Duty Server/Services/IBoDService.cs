@@ -17,13 +17,12 @@ namespace Ball_of_Duty_Server.Services
         PlayerDTO NewGuest(string nickname);
 
         [OperationContract]
-        GameDTO JoinGame(int clientPlayerId, int clientPort);
+        GameDTO JoinGame(int clientPlayerId, int clientPort, int clientTcpPort);
 
         [OperationContract]
         AccountDTO NewAccount(string username, string nickname, int playerId, byte[] salt, byte[] hash);
 
         [OperationContract]
         void QuitGame(int clientPlayerId);
-
     }
 }

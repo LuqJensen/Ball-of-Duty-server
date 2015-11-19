@@ -15,7 +15,7 @@ namespace Ball_of_Duty_Server.Domain
 
         private Dictionary<int, Player> _players = new Dictionary<int, Player>();
 
-        public void AddPlayer(Player player, string clientIp, int clientPort)
+        public void AddPlayer(Player player, string clientIp, int clientPort, int clientTcpPort)
         {
             _players.Add(player.Id, player);
             player.CurrentCharacter = Map.AddCharacter(); // TODO data to character creation should be dynamic
@@ -29,7 +29,7 @@ namespace Ball_of_Duty_Server.Domain
                 Id = player.CurrentCharacter.Id
             };
 
-            Map.Broker.WriteCreateCharacter(player.Id, data, clientIp, clientPort);
+            Map.Broker.WriteCreateCharacter(player.Id, data, clientIp, clientPort, clientTcpPort);
         }
 
         public PlayerDTO[] ExportPlayers()

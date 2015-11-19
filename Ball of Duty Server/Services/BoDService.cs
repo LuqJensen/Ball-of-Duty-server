@@ -17,15 +17,21 @@ namespace Ball_of_Duty_Server.Services
 {
     public class BoDService : IBoDService
     {
+        private static bool _initiliazed = false;
+
         public BoDService()
         {
+            Initialize();
         }
+
 
         public static ConcurrentDictionary<int, Game> Games { get; set; } = new ConcurrentDictionary<int, Game>();
 
-        public static ConcurrentDictionary<int, Game> PlayerIngame { get; set; } = new ConcurrentDictionary<int, Game>(); // midlertidig
+        public static ConcurrentDictionary<int, Game> PlayerIngame { get; set; } = new ConcurrentDictionary<int, Game>()
+            ; // midlertidig
 
-        public static ConcurrentDictionary<int, Player> OnlinePlayers { get; set; } = new ConcurrentDictionary<int, Player>();
+        public static ConcurrentDictionary<int, Player> OnlinePlayers { get; set; } =
+            new ConcurrentDictionary<int, Player>();
 
         /*private static string localIPAddress;
 
@@ -46,6 +52,18 @@ namespace Ball_of_Duty_Server.Services
                 return localIPAddress;
             }
         }*/
+
+        private static void Initialize()
+        {
+            if (_initiliazed)
+            {
+                return;
+            }
+            _initiliazed = true;
+            Game game = new Game();
+            Console.WriteLine("Newly created game id: " + game.Id);
+            Games.TryAdd(game.Id, game);
+        }
 
         public PlayerDTO NewGuest(string nickname)
         {
@@ -93,7 +111,8 @@ namespace Ball_of_Duty_Server.Services
             return game;
         }
 
-        public GameDTO JoinGame(int clientPlayerId, int clientPort)
+        public GameDTO JoinGame(int clientPlayerId, int clientPort, int clientTcpPort)
+            //TODO Needs parameter for both client TCP port and UDP port, if we want several clients to be able to be on one computer.
         {
             Player player;
 
@@ -103,7 +122,7 @@ namespace Ball_of_Duty_Server.Services
                 return new GameDTO(); //TODO: probably not the smartest, but necessary.
             }
 
-            Console.WriteLine($"Player: {clientPlayerId} tried to join game.");
+//            Console.WriteLine($"Player: {clientPlayerId} tried to join game.");
 
             Game game = GetGame();
             Map map = game.Map;
@@ -123,7 +142,7 @@ namespace Ball_of_Duty_Server.Services
 
             #endregion
 
-            game.AddPlayer(player, clientIp, clientPort);
+            game.AddPlayer(player, clientIp, clientPort, clientTcpPort);
             if (!PlayerIngame.ContainsKey(player.Id)) //TODO: brug OnlinePlayers istedet
             {
                 PlayerIngame.TryAdd(player.Id, game);
@@ -149,7 +168,7 @@ namespace Ball_of_Duty_Server.Services
                 //if (Games.TryGetValue(gameId, out game)) //TODO: brug OnlinePlayers i stedet
             {
                 game.RemovePlayer(clientPlayerId);
-                Console.WriteLine($"Player: {clientPlayerId} quit game: {game.Id}.");
+//                Console.WriteLine($"Player: {clientPlayerId} quit game: {game.Id}.");
             }
             else
             {
