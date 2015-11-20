@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Ball_of_Duty_Server.DAO;
+using Ball_of_Duty_Server.Domain.Communication;
 using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Persistence;
@@ -15,10 +16,11 @@ namespace Ball_of_Duty_Server.Domain
 
         private Dictionary<int, Player> _players = new Dictionary<int, Player>();
 
-        public void AddPlayer(Player player, string clientIp, int clientPort)
+        public void AddPlayer(Player player, string clientIp, int clientPort, Specializations clientSpecialization)
         {
             _players.Add(player.Id, player);
-            player.CurrentCharacter = Map.AddCharacter(); // TODO data to character creation should be dynamic
+            player.CurrentCharacter = Map.AddCharacter(clientSpecialization);
+            // TODO data to character creation should be dynamic
 
             GameObjectDAO data = new GameObjectDAO
             {

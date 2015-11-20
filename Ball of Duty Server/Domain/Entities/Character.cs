@@ -9,7 +9,6 @@ namespace Ball_of_Duty_Server.Domain.Entities
     public class Character : GameObject, ICollidable
     {
         public double Score { get; set; } = 0;
-        public const int MAX_HP = 107;
 
         private const double SCORE_UP = 100;
         private const double SCORE_UP_FACTOR = 0.1;
@@ -19,10 +18,11 @@ namespace Ball_of_Duty_Server.Domain.Entities
         private const long SCORE_DECAY_INTERVAL = 5000;
         private readonly LightEvent _decayScoreEvent;
 
-        public Character()
+        public Character(double size, int health)
         {
-            Body = new Body(this, new Point(0, 0), 50, 50) { Type = Body.Geometry.CIRCLE }; // TODO should be dynamic
-            Health = new Health(this, MAX_HP);
+            Body = new Body(this, new Point(0, 0), size, size) { Type = Body.Geometry.CIRCLE };
+            // TODO should be dynamic
+            Health = new Health(this, health);
             _decayScoreEvent = new LightEvent(SCORE_DECAY_INTERVAL, DecayScore);
         }
 

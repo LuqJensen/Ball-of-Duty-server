@@ -9,6 +9,7 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Windows;
 using Ball_of_Duty_Server.Domain;
+using Ball_of_Duty_Server.Domain.Communication;
 using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Persistence;
@@ -23,9 +24,11 @@ namespace Ball_of_Duty_Server.Services
 
         public static ConcurrentDictionary<int, Game> Games { get; set; } = new ConcurrentDictionary<int, Game>();
 
-        public static ConcurrentDictionary<int, Game> PlayerIngame { get; set; } = new ConcurrentDictionary<int, Game>(); // midlertidig
+        public static ConcurrentDictionary<int, Game> PlayerIngame { get; set; } = new ConcurrentDictionary<int, Game>()
+            ; // midlertidig
 
-        public static ConcurrentDictionary<int, Player> OnlinePlayers { get; set; } = new ConcurrentDictionary<int, Player>();
+        public static ConcurrentDictionary<int, Player> OnlinePlayers { get; set; } =
+            new ConcurrentDictionary<int, Player>();
 
         /*private static string localIPAddress;
 
@@ -93,7 +96,7 @@ namespace Ball_of_Duty_Server.Services
             return game;
         }
 
-        public GameDTO JoinGame(int clientPlayerId, int clientPort)
+        public GameDTO JoinGame(int clientPlayerId, int clientPort, int clientSpecialization)
         {
             Player player;
 
@@ -123,7 +126,8 @@ namespace Ball_of_Duty_Server.Services
 
             #endregion
 
-            game.AddPlayer(player, clientIp, clientPort);
+            Specializations spec = (Specializations)clientSpecialization;
+            game.AddPlayer(player, clientIp, clientPort, spec);
             if (!PlayerIngame.ContainsKey(player.Id)) //TODO: brug OnlinePlayers istedet
             {
                 PlayerIngame.TryAdd(player.Id, game);
