@@ -65,6 +65,7 @@
     <Compile Include="Domain\Communication\Broker.Translate.cs" />
     <Compile Include="Domain\Physics\Collision\CollisionHandler.cs" />
     <Compile Include="DAO\GameObjectDAO.cs" />
+    <Compile Include="DTO\PlayerDTO.cs" />
     <Compile Include="Persistence\Account.Domain.cs" />
     <Compile Include="Domain\Body.cs" />
     <Compile Include="Domain\Entities\Bullet.cs" />
@@ -91,7 +92,6 @@
     <Compile Include="DTO\CharacterDTO.cs" />
     <Compile Include="DTO\GameObjectDTO.cs" />
     <Compile Include="DTO\GameDTO.cs" />
-    <Compile Include="DTO\PlayerDTO.cs" />
     <Compile Include="DTO\PointDTO.cs" />
     <Compile Include="Persistence\Account.cs">
       <DependentUpon>DataModel.tt</DependentUpon>

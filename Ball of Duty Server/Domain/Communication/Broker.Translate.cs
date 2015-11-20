@@ -150,7 +150,8 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
-        public void WriteCreateCharacter(int playerId, GameObjectDAO charData, string ip, int preferedPort)
+        public void WriteCreateCharacter(int playerId, string nickname, GameObjectDAO charData, string ip,
+            int preferedPort)
         {
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
@@ -158,7 +159,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write((byte)ASCII.SOH);
                 bw.Write((byte)Opcodes.NEW_PLAYER);
                 bw.Write((byte)ASCII.STX);
-                bw.Write(playerId);
+                bw.Write(nickname);
                 bw.Write(charData.Id);
                 bw.Write(charData.X);
                 bw.Write(charData.Y);

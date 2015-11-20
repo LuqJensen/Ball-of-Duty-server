@@ -93,9 +93,15 @@ namespace Ball_of_Duty_Server.Domain.Communication
 
         public void ReceiveUdp()
         {
-            while (true)
+            try
             {
-                Read(_listener.Receive(ref _ip));
+                while (true)
+                {
+                    Read(_listener.Receive(ref _ip));
+                }
+            }
+            catch (SocketException e)
+            {
             }
         }
 

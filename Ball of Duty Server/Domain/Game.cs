@@ -29,7 +29,7 @@ namespace Ball_of_Duty_Server.Domain
                 Id = player.CurrentCharacter.Id
             };
 
-            Map.Broker.WriteCreateCharacter(player.Id, data, clientIp, clientPort);
+            Map.Broker.WriteCreateCharacter(player.Id, player.Nickname, data, clientIp, clientPort);
         }
 
         public PlayerDTO[] ExportPlayers()
@@ -41,7 +41,8 @@ namespace Ball_of_Duty_Server.Domain
                 players.Add(new PlayerDTO
                 {
                     Id = p.Id,
-                    Nickname = p.Nickname
+                    Nickname = p.Nickname,
+                    CharacterId = p.CurrentCharacter.Id
                 });
             }
 
