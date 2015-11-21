@@ -17,7 +17,6 @@ namespace Ball_of_Duty_Server.Domain.Maps
     {
         private ConcurrentDictionary<int, bool> _gameObjectsActive;
 
-
         private Thread _updateThread;
         private long _lastUpdate;
         // The precision of DateTime.Ticks is given in 100's of nanoseconds as stated here:
@@ -56,7 +55,6 @@ namespace Ball_of_Duty_Server.Domain.Maps
             _updateThread = new Thread(Activate);
             _updateThread.Start();
         }
-
 
         public void Activate()
         {
@@ -136,13 +134,25 @@ namespace Ball_of_Duty_Server.Domain.Maps
             return 0;
         }
 
-        public Character AddCharacter(Specializations specialization)
+        public Character AddCharacter(string nickname, Specializations specialization)
         {
             Character c = CharacterFactory.CreateCharacter(specialization);
 
             if (GameObjects.TryAdd(c.Id, c))
             {
                 c.Register(Observation.KILLING, this, ExterminationNotification);
+
+                Body b = c.Body;
+                GameObjectDAO data = new GameObjectDAO
+                {
+                    X = b.Position.X,
+                    Y = b.Position.Y,
+                    Width = b.Width,
+                    Height = b.Height,
+                    Id = c.Id
+                };
+
+                Broker.WriteCreateCharacter(nickname, data);
             }
             return c;
         }
@@ -150,14 +160,22 @@ namespace Ball_of_Duty_Server.Domain.Maps
         public GameObjectDTO[] ExportGameObjects()
         {
             return (from go in GameObjects.Values
-                let body = new BodyDTO
+                let b = go.Body let body = new BodyDTO
                 {
-                    Position = new PointDTO { X = go.Body.Position.X, Y = go.Body.Position.Y },
-                    Width = go.Body.Width,
-                    Height = go.Body.Height,
-                    Type = (int)go.Body.Type
+                    Position = new PointDTO
+                    {
+                        X = b.Position.X,
+                        Y = b.Position.Y
+                    },
+                    Width = b.Width,
+                    Height = b.Height,
+                    Type = (int)b.Type
                 }
-                select new GameObjectDTO { Id = go.Id, Body = body }).ToArray();
+                select new GameObjectDTO
+                {
+                    Id = go.Id,
+                    Body = body
+                }).ToArray();
         }
 
         private List<GameObjectDAO> GetPositions()

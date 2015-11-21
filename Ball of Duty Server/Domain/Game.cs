@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Ball_of_Duty_Server.DAO;
-using Ball_of_Duty_Server.Domain.Communication;
+using System.Linq;
 using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
 using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.DTO;
@@ -20,36 +19,20 @@ namespace Ball_of_Duty_Server.Domain
         public void AddPlayer(Player player, string clientIp, int clientUdpPort, int clientTcpPort, Specializations clientSpecialization)
         {
             _players.Add(player.Id, player);
-            player.CurrentCharacter = Map.AddCharacter(clientSpecialization);
+            player.CurrentCharacter = Map.AddCharacter(player.Nickname, clientSpecialization);
             // TODO data to character creation should be dynamic
 
-            GameObjectDAO data = new GameObjectDAO
-            {
-                X = player.CurrentCharacter.Body.Position.X,
-                Y = player.CurrentCharacter.Body.Position.Y,
-                Width = player.CurrentCharacter.Body.Width,
-                Height = player.CurrentCharacter.Body.Height,
-                Id = player.CurrentCharacter.Id
-            };
-
-            Map.Broker.WriteCreateCharacter(player.Id, data, clientIp, clientUdpPort, clientTcpPort);
+            Map.Broker.AddTarget(player.Id, clientIp, clientUdpPort, clientTcpPort);
         }
 
         public PlayerDTO[] ExportPlayers()
         {
-            List<PlayerDTO> players = new List<PlayerDTO>();
-
-            foreach (Player p in _players.Values)
+            return _players.Values.Select(p => new PlayerDTO
             {
-                players.Add(new PlayerDTO
-                {
-                    Id = p.Id,
-                    Nickname = p.Nickname
-                });
-            }
-
-
-            return players.ToArray();
+                Id = p.Id,
+                Nickname = p.Nickname,
+                CharacterId = p.CurrentCharacter?.Id ?? 0 // TODO: look into some kind of assurance that CurrentCharacter is never null.
+            }).ToArray();
         }
 
         public void RemovePlayer(int playerId)

@@ -91,7 +91,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             });
         }
 
-        private void AddTarget(int playerId, string ip, int udpPort, int tcpPort)
+        public void AddTarget(int playerId, string ip, int udpPort, int tcpPort)
         {
             IPAddress ipAddress = IPAddress.Parse(ip);
 
