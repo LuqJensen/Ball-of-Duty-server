@@ -9,12 +9,15 @@ using Ball_of_Duty_Server.Domain.Communication;
 using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Utility;
+using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
 
 namespace Ball_of_Duty_Server.Domain.Maps
 {
     public class Map
     {
         private ConcurrentDictionary<int, bool> _gameObjectsActive;
+
+
         private Thread _updateThread;
         private long _lastUpdate;
         // The precision of DateTime.Ticks is given in 100's of nanoseconds as stated here:
@@ -53,6 +56,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
             _updateThread = new Thread(Activate);
             _updateThread.Start();
         }
+
 
         public void Activate()
         {
@@ -132,9 +136,10 @@ namespace Ball_of_Duty_Server.Domain.Maps
             return 0;
         }
 
-        public Character AddCharacter()
+        public Character AddCharacter(Specializations specialization)
         {
-            Character c = new Character();
+            Character c = CharacterFactory.CreateCharacter(specialization);
+
             if (GameObjects.TryAdd(c.Id, c))
             {
                 c.Register(Observation.KILLING, this, ExterminationNotification);

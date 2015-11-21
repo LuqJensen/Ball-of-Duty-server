@@ -63,6 +63,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Domain\Communication\Broker.Translate.cs" />
+    <Compile Include="Domain\Entities\CharacterSpecializations\Specializations.cs" />
+    <Compile Include="Domain\Entities\CharacterFactory.cs" />
+    <Compile Include="Domain\Entities\CharacterSpecializations\Blaster.cs" />
+    <Compile Include="Domain\Entities\CharacterSpecializations\Heavy.cs" />
+    <Compile Include="Domain\Entities\CharacterSpecializations\Roller.cs" />
     <Compile Include="Domain\Physics\Collision\CollisionHandler.cs" />
     <Compile Include="DAO\GameObjectDAO.cs" />
     <Compile Include="Persistence\Account.Domain.cs" />

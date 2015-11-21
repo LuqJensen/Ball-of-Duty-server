@@ -17,7 +17,7 @@ namespace Ball_of_Duty_Server.Services
         PlayerDTO NewGuest(string nickname);
 
         [OperationContract]
-        GameDTO JoinGame(int clientPlayerId, int clientPort, int clientTcpPort);
+        GameDTO JoinGame(int clientPlayerId, int clientUdpPort, int clientTcpPort, int clientSpecialization);
 
         [OperationContract]
         AccountDTO NewAccount(string username, string nickname, int playerId, byte[] salt, byte[] hash);

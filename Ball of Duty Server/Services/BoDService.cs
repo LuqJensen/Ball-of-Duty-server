@@ -9,6 +9,8 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Windows;
 using Ball_of_Duty_Server.Domain;
+using Ball_of_Duty_Server.Domain.Communication;
+using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
 using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Persistence;
@@ -80,7 +82,7 @@ namespace Ball_of_Duty_Server.Services
                     }
                 };
             }
-            catch
+            catch (ArgumentException)
             {
                 return new AccountDTO();
             }
@@ -97,13 +99,12 @@ namespace Ball_of_Duty_Server.Services
             }
 
             Game game = new Game();
-            Console.WriteLine("Newly created game id: " + game.Id);
+            Console.WriteLine($"Created new game: {game.Id}");
             Games.TryAdd(game.Id, game);
             return game;
         }
 
-        public GameDTO JoinGame(int clientPlayerId, int clientPort, int clientTcpPort)
-            //TODO Needs parameter for both client TCP port and UDP port, if we want several clients to be able to be on one computer.
+        public GameDTO JoinGame(int clientPlayerId, int clientUdpPort, int clientTcpPort, int clientSpecialization)
         {
             Player player;
             if (!OnlinePlayers.TryGetValue(clientPlayerId, out player))
@@ -111,7 +112,7 @@ namespace Ball_of_Duty_Server.Services
                 return new GameDTO(); //TODO: probably not the smartest, but necessary.
             }
 
-//            Console.WriteLine($"Player: {clientPlayerId} tried to join game.");
+            Console.WriteLine($"Player: {clientPlayerId} tried to join game.");
 
             Game game = GetGame();
             Map map = game.Map;
@@ -130,7 +131,15 @@ namespace Ball_of_Duty_Server.Services
 
             #endregion
 
-            game.AddPlayer(player, clientIp, clientPort, clientTcpPort);
+            if (!Enum.IsDefined(typeof (Specializations), clientSpecialization)) // TODO: maybe move this validation to CharacterFactory
+            {
+                return new GameDTO();
+            }
+            // C# int to enum casts never throw an exception, this is due to bitfields.
+            // http://stackoverflow.com/questions/1758321/casting-ints-to-enums-in-c-sharp
+            Specializations spec = (Specializations)clientSpecialization;
+
+            game.AddPlayer(player, clientIp, clientUdpPort, clientTcpPort, spec);
             if (!PlayerIngame.ContainsKey(player.Id)) //TODO: brug OnlinePlayers istedet
             {
                 PlayerIngame.TryAdd(player.Id, game);
@@ -156,7 +165,7 @@ namespace Ball_of_Duty_Server.Services
                 //if (Games.TryGetValue(gameId, out game)) //TODO: brug OnlinePlayers i stedet
             {
                 game.RemovePlayer(clientPlayerId);
-//                Console.WriteLine($"Player: {clientPlayerId} quit game: {game.Id}.");
+                Console.WriteLine($"Player: {clientPlayerId} quit game: {game.Id}.");
             }
             else
             {
