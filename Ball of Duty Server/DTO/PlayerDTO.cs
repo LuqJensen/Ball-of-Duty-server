@@ -12,5 +12,7 @@ namespace Ball_of_Duty_Server.DTO
         public int Id;
         public string Nickname;
         public int CharacterId;
+        public double HighScore;
+        public int Gold;
     }
 }

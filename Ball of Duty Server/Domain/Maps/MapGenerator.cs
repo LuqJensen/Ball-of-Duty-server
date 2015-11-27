@@ -11,14 +11,17 @@ namespace Ball_of_Duty_Server.Domain.Maps
     public class MapGenerator
     {
         private static Random _rand = new Random(); // TODO needs to be able to pick seed
-        private static int _wallAmount = 50;
-        private static int _wallSize = 50;
+        private static int _wallAmount;
+        private const int WALLS_PER_MEGA_PIXEL = 70;
+        private const int MEGA_PIXEL = 1000 * 1000;
+        private const int WALL_SIZE = 50;
 
         public static void GenerateMap(Map map)
         {
             int mapWidth = map.Width;
             int mapHeight = map.Height;
-            int wallSizeReal = _wallSize; // TODO get rid of either variable, this is pointless.
+            int wallSizeReal = WALL_SIZE; // TODO get rid of either variable, this is pointless.
+            _wallAmount = WALLS_PER_MEGA_PIXEL * mapWidth * mapHeight / MEGA_PIXEL;
             int mapGridX = mapWidth / wallSizeReal;
             int mapGridY = mapHeight / wallSizeReal;
 
@@ -26,7 +29,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
             for (int i = 0; i < mapGridX; i++)
             {
-                Wall wall = new Wall(position, _wallSize);
+                Wall wall = new Wall(position, WALL_SIZE);
                 map.GameObjects.TryAdd(wall.Id, wall);
                 position.X += wallSizeReal;
             }
@@ -35,7 +38,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
             for (int i = 0; i < mapGridX; i++)
             {
-                Wall wall = new Wall(position, _wallSize);
+                Wall wall = new Wall(position, WALL_SIZE);
                 map.GameObjects.TryAdd(wall.Id, wall);
                 position.X += wallSizeReal;
             }
@@ -44,7 +47,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
             for (int i = 0; i < mapGridY - 2; i++)
             {
-                Wall wall = new Wall(position, _wallSize);
+                Wall wall = new Wall(position, WALL_SIZE);
                 map.GameObjects.TryAdd(wall.Id, wall);
                 position.Y += wallSizeReal;
             }
@@ -53,7 +56,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
             for (int i = 0; i < mapGridY - 2; i++)
             {
-                Wall wall = new Wall(position, _wallSize);
+                Wall wall = new Wall(position, WALL_SIZE);
                 map.GameObjects.TryAdd(wall.Id, wall);
                 position.Y += wallSizeReal;
             }
@@ -66,7 +69,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
                 while (true)
                 {
                     position = new Point(_rand.Next(1, mapGridX) * wallSizeReal, _rand.Next(1, mapGridY) * wallSizeReal);
-                    tempWall = new Wall(position, _wallSize);
+                    tempWall = new Wall(position, WALL_SIZE);
                     if (CheckValidWall(tempWall, map.GameObjects.Values))
                     {
                         map.GameObjects.TryAdd(tempWall.Id, tempWall);
@@ -101,7 +104,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
                         break;
                     }
 
-                    tempWall = new Wall(newPosition, _wallSize);
+                    tempWall = new Wall(newPosition, WALL_SIZE);
                     if (CheckValidWall(tempWall, map.GameObjects.Values))
                     {
                         map.GameObjects.TryAdd(tempWall.Id, tempWall);
@@ -121,7 +124,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
             }
         }
 
-        private static bool CheckValidWall(Wall newWall, ICollection<GameObject> walls) 
+        private static bool CheckValidWall(Wall newWall, ICollection<GameObject> walls)
         {
             foreach (var wall in walls)
             {

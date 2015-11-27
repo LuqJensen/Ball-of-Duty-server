@@ -12,6 +12,8 @@ namespace Ball_of_Duty_Server.DTO
         public PlayerDTO[] Players;
         public int GameId;
         public int CharacterId;
+        public int MapWidth;
+        public int MapHeight;
         public string IPAddress;
     }
 }

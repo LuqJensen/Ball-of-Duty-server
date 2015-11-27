@@ -12,11 +12,18 @@ namespace Ball_of_Duty_Server.Persistence
     using System;
     using System.Collections.Generic;
     
-    public partial class Player
+    public partial class Player 
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public Player()
+        {
+            this.HighScore = 0D;
+        }
+    
         public int Id { get; set; }
         public string Nickname { get; set; }
         public int Gold { get; set; }
+        public double HighScore { get; set; }
     
         public virtual Account Account { get; set; }
     }

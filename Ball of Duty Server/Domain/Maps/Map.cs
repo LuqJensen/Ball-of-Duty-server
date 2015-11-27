@@ -160,7 +160,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
         public GameObjectDTO[] ExportGameObjects()
         {
             return (from go in GameObjects.Values
-                let b = go.Body let body = new BodyDTO
+                let b = go.Body
+                let body = new BodyDTO
                 {
                     Position = new PointDTO
                     {

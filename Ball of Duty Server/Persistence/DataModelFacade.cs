@@ -29,7 +29,6 @@ namespace Ball_of_Duty_Server.Persistence
                 }
 
                 Player player = dc.Players.FirstOrDefault(p => p.Id == playerId) ?? CreatePlayer(nickname);
-
                 Account account = new Account()
                 {
                     Username = username,
@@ -43,6 +42,22 @@ namespace Ball_of_Duty_Server.Persistence
                 dc.Accounts.Add(account);
                 dc.SaveChanges();
                 return account;
+            }
+        }
+
+        public static void SaveChanges()
+        {
+            using (DatabaseContainer dc = new DatabaseContainer())
+            {
+                dc.SaveChanges();
+            }
+        }
+
+        public static Player[] GetTopPlayers()
+        {
+            using (DatabaseContainer dc = new DatabaseContainer())
+            {
+                return dc.Players.Select(p => p).OrderByDescending(p => p.HighScore).Take(100).ToArray();
             }
         }
     }

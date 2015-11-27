@@ -21,9 +21,11 @@ namespace Ball_of_Duty_Server.Services
     {
         public static ConcurrentDictionary<int, Game> Games { get; set; } = new ConcurrentDictionary<int, Game>();
 
-        public static ConcurrentDictionary<int, Game> PlayerIngame { get; set; } = new ConcurrentDictionary<int, Game>(); // midlertidig
+        public static ConcurrentDictionary<int, Game> PlayerIngame { get; set; } = new ConcurrentDictionary<int, Game>()
+            ; // midlertidig
 
-        public static ConcurrentDictionary<int, Player> OnlinePlayers { get; set; } = new ConcurrentDictionary<int, Player>();
+        public static ConcurrentDictionary<int, Player> OnlinePlayers { get; set; } =
+            new ConcurrentDictionary<int, Player>();
 
         /*private static string localIPAddress;
 
@@ -121,7 +123,8 @@ namespace Ball_of_Duty_Server.Services
 
             OperationContext context = OperationContext.Current;
             MessageProperties properties = context.IncomingMessageProperties;
-            RemoteEndpointMessageProperty endpoint = properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
+            RemoteEndpointMessageProperty endpoint =
+                properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
             string clientIp = endpoint?.Address;
 
             if (clientIp == null) //TODO: probably not the smartest, but necessary.
@@ -131,7 +134,8 @@ namespace Ball_of_Duty_Server.Services
 
             #endregion
 
-            if (!Enum.IsDefined(typeof (Specializations), clientSpecialization)) // TODO: maybe move this validation to CharacterFactory
+            if (!Enum.IsDefined(typeof (Specializations), clientSpecialization))
+                // TODO: maybe move this validation to CharacterFactory
             {
                 return new GameDTO();
             }
@@ -152,7 +156,9 @@ namespace Ball_of_Duty_Server.Services
                 Players = game.ExportPlayers(),
                 GameObjects = map.ExportGameObjects(),
                 CharacterId = player.CurrentCharacter.Id,
-                GameId = game.Id
+                GameId = game.Id,
+                MapWidth = map.Width,
+                MapHeight = map.Height
             };
             //TODO: Add servers IP here -- maybe rename to GameDTO?
         }
@@ -171,6 +177,23 @@ namespace Ball_of_Duty_Server.Services
             {
                 Debug.WriteLine($"Player: {clientPlayerId} failed quitting game" /*: {gameId}."*/);
             }
+        }
+
+        public PlayerDTO[] GetLeaderboard()
+        {
+            Player[] players = DataModelFacade.GetTopPlayers();
+            PlayerDTO[] playerDtos = new PlayerDTO[players.Length];
+            for (int i = 0; i < players.Length; i++)
+            {
+                playerDtos[i] = new PlayerDTO
+                {
+                    Id = players[i].Id,
+                    Nickname = players[i].Nickname,
+                    HighScore = players[i].HighScore
+                };
+            }
+
+            return playerDtos;
         }
     }
 }

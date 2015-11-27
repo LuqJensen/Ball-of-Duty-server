@@ -24,5 +24,8 @@ namespace Ball_of_Duty_Server.Services
 
         [OperationContract]
         void QuitGame(int clientPlayerId);
+
+        [OperationContract]
+        PlayerDTO[] GetLeaderboard();
     }
 }
