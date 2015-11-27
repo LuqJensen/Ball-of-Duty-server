@@ -11,5 +11,6 @@ namespace Ball_of_Duty_Server.DTO
     {
         public int Id;
         public BodyDTO Body;
+        public int Specialization;
     }
 }

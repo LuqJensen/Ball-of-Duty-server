@@ -149,7 +149,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
                     Y = b.Position.Y,
                     Width = b.Width,
                     Height = b.Height,
-                    Id = c.Id
+                    Id = c.Id,
+                    Specialization = (int) specialization
                 };
 
                 Broker.WriteCreateCharacter(nickname, data);
@@ -160,7 +161,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
         public GameObjectDTO[] ExportGameObjects()
         {
             return (from go in GameObjects.Values
-                let b = go.Body let body = new BodyDTO
+                let b = go.Body
+                let body = new BodyDTO
                 {
                     Position = new PointDTO
                     {
@@ -174,9 +176,33 @@ namespace Ball_of_Duty_Server.Domain.Maps
                 select new GameObjectDTO
                 {
                     Id = go.Id,
-                    Body = body
+                    Body = body,
+                    Specialization = GetSpecialization(go)
                 }).ToArray();
         }
+
+        /// <summary>
+        /// Returns 0 if the specialization
+        /// </summary>
+        /// <param name="go"></param>
+        /// <returns></returns>
+        private int GetSpecialization(GameObject go)
+        {
+            if (go is Blaster)
+            {
+                return (int)Specializations.BLASTER;
+            }
+            if (go is Roller)
+            {
+                return (int)Specializations.ROLLER;
+            }
+            if (go is Heavy)
+            {
+                return (int)Specializations.HEAVY;
+            }
+            return 0;
+        }
+
 
         private List<GameObjectDAO> GetPositions()
         {
