@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, 2012 and Azure
 -- --------------------------------------------------
--- Date Created: 11/20/2015 09:34:39
+-- Date Created: 11/30/2015 16:04:10
 -- Generated from EDMX file: C:\Users\lucas\Documents\BOD-Server\Ball of Duty Server\Persistence\DataModel.edmx
 -- --------------------------------------------------
 
@@ -50,7 +50,8 @@ GO
 CREATE TABLE [dbo].[Players] (
     [Id] int IDENTITY(1,1) NOT NULL,
     [Nickname] nvarchar(max)  NOT NULL,
-    [Gold] int  NOT NULL
+    [Gold] int  NOT NULL,
+    [HighScore] float  NOT NULL
 );
 GO
 

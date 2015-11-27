@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
@@ -10,20 +11,23 @@ namespace Ball_of_Duty_Server.Domain
 {
     public class Game
     {
-        public int Id { get; set; }
+        private static volatile int _createdGames = 0;
 
-        public Map Map { get; set; } = new Map();
+        private ConcurrentDictionary<int, Player> _players = new ConcurrentDictionary<int, Player>();
 
-        private Dictionary<int, Player> _players = new Dictionary<int, Player>();
+        public int Id { get; } = ++_createdGames;
 
-        public void AddPlayer(Player player, string clientIp, int clientUdpPort, int clientTcpPort,
-            Specializations clientSpecialization)
+        public Map Map { get; } = new Map(4000, 4000);
+
+        public void AddPlayer(Player player, string clientIp, int clientUdpPort, int clientTcpPort, Specializations clientSpecialization)
         {
-            _players.Add(player.Id, player);
-            player.CurrentCharacter = Map.AddCharacter(player.Nickname, clientSpecialization);
-            // TODO data to character creation should be dynamic
+            if (_players.TryAdd(player.Id, player))
+            {
+                player.CurrentCharacter = Map.AddCharacter(player.Nickname, clientSpecialization);
+                // TODO data to character creation should be dynamic
 
-            Map.Broker.AddTarget(player.Id, clientIp, clientUdpPort, clientTcpPort);
+                Map.Broker.AddTarget(player.Id, clientIp, clientUdpPort, clientTcpPort);
+            }
         }
 
         public PlayerDTO[] ExportPlayers()
@@ -32,8 +36,9 @@ namespace Ball_of_Duty_Server.Domain
             {
                 Id = p.Id,
                 Nickname = p.Nickname,
-                CharacterId = p.CurrentCharacter?.Id ?? 0
-                // TODO: look into some kind of assurance that CurrentCharacter is never null.
+                CharacterId = p.CurrentCharacter?.Id ?? 0, // TODO: look into some kind of assurance that CurrentCharacter is never null.
+                Gold = p.Gold,
+                HighScore = p.HighScore
             }).ToArray();
         }
 
@@ -69,13 +74,9 @@ namespace Ball_of_Duty_Server.Domain
         public void RemovePlayer(int playerId)
         {
             Player player;
-            if (_players.TryGetValue(playerId, out player))
+            if (_players.TryRemove(playerId, out player))
             {
-                _players.Remove(playerId);
-                if (player.CurrentCharacter != null)
-                {
-                    Map.RemoveObject(player.CurrentCharacter.Id);
-                }
+                player.CurrentCharacter?.Destroy();
             }
         }
 

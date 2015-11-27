@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ball_of_Duty_Server.DTO;
 
 namespace Ball_of_Duty_Server.Persistence
 {
@@ -12,7 +13,10 @@ namespace Ball_of_Duty_Server.Persistence
         {
             using (DatabaseContainer dc = new DatabaseContainer())
             {
-                Player player = new Player() { Nickname = nickname }; // TODO: dynamic account.
+                Player player = new Player()
+                {
+                    Nickname = nickname
+                }; // TODO: dynamic account.
                 dc.Players.Add(player);
                 dc.SaveChanges();
                 return player;
@@ -29,7 +33,6 @@ namespace Ball_of_Duty_Server.Persistence
                 }
 
                 Player player = dc.Players.FirstOrDefault(p => p.Id == playerId) ?? CreatePlayer(nickname);
-
                 Account account = new Account()
                 {
                     Username = username,
@@ -43,6 +46,15 @@ namespace Ball_of_Duty_Server.Persistence
                 dc.Accounts.Add(account);
                 dc.SaveChanges();
                 return account;
+            }
+        }
+
+        public static Player[] GetHighestScoringPlayers()
+        {
+            using (DatabaseContainer dc = new DatabaseContainer())
+            {
+                return dc.Players.Select(p => p).OrderByDescending(p => p.HighScore).Take(100).ToArray();
+                    // TODO maybe let the quantity be a parameter
             }
         }
     }

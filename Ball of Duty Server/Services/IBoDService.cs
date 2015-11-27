@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Ball_of_Duty_Server.Domain;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Persistence;
-using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
 
 namespace Ball_of_Duty_Server.Services
 {
@@ -26,6 +25,9 @@ namespace Ball_of_Duty_Server.Services
         [OperationContract]
         void QuitGame(int clientPlayerId);
 
+        [OperationContract]
+        PlayerDTO[] GetLeaderboard();
+        
         [OperationContract]
         GameObjectDTO Respawn(int clientPlayerId, int clientSpecializations);
     }

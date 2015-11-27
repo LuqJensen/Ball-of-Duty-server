@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,9 +19,11 @@ namespace Ball_of_Duty_Server.Persistence
             get { return _currentCharacter; }
             set
             {
-                _currentCharacter?.Unregister(Observation.ACQUISITION_OF_GOLD, this);
+                _currentCharacter?.UnregisterAll(this);
                 _currentCharacter = value;
                 _currentCharacter.Register(Observation.ACQUISITION_OF_GOLD, this, AddGold);
+                _currentCharacter.Register(Observation.EXTERMINATION, this, DestroyEvent);
+                _currentCharacter.Register(Observation.KILLING, this, DestroyEvent);
             }
         }
 
@@ -31,7 +34,26 @@ namespace Ball_of_Duty_Server.Persistence
         /// <param name="data"></param>
         private void AddGold(Observable observable, object data)
         {
-            Gold += 10; // TODO save to db here???
+            Gold += 10;
+            using (DatabaseContainer dc = new DatabaseContainer())
+            {
+                dc.Entry(this).State = EntityState.Modified;
+                dc.SaveChanges();
+            }
+        }
+
+        private void DestroyEvent(Observable observable, object data)
+        {
+            if (CurrentCharacter.HighScore > this.HighScore)
+            {
+                this.HighScore = CurrentCharacter.HighScore;
+            }
+
+            using (DatabaseContainer dc = new DatabaseContainer())
+            {
+                dc.Entry(this).State = EntityState.Modified;
+                dc.SaveChanges();
+            }
         }
     }
 }

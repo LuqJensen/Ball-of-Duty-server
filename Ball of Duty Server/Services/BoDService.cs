@@ -71,10 +71,10 @@ namespace Ball_of_Duty_Server.Services
             try
             {
                 Account a = DataModelFacade.CreateAccount(username, nickname, playerId, salt, hash);
-                return new AccountDTO()
+                return new AccountDTO
                 {
                     Id = a.Id,
-                    Player = new PlayerDTO()
+                    Player = new PlayerDTO
                     {
                         Id = a.Player.Id,
                         Nickname = a.Player.Nickname
@@ -158,16 +158,16 @@ namespace Ball_of_Duty_Server.Services
                 PlayerIngame.TryAdd(player.Id, game);
             }
 
-            Console.WriteLine($"Current gameobjects: {map.GameObjects.Count}");
-
             return new GameDTO
             {
                 Players = game.ExportPlayers(),
                 GameObjects = map.ExportGameObjects(),
                 CharacterId = player.CurrentCharacter.Id,
-                GameId = game.Id
+                GameId = game.Id,
+                MapWidth = map.Width,
+                MapHeight = map.Height
             };
-            //TODO: Add servers IP here -- maybe rename to GameDTO?
+            //TODO: Add servers IP here
         }
 
         public void QuitGame(int clientPlayerId /*, int gameId*/) //TODO: brug OnlinePlayers istedet
@@ -184,6 +184,17 @@ namespace Ball_of_Duty_Server.Services
             {
                 Debug.WriteLine($"Player: {clientPlayerId} failed quitting game" /*: {gameId}."*/);
             }
+        }
+
+        public PlayerDTO[] GetLeaderboard()
+        {
+            return (from p in DataModelFacade.GetHighestScoringPlayers()
+                select new PlayerDTO
+                {
+                    Id = p.Id,
+                    Nickname = p.Nickname,
+                    HighScore = p.HighScore
+                }).ToArray();
         }
     }
 }

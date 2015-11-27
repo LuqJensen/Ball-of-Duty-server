@@ -30,6 +30,7 @@
     <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
     <Property Name="Nickname" Type="nvarchar(max)" Nullable="false" />
     <Property Name="Gold" Type="int" Nullable="false" />
+    <Property Name="HighScore" Type="float" Nullable="false" DefaultValue="0" />
   </EntityType>
   <Association Name="PlayerAccount">
     <End Role="Player" Type="BoDServerDataModel.Store.Players" Multiplicity="0..1" />
@@ -65,6 +66,7 @@
           <Property Name="Nickname" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="Gold" Type="Int32" Nullable="false" />
           <NavigationProperty Name="Account" Relationship="BoDServerDataModel.PlayerAccount" FromRole="Player" ToRole="Account" />
+          <Property Name="HighScore" Type="Double" Nullable="false" DefaultValue="0" />
         </EntityType>
         <EntityContainer Name="DatabaseContainer" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Accounts" EntityType="Self.Account" />
@@ -100,6 +102,7 @@
           <ScalarProperty Name="Id" ColumnName="Id" />
           <ScalarProperty Name="Nickname" ColumnName="Nickname" />
           <ScalarProperty Name="Gold" ColumnName="Gold" />
+          <ScalarProperty Name="HighScore" ColumnName="HighScore" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

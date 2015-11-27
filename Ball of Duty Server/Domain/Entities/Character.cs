@@ -11,6 +11,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
     {
         public double Score { get; set; } = 0;
         public Specializations Specialization { get; private set; }
+        public double HighScore { get; set; } = 0;
 
         private const double SCORE_UP = 100;
         private const double SCORE_UP_FACTOR = 0.1;
@@ -40,6 +41,10 @@ namespace Ball_of_Duty_Server.Domain.Entities
         {
             ++_killCount;
             Score += SCORE_UP + (victim.Score * SCORE_UP_FACTOR);
+            if (Score > HighScore)
+            {
+                HighScore = Score;
+            }
             NotifyObservers(Observation.ACQUISITION_OF_GOLD, victim);
         }
 

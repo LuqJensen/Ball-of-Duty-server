@@ -36,16 +36,6 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
         public Game Game { get; set; }
 
-        public Map()
-        {
-            Width = 1100;
-            Height = 650; // default
-            MapGenerator.GenerateMap(this);
-            Broker = new Broker(this);
-            _updateThread = new Thread(Activate);
-            _updateThread.Start();
-        }
-
         public Map(int width, int height)
         {
             Width = width;

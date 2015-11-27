@@ -77,7 +77,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                                 await v.SendMessage(message);
                                 // TODO find out if each iteration is waiting for "ack" from the client.
                             }
-                            catch (SocketException)
+                            catch (SocketException) // TODO remove the disposal and catching of the disposedexception.
                             {
                                 v.Dispose();
                             }
