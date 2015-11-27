@@ -9,6 +9,7 @@ namespace Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations
 
         public Roller() : base(SIZE, HP)
         {
+
         }
     }
 }

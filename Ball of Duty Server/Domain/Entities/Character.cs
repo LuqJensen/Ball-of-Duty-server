@@ -20,7 +20,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
 
         public Character(double size, int health)
         {
-            Body = new Body(this, new Point(0, 0), size, size) { Type = Body.Geometry.CIRCLE };
+            Body = new Body(this, new Point(150, 150), size, size) { Type = Body.Geometry.CIRCLE };
             // TODO should be dynamic
             Health = new Health(this, health);
             _decayScoreEvent = new LightEvent(SCORE_DECAY_INTERVAL, DecayScore);

@@ -9,7 +9,6 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Windows;
 using Ball_of_Duty_Server.Domain;
-using Ball_of_Duty_Server.Domain.Communication;
 using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
 using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.DTO;
@@ -103,6 +102,20 @@ namespace Ball_of_Duty_Server.Services
             Games.TryAdd(game.Id, game);
             return game;
         }
+
+        public GameObjectDTO Respawn(int clientPlayerId, int clientSpecializations)
+        {
+            Game game;
+            if (!PlayerIngame.TryGetValue(clientPlayerId, out game))
+            {
+                Console.WriteLine("Coulnd't find player");
+                return new GameObjectDTO();
+            }
+            Console.WriteLine($"Player: {clientPlayerId} tried to respawn.");
+            Specializations spec = (Specializations)clientSpecializations;
+
+            return game.Respawn(clientPlayerId, spec);
+        } 
 
         public GameDTO JoinGame(int clientPlayerId, int clientUdpPort, int clientTcpPort, int clientSpecialization)
         {

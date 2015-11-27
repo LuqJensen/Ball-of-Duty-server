@@ -16,7 +16,8 @@ namespace Ball_of_Duty_Server.Domain
 
         private Dictionary<int, Player> _players = new Dictionary<int, Player>();
 
-        public void AddPlayer(Player player, string clientIp, int clientUdpPort, int clientTcpPort, Specializations clientSpecialization)
+        public void AddPlayer(Player player, string clientIp, int clientUdpPort, int clientTcpPort,
+            Specializations clientSpecialization)
         {
             _players.Add(player.Id, player);
             player.CurrentCharacter = Map.AddCharacter(player.Nickname, clientSpecialization);
@@ -31,9 +32,39 @@ namespace Ball_of_Duty_Server.Domain
             {
                 Id = p.Id,
                 Nickname = p.Nickname,
-                CharacterId = p.CurrentCharacter?.Id ?? 0 // TODO: look into some kind of assurance that CurrentCharacter is never null.
+                CharacterId = p.CurrentCharacter?.Id ?? 0
+                // TODO: look into some kind of assurance that CurrentCharacter is never null.
             }).ToArray();
         }
+
+        public GameObjectDTO Respawn(int playerId, Specializations clientSpecialization)
+        {
+            Player p;
+            if (!_players.TryGetValue(playerId, out p))
+            {
+                return new GameObjectDTO();
+                Console.WriteLine($"Player: {playerId} could not respawn.");
+            }
+            p.CurrentCharacter = Map.AddCharacter(p.Nickname, clientSpecialization);
+            Body b = p.CurrentCharacter.Body;
+
+            return new GameObjectDTO()
+            {
+                Id = p.CurrentCharacter.Id,
+                Body = new BodyDTO
+                {
+                    Position = new PointDTO
+                    {
+                        X = b.Position.X,
+                        Y = b.Position.Y
+                    },
+                    Width = b.Width,
+                    Height = b.Height,
+                    Type = (int)b.Type
+                }
+            };
+        }
+
 
         public void RemovePlayer(int playerId)
         {
