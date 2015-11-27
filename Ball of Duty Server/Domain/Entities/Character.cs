@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows;
+using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
 using Ball_of_Duty_Server.Domain.Physics.Collision;
 using Ball_of_Duty_Server.Utility;
 
@@ -9,6 +10,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
     public class Character : GameObject, ICollidable
     {
         public double Score { get; set; } = 0;
+        public Specializations Specialization { get; private set; }
 
         private const double SCORE_UP = 100;
         private const double SCORE_UP_FACTOR = 0.1;
@@ -18,11 +20,12 @@ namespace Ball_of_Duty_Server.Domain.Entities
         private const long SCORE_DECAY_INTERVAL = 5000;
         private readonly LightEvent _decayScoreEvent;
 
-        public Character(double size, int health)
+        public Character(double size, int health, Specializations specialization)
         {
             Body = new Body(this, new Point(0, 0), size, size) { Type = Body.Geometry.CIRCLE };
             // TODO should be dynamic
             Health = new Health(this, health);
+            Specialization = specialization;
             _decayScoreEvent = new LightEvent(SCORE_DECAY_INTERVAL, DecayScore);
         }
 

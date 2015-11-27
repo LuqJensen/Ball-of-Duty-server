@@ -164,6 +164,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(charData.Y);
                 bw.Write(charData.Width);
                 bw.Write(charData.Height);
+                bw.Write(charData.Specialization);
                 bw.Write(0); // Temporary till EntityType enum is implemented on server.
 
                 bw.Write((byte)ASCII.EOT);
