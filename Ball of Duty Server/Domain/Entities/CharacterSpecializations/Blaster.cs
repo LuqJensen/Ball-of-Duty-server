@@ -7,7 +7,7 @@ namespace Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations
         private const int HP = 100;
         private const double SIZE = 50;
 
-        public Blaster() : base(SIZE, HP)
+        public Blaster() : base(SIZE, HP, Specializations.BLASTER)
         {
         }
     }

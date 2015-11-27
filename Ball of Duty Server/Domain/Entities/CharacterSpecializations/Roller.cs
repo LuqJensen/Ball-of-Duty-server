@@ -7,7 +7,7 @@ namespace Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations
         private const int HP = 100;
         private const double SIZE = 50;
 
-        public Roller() : base(SIZE, HP)
+        public Roller() : base(SIZE, HP, Specializations.ROLLER)
         {
         }
     }

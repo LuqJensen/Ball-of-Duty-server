@@ -149,7 +149,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
                     Y = b.Position.Y,
                     Width = b.Width,
                     Height = b.Height,
-                    Id = c.Id
+                    Id = c.Id,
+                    Specialization = (int)c.Specialization
                 };
 
                 Broker.WriteCreateCharacter(nickname, data);
@@ -160,7 +161,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
         public GameObjectDTO[] ExportGameObjects()
         {
             return (from go in GameObjects.Values
-                let b = go.Body let body = new BodyDTO
+                let b = go.Body
+                let body = new BodyDTO
                 {
                     Position = new PointDTO
                     {
@@ -174,7 +176,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
                 select new GameObjectDTO
                 {
                     Id = go.Id,
-                    Body = body
+                    Body = body,
+                    Specialization = go is Character ? (int)((Character)go).Specialization : 0
                 }).ToArray();
         }
 
