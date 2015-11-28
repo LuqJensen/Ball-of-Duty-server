@@ -22,7 +22,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
 
         public Character(double size, int health, Specializations specialization)
         {
-            Body = new Body(this, new Point(0, 0), size, size) { Type = Body.Geometry.CIRCLE };
+            Body = new Body(this, new Point(150, 150), size, size) { Type = Body.Geometry.CIRCLE };
             // TODO should be dynamic
             Health = new Health(this, health);
             Specialization = specialization;
