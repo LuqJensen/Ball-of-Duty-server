@@ -10,7 +10,6 @@ namespace Ball_of_Duty_Server.Utility
     {
         EXTERMINATION = 1,
         ACQUISITION_OF_GOLD = 2,
-        KILLING = 3,
-        CHANGED = 4
+        KILLING = 3
     }
 }

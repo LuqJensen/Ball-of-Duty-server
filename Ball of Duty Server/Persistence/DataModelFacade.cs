@@ -45,19 +45,12 @@ namespace Ball_of_Duty_Server.Persistence
             }
         }
 
-        public static void SaveChanges()
-        {
-            using (DatabaseContainer dc = new DatabaseContainer())
-            {
-                dc.SaveChanges();
-            }
-        }
 
-        public static Player[] GetTopPlayers()
+        public static IEnumerable<Player> GetHighestScoringPlayers()
         {
             using (DatabaseContainer dc = new DatabaseContainer())
             {
-                return dc.Players.Select(p => p).OrderByDescending(p => p.HighScore).Take(100).ToArray();
+                return dc.Players.Select(p => p).OrderByDescending(p => p.HighScore).Take(100);
             }
         }
     }
