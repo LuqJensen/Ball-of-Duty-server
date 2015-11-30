@@ -181,8 +181,9 @@ namespace Ball_of_Duty_Server.Services
 
         public PlayerDTO[] GetLeaderboard()
         {
-            Player[] players = DataModelFacade.GetHighestScoringPlayers().ToArray();
+            Player[] players = DataModelFacade.GetHighestScoringPlayers();
             PlayerDTO[] playerDtos = new PlayerDTO[players.Length];
+
             for (int i = 0; i < players.Length; i++)
             {
                 playerDtos[i] = new PlayerDTO

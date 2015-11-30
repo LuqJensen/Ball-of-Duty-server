@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ball_of_Duty_Server.DTO;
 
 namespace Ball_of_Duty_Server.Persistence
 {
@@ -46,11 +47,11 @@ namespace Ball_of_Duty_Server.Persistence
         }
 
 
-        public static IEnumerable<Player> GetHighestScoringPlayers()
+        public static Player[] GetHighestScoringPlayers()
         {
             using (DatabaseContainer dc = new DatabaseContainer())
             {
-                return dc.Players.Select(p => p).OrderByDescending(p => p.HighScore).Take(100);
+                return dc.Players.Select(p => p).OrderByDescending(p => p.HighScore).Take(100).ToArray();
             }
         }
     }
