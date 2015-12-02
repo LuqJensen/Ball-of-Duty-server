@@ -22,6 +22,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             _opcodeMapping.Add(Opcodes.REQUEST_BULLET, this.BulletCreationRequest);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         private void Read(byte[] buffer)
         {
             using (MemoryStream ms = new MemoryStream(buffer))
@@ -55,6 +56,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             } while (reader.ReadByte() == (byte)ASCII.US);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         public void WritePositionUpdate(List<GameObjectDAO> positions)
         {
             if (positions.Count == 0)
@@ -83,6 +85,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         public void WriteScoreUpdate(List<GameObjectDAO> characters)
         {
             using (MemoryStream ms = new MemoryStream())
@@ -108,7 +111,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
-
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         public void WriteHealthUpdate(List<GameObjectDAO> characters)
         {
             using (MemoryStream ms = new MemoryStream())
@@ -135,6 +138,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         public void WriteObjectDestruction(int objectId)
         {
             using (MemoryStream ms = new MemoryStream())
@@ -150,6 +154,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         public void WriteCreateCharacter(string nickname, GameObjectDAO charData)
         {
             using (MemoryStream ms = new MemoryStream())
@@ -172,6 +177,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         public void WriteRemoveCharacter(int playerId, int characterId)
         {
             using (MemoryStream ms = new MemoryStream())
@@ -188,6 +194,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         private void BulletCreationRequest(BinaryReader reader) // TODO split this in read and write.
         {
             double x = reader.ReadDouble();
@@ -223,6 +230,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         public void KillNotification(int victimId, int killerId)
         {
             using (MemoryStream ms = new MemoryStream())

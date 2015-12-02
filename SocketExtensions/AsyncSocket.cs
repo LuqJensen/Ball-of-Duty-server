@@ -16,16 +16,18 @@ namespace SocketExtensions
         private Socket _socket;
         private SocketAwaitableEventWrapper _sender, _receiver;
 
+        public IPEndPoint IpEndPoint { get; }
+
         public AsyncSocket(Socket s)
         {
             this._socket = s;
             this._socket.NoDelay = true;
+            this.IpEndPoint = _socket.RemoteEndPoint as IPEndPoint;
 //            this._sender = new SocketAwaitableEventWrapper();
             this._receiver = new SocketAwaitableEventWrapper();
             this._receiver.EventArgs.SetBuffer(new byte[BUFFER_LENGTH], 0, BUFFER_LENGTH);
         }
 
-        public IPEndPoint IpEndPoint => _socket.RemoteEndPoint as IPEndPoint;
 
         public async Task<ReadResult> ReceiveAsync()
         {
@@ -39,18 +41,27 @@ namespace SocketExtensions
         public async Task SendMessage(byte[] buffer)
         {
             await Task.Yield();
-            _sender = new SocketAwaitableEventWrapper(); // TODO fix this, its bad for performance.
-            _sender.EventArgs.SetBuffer(buffer, 0, buffer.Length);
+            // TODO fix this, its bad for performance. Better than before, but we should probably use pooling.
+            // The issue is that we dont know exactly how many allocations will be caused by X amount of players
+            // making y amount of requests.
+            using (SocketAwaitableEventWrapper sender = new SocketAwaitableEventWrapper())
+            {
+                sender.EventArgs.SetBuffer(buffer, 0, buffer.Length);
 
-            await _socket.SendAsync(_sender.SocketAwaitable);
+                await _socket.SendAsync(sender.SocketAwaitable);
+            }
         }
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            if (!_disposed)
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed")]
         protected virtual void Dispose(bool safeToFreeManaged)
         {
             if (!_disposed)
@@ -67,11 +78,10 @@ namespace SocketExtensions
             }
         }
 
-
-        /* ~AsyncSocket() // Enable if AsyncSocket is to contain unmanaged resources.
-         {
-             Dispose(false);
-         }*/
+        ~AsyncSocket()
+        {
+            Dispose(false);
+        }
 
         public struct ReadResult
         {
@@ -85,7 +95,7 @@ namespace SocketExtensions
             }
         }
 
-        private class SocketAwaitableEventWrapper
+        private class SocketAwaitableEventWrapper : IDisposable
         {
             private bool _disposed = false;
 
@@ -100,10 +110,14 @@ namespace SocketExtensions
 
             public void Dispose()
             {
-                Dispose(true);
-                GC.SuppressFinalize(this);
+                if (!_disposed)
+                {
+                    Dispose(true);
+                    GC.SuppressFinalize(this);
+                }
             }
 
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed")]
             protected virtual void Dispose(bool safeToFreeManaged)
             {
                 if (!_disposed)
@@ -116,6 +130,11 @@ namespace SocketExtensions
 
                     _disposed = true;
                 }
+            }
+
+            ~SocketAwaitableEventWrapper()
+            {
+                Dispose(false);
             }
         }
     }

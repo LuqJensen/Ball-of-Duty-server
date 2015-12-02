@@ -48,7 +48,6 @@ namespace Ball_of_Duty_Server.Domain
             if (!_players.TryGetValue(playerId, out p))
             {
                 return new GameObjectDTO();
-                Console.WriteLine($"Player: {playerId} could not respawn.");
             }
             p.CurrentCharacter = Map.AddCharacter(p.Nickname, clientSpecialization);
             Body b = p.CurrentCharacter.Body;

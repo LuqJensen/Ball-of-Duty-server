@@ -131,6 +131,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
             if (GameObjects.TryAdd(c.Id, c))
             {
                 c.Register(Observation.KILLING, this, ExterminationNotification);
+                c.Register(Observation.EXTERMINATION, this, ExterminationNotification);
 
                 Body b = c.Body;
                 GameObjectDAO data = new GameObjectDAO

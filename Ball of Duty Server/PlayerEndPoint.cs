@@ -9,7 +9,6 @@ namespace Ball_of_Duty_Server
 {
     public class PlayerEndPoint
     {
-        public bool Active { get; set; } = false;
         public int PlayerId { get; set; }
         public IPEndPoint IpEndPoint { get; set; }
 

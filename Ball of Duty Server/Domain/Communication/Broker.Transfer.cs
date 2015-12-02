@@ -27,14 +27,11 @@ namespace Ball_of_Duty_Server.Domain.Communication
         private IPEndPoint _ip; // Needs new port for each game
         private UdpClient _listener;
 
-        private ConcurrentDictionary<IPEndPoint, PlayerEndPoint> _playerEndPoints =
-            new ConcurrentDictionary<IPEndPoint, PlayerEndPoint>();
+        private ConcurrentDictionary<IPEndPoint, PlayerEndPoint> _playerEndPoints = new ConcurrentDictionary<IPEndPoint, PlayerEndPoint>();
 
-        private ConcurrentDictionary<IPEndPoint, bool> _udpEndPoints =
-            new ConcurrentDictionary<IPEndPoint, bool>();
+        private ConcurrentDictionary<IPEndPoint, bool> _udpEndPoints = new ConcurrentDictionary<IPEndPoint, bool>();
 
-        private ConcurrentDictionary<AsyncSocket, bool> _connectedClients =
-            new ConcurrentDictionary<AsyncSocket, bool>();
+        private ConcurrentDictionary<AsyncSocket, bool> _connectedClients = new ConcurrentDictionary<AsyncSocket, bool>();
 
         private TcpListener _tcpListener = TcpListener.Create(SERVER_TCP_PORT); // TODO dynamic port
 
@@ -57,38 +54,36 @@ namespace Ball_of_Duty_Server.Domain.Communication
             t.Start();
             Thread t2 = new Thread(() => { AcceptClientsAsync().Wait(); });
             t2.Start();
-            Thread t3 = new Thread(() => { BroadcastTcpAsync().Wait(); });
+            Thread t3 = new Thread(BroadcastTcpAsync);
             t3.Start();
         }
 
-        private Task BroadcastTcpAsync()
+        private void BroadcastTcpAsync()
         {
-            return Task.Run(async () =>
+            while (true)
             {
-                while (true)
+                byte[] message;
+                if (_tcpQueue.TryTake(out message, Timeout.Infinite))
                 {
-                    byte[] message;
-                    if (_tcpQueue.TryTake(out message, Timeout.Infinite))
+                    foreach (var v in _connectedClients.Keys)
                     {
-                        foreach (var v in _connectedClients.Keys)
+                        Task.Run(async () =>
                         {
                             try
                             {
                                 await v.SendMessage(message);
-                                // TODO find out if each iteration is waiting for "ack" from the client.
                             }
-                            catch (SocketException) // TODO remove the disposal and catching of the disposedexception.
+                            catch (SocketException)
                             {
-                                v.Dispose();
+                                RemoveTarget(v);
                             }
-                            catch (ObjectDisposedException ex)
+                            catch (ObjectDisposedException)
                             {
-                                Console.WriteLine(ex.StackTrace);
                             }
-                        }
+                        });
                     }
                 }
-            });
+            }
         }
 
         public void AddTarget(int playerId, string ip, int udpPort, int tcpPort)
@@ -104,25 +99,27 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
-        /// <summary>
-        /// Removes a target based on its tcp end point.
-        /// </summary>
-        /// <param name="iPeP"></param>
-        public void RemoveTarget(IPEndPoint iPeP)
+        public void RemoveTarget(AsyncSocket socket)
         {
+            bool b;
+            _connectedClients.TryRemove(socket, out b);
+
             PlayerEndPoint endPoint;
-            if (_playerEndPoints.TryRemove(iPeP, out endPoint))
+            // perhaps add socket to PlayerEndPoint so we can always efficiently remove the player from _connectedClients
+            if (_playerEndPoints.TryRemove(socket.IpEndPoint, out endPoint))
             {
-                bool b;
-                _udpEndPoints.TryRemove(endPoint.IpEndPoint, out b);
+                Console.WriteLine($"Client: {socket.IpEndPoint.ToString().Replace("::ffff:", "")} disconnected.");
+                bool b2;
+                _udpEndPoints.TryRemove(endPoint.IpEndPoint, out b2);
 
                 Game game;
                 if (BoDService.PlayerIngame.TryRemove(endPoint.PlayerId, out game))
                 {
                     game.RemovePlayer(endPoint.PlayerId);
-                    //Console.WriteLine($"Player: {id} quit game: {game.Id}.");
+                    Console.WriteLine($"Player: {endPoint.PlayerId} quit game: {game.Id}.");
                 }
             }
+            socket.Dispose();
         }
 
         private Task AcceptClientsAsync()
@@ -156,9 +153,18 @@ namespace Ball_of_Duty_Server.Domain.Communication
             try
             {
                 s = new AsyncSocket(socket);
-                _connectedClients.TryAdd(s, true);
-                Console.WriteLine($"Client connected: {s.IpEndPoint?.ToString().Replace("::ffff:", "")}");
+            }
+            catch (SocketException)
+            {
+                socket.Dispose();
+                return;
+            }
 
+            _connectedClients.TryAdd(s, true);
+            Console.WriteLine($"Client connected: {s.IpEndPoint?.ToString().Replace("::ffff:", "")}");
+
+            try
+            {
                 while (true)
                 {
                     Task<AsyncSocket.ReadResult> receive = s.ReceiveAsync();
@@ -169,26 +175,14 @@ namespace Ball_of_Duty_Server.Domain.Communication
             catch (SocketException)
             {
             }
+            catch (ObjectDisposedException)
+            {
+            }
             finally
             {
-                if (s != null)
-                {
-                    bool b;
-                    if (_connectedClients.TryRemove(s, out b))
-                    {
-                        IPEndPoint ip = s.IpEndPoint;
-                        if (ip != null)
-                        {
-                            Console.WriteLine($"Client: {ip.ToString().Replace("::ffff:", "")} disconnected.");
-                            RemoveTarget(ip);
-                        }
-                    }
-                    s.Dispose();
-                }
-                socket?.Close();
+                RemoveTarget(s);
             }
         }
-
 
         public void ReceiveUdp()
         {
@@ -197,10 +191,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 IPEndPoint ipEp = null;
                 Read(_listener.Receive(ref ipEp));
 
-                if (_udpEndPoints.ContainsKey(ipEp))
-                {
-                    _udpEndPoints[ipEp] = true;
-                }
+                _udpEndPoints.TryUpdate(ipEp, true, false);
             }
         }
 
