@@ -11,11 +11,19 @@ namespace Ball_of_Duty_Server.Utility
         private readonly long _interval;
         private long _currentTime = 0;
         private readonly Action _timedEvent;
+        private long decay_INTERVAL;
+        private void v;
 
         public LightEvent(long interval, Action timedEvent)
         {
             _interval = interval;
             _timedEvent = timedEvent;
+        }
+
+        public LightEvent(long decay_INTERVAL, void v)
+        {
+            this.decay_INTERVAL = decay_INTERVAL;
+            this.v = v;
         }
 
         public void Update(long deltaTime)

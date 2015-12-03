@@ -9,15 +9,19 @@ namespace Ball_of_Duty_Server.Domain
 {
     public class Health
     {
+        public double HealthIncreaseFactor { get; set; }
+        public int HealthRegen { get; set; }
         public int Max { get; set; }
         public int Value { get; set; }
         public GameObject GameObject { get; set; }
 
-        public Health(GameObject gameObject, int maxHealth)
+        public Health(GameObject gameObject, int maxHealth, int healthRegen, double healthIncreaseFactor)
         {
             GameObject = gameObject;
             Max = maxHealth;
             Value = maxHealth;
+            HealthIncreaseFactor = healthIncreaseFactor;
+            HealthRegen = healthRegen;
         }
 
         public void TakeDamage(int amount, GameObject shooter)
