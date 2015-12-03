@@ -7,27 +7,32 @@ using Ball_of_Duty_Server.Utility;
 
 namespace Ball_of_Duty_Server.Domain.Entities
 {
-    public class Character : GameObject, ICollidable
+    public abstract class Character : GameObject, ICollidable
     {
         public double Score { get; set; } = 0;
         public Specializations Specialization { get; private set; }
         public double HighScore { get; set; } = 0;
+        public abstract int BaseHealth { get; }
+        public abstract double HealthIncreaseFactor { get; }
 
         private const double SCORE_UP = 100;
         private const double SCORE_UP_FACTOR = 0.1;
         private const double SCORE_DECAY_FACTOR = 0.01;
         private const double ALLOWED_SCORE_BEFORE_DECAY = 400;
         private int _killCount = 0;
-        private const long SCORE_DECAY_INTERVAL = 5000;
+        private const long DECAY_SCORE_INTERVAL = 5000;
+        private const long REGEN_INTERVAL = 5000;
         private readonly LightEvent _decayScoreEvent;
+        private readonly LightEvent _regenEvent;
 
-        public Character(double size, int health, Specializations specialization)
+        public Character(double baseSize, int health, Specializations specialization, int baseHealthRegen)
         {
-            Body = new Body(this, new Point(150, 150), size, size) { Type = Body.Geometry.CIRCLE };
+            Body = new Body(this, new Point(150, 150), baseSize, baseSize) { Type = Body.Geometry.CIRCLE };
             // TODO should be dynamic
-            Health = new Health(this, health);
+            Health = new Health(this, health, baseHealthRegen);
             Specialization = specialization;
-            _decayScoreEvent = new LightEvent(SCORE_DECAY_INTERVAL, DecayScore);
+            _decayScoreEvent = new LightEvent(DECAY_SCORE_INTERVAL, DecayScore);
+            _regenEvent = new LightEvent(REGEN_INTERVAL, Health.RegenHealth);
         }
 
         /// <summary>
@@ -45,18 +50,21 @@ namespace Ball_of_Duty_Server.Domain.Entities
             {
                 HighScore = Score;
             }
+            UpdateStats();
             NotifyObservers(Observation.ACQUISITION_OF_GOLD, victim);
         }
+
 
         /// <summary>
         /// "Decays" (decreases) the Score by 1 percent IF the score is greater than 400
         /// </summary>
-        public void DecayScore()
+        private void DecayScore()
         {
             if (Score > ALLOWED_SCORE_BEFORE_DECAY)
             {
                 Score -= (Score * SCORE_DECAY_FACTOR);
             }
+            UpdateStats();
         }
 
 
@@ -67,6 +75,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
         public override void Update(long deltaTime, ICollection<GameObject> values)
         {
             _decayScoreEvent.Update(deltaTime);
+            _regenEvent.Update(deltaTime);
         }
 
         public override bool Destroy(GameObject exterminator)
@@ -78,6 +87,11 @@ namespace Ball_of_Duty_Server.Domain.Entities
                 return true;
             }
             return false;
+        }
+
+        public void UpdateStats()
+        {
+            Health.Max = BaseHealth + (int)(Score * HealthIncreaseFactor);
         }
     }
 }
