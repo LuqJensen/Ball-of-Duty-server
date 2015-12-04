@@ -6,7 +6,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
 {
     public class GameObject : Observable
     {
-        private static int _gameObjectsCreated;
+        private static volatile int _gameObjectsCreated;
         public Body Body { get; set; }
         public Health Health { get; set; }
         public Physics.Physics Physics { get; set; }

@@ -27,11 +27,13 @@ namespace Ball_of_Duty_Server.Domain.Communication
         private IPEndPoint _ip; // Needs new port for each game
         private UdpClient _listener;
 
-        private ConcurrentDictionary<IPEndPoint, PlayerEndPoint> _playerEndPoints = new ConcurrentDictionary<IPEndPoint, PlayerEndPoint>();
+        private ConcurrentDictionary<IPEndPoint, PlayerEndPoint> _playerEndPoints =
+            new ConcurrentDictionary<IPEndPoint, PlayerEndPoint>();
 
         private ConcurrentDictionary<IPEndPoint, bool> _udpEndPoints = new ConcurrentDictionary<IPEndPoint, bool>();
 
-        private ConcurrentDictionary<AsyncSocket, bool> _connectedClients = new ConcurrentDictionary<AsyncSocket, bool>();
+        private ConcurrentDictionary<AsyncSocket, bool> _connectedClients =
+            new ConcurrentDictionary<AsyncSocket, bool>();
 
         private TcpListener _tcpListener = TcpListener.Create(SERVER_TCP_PORT); // TODO dynamic port
 

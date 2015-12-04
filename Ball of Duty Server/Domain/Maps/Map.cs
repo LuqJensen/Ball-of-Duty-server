@@ -232,7 +232,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
             }
             else
             {
-                Console.WriteLine($"Gameobject {victim.Id} died a natural death.");
+//                Console.WriteLine($"Gameobject {victim.Id} died a natural death.");
             }
             RemoveObject(victim.Id);
         }

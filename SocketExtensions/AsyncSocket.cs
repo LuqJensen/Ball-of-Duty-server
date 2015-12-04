@@ -10,7 +10,7 @@ namespace SocketExtensions
 {
     public class AsyncSocket : IDisposable
     {
-        public const int BUFFER_LENGTH = 0x1000;
+        public const int BUFFER_LENGTH = 0x10000;
 
         private bool _disposed = false;
         private Socket _socket;
@@ -33,6 +33,13 @@ namespace SocketExtensions
         {
             await _socket.ReceiveAsync(_receiver.SocketAwaitable);
             int bytesRead = _receiver.EventArgs.BytesTransferred;
+
+            if (bytesRead <= 0)
+            {
+                throw new SocketException((int)SocketError.ConnectionAborted);
+            }
+
+
             byte[] buffer = new byte[bytesRead];
             Array.Copy(_receiver.EventArgs.Buffer, buffer, bytesRead);
             return new ReadResult(bytesRead, buffer);
@@ -117,7 +124,8 @@ namespace SocketExtensions
                 }
             }
 
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed")]
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage",
+                "CA2213:DisposableFieldsShouldBeDisposed")]
             protected virtual void Dispose(bool safeToFreeManaged)
             {
                 if (!_disposed)
