@@ -90,7 +90,11 @@ namespace Ball_of_Duty_Server.Domain.Communication
         {
             IPAddress ipAddress = IPAddress.Parse(ip);
 
-            IPEndPoint tcpIpEp = new IPEndPoint(ipAddress, tcpPort);
+            // Socket.RemoteEndPoint property by default returns the IP presented as IPv6
+            // So we must make sure that this TCP IP matches it.
+            IPEndPoint tcpIpEp = new IPEndPoint(ipAddress.MapToIPv6(), tcpPort);
+            // For some reason the IPEndPoint obtained through UdpClient.Receive(ref IPEndPoint)
+            // Defaults to IPv4...
             IPEndPoint udpIpEp = new IPEndPoint(ipAddress, udpPort);
 
             if (_playerEndPoints.TryAdd(tcpIpEp, new PlayerEndPoint(udpIpEp, playerId)))
@@ -108,7 +112,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             // perhaps add socket to PlayerEndPoint so we can always efficiently remove the player from _connectedClients
             if (_playerEndPoints.TryRemove(socket.IpEndPoint, out endPoint))
             {
-                Console.WriteLine($"Client: {socket.IpEndPoint.ToString().Replace("::ffff:", "")} disconnected.");
+                Console.WriteLine($"Client: {socket.IpEndPoint.Address.MapToIPv4()} disconnected.");
                 bool b2;
                 _udpEndPoints.TryRemove(endPoint.IpEndPoint, out b2);
 
