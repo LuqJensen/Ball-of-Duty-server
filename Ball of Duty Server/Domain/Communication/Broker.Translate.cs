@@ -25,22 +25,27 @@ namespace Ball_of_Duty_Server.Domain.Communication
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         private void Read(byte[] buffer)
         {
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            BinaryReader br = new BinaryReader(new MemoryStream(buffer));
+            try
             {
-                if (br.ReadByte() != 1)
+                while (br.ReadByte() == (byte)ASCII.SOH)
                 {
-                    return;
-                }
+                    Opcodes opcode = (Opcodes)br.ReadByte();
+                    br.ReadByte();
 
-                Opcodes opcode = (Opcodes)br.ReadByte();
-                br.ReadByte();
-
-                Action<BinaryReader> readMethod;
-                if (_opcodeMapping.TryGetValue(opcode, out readMethod))
-                {
-                    readMethod(br);
+                    Action<BinaryReader> readMethod;
+                    if (_opcodeMapping.TryGetValue(opcode, out readMethod))
+                    {
+                        readMethod(br);
+                    }
                 }
+            }
+            catch (EndOfStreamException)
+            {
+            }
+            finally
+            {
+                br.Dispose();
             }
         }
 
@@ -53,7 +58,8 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 double y = reader.ReadDouble();
 
                 Map.UpdatePosition(new Point(x, y), id); // TODO preferably call this method once per positionupdate.
-            } while (reader.ReadByte() == (byte)ASCII.US);
+            }
+            while (reader.ReadByte() == (byte)ASCII.US);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
@@ -206,6 +212,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             int damage = reader.ReadInt32();
             int ownerId = reader.ReadInt32();
             int entityType = reader.ReadInt32();
+            reader.ReadByte(); // ASCII.EOT
 
             int bulletId = Map.AddBullet(x, y, velocityX, velocityY, radius, damage, ownerId);
             using (MemoryStream ms = new MemoryStream())

@@ -90,6 +90,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
         {
             IPAddress ipAddress = IPAddress.Parse(ip);
 
+            // http://blogs.msdn.com/b/webdev/archive/2013/01/08/dual-mode-sockets-never-create-an-ipv4-socket-again.aspx
             // Socket.RemoteEndPoint property by default returns the IP presented as IPv6
             // So we must make sure that this TCP IP matches it.
             IPEndPoint tcpIpEp = new IPEndPoint(ipAddress.MapToIPv6(), tcpPort);
@@ -165,7 +166,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
 
             _connectedClients.TryAdd(s, true);
-            Console.WriteLine($"Client connected: {s.IpEndPoint?.ToString().Replace("::ffff:", "")}");
+            Console.WriteLine($"Client connected: {s.IpEndPoint.Address.MapToIPv4()}");
 
             try
             {
