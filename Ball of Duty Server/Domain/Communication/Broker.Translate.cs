@@ -22,7 +22,6 @@ namespace Ball_of_Duty_Server.Domain.Communication
             _opcodeMapping.Add(Opcodes.REQUEST_BULLET, this.BulletCreationRequest);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         private void Read(byte[] buffer)
         {
             BinaryReader br = new BinaryReader(new MemoryStream(buffer));
@@ -58,8 +57,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 double y = reader.ReadDouble();
 
                 Map.UpdatePosition(new Point(x, y), id); // TODO preferably call this method once per positionupdate.
-            }
-            while (reader.ReadByte() == (byte)ASCII.US);
+            } while (reader.ReadByte() == (byte)ASCII.US);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
@@ -200,6 +198,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         private void BulletCreationRequest(BinaryReader reader) // TODO split this in read and write.
         {
@@ -213,7 +212,6 @@ namespace Ball_of_Duty_Server.Domain.Communication
             int ownerId = reader.ReadInt32();
             int entityType = reader.ReadInt32();
             reader.ReadByte(); // ASCII.EOT
-
             int bulletId = Map.AddBullet(x, y, velocityX, velocityY, radius, damage, ownerId);
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
