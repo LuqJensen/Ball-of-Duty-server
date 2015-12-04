@@ -27,5 +27,10 @@ namespace Ball_of_Duty_Server.Utility
                 _currentTime = 0;
             }
         }
+
+        public void Reset()
+        {
+            _currentTime = 0; // TODO consider locking here.
+        }
     }
 }

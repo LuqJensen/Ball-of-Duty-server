@@ -10,6 +10,7 @@
         BROADCAST_SCORE_UPDATE = 6,
         BROADCAST_HEALTH_UPDATE = 7,
         KILL_NOTIFICATION = 8,
-        OBJECT_DESTRUCTION = 9
+        OBJECT_DESTRUCTION = 9,
+        PING = 10
     }
 }

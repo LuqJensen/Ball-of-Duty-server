@@ -7,12 +7,14 @@ using System.Windows;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.Services;
+using Ball_of_Duty_Server.Utility;
 using SocketExtensions;
 using Timer = System.Timers.Timer;
 
@@ -24,16 +26,19 @@ namespace Ball_of_Duty_Server.Domain.Communication
         private const int SERVER_TCP_PORT = 15010;
         private const int SIO_UDP_CONNRESET = -1744830452;
 
+        private const int TCP_TIMEOUT = 10000;
+
         private IPEndPoint _ip; // Needs new port for each game
         private UdpClient _listener;
 
-        private ConcurrentDictionary<IPEndPoint, PlayerEndPoint> _playerEndPoints =
-            new ConcurrentDictionary<IPEndPoint, PlayerEndPoint>();
+        private ConcurrentDictionary<IPEndPoint, PlayerEndPoint> _playerEndPoints = new ConcurrentDictionary<IPEndPoint, PlayerEndPoint>();
 
         private ConcurrentDictionary<IPEndPoint, bool> _udpEndPoints = new ConcurrentDictionary<IPEndPoint, bool>();
 
-        private ConcurrentDictionary<AsyncSocket, bool> _connectedClients =
-            new ConcurrentDictionary<AsyncSocket, bool>();
+        /// <summary>
+        /// Pairs an AsyncSocket with a TCP read timeout LightEvent.
+        /// </summary>
+        private ConcurrentDictionary<AsyncSocket, LightEvent> _connectedClients = new ConcurrentDictionary<AsyncSocket, LightEvent>();
 
         private TcpListener _tcpListener = TcpListener.Create(SERVER_TCP_PORT); // TODO dynamic port
 
@@ -58,6 +63,14 @@ namespace Ball_of_Duty_Server.Domain.Communication
             t2.Start();
             Thread t3 = new Thread(BroadcastTcpAsync);
             t3.Start();
+        }
+
+        public void Update(long deltaTime)
+        {
+            foreach (var v in _connectedClients.Values)
+            {
+                v.Update(deltaTime);
+            }
         }
 
         private void BroadcastTcpAsync()
@@ -108,22 +121,27 @@ namespace Ball_of_Duty_Server.Domain.Communication
 
         public void RemoveTarget(AsyncSocket socket)
         {
-            bool b;
-            _connectedClients.TryRemove(socket, out b);
+            LightEvent e;
+            _connectedClients.TryRemove(socket, out e);
 
             PlayerEndPoint endPoint;
             // perhaps add socket to PlayerEndPoint so we can always efficiently remove the player from _connectedClients
             if (_playerEndPoints.TryRemove(socket.IpEndPoint, out endPoint))
             {
-                Console.WriteLine($"Client: {socket.IpEndPoint.Address.MapToIPv4()} disconnected.");
+                Console.WriteLine($"Client: {socket.IpEndPoint.Address.MapToIPv4()}:{socket.IpEndPoint.Port} disconnected.");
                 bool b2;
                 _udpEndPoints.TryRemove(endPoint.IpEndPoint, out b2);
 
-                Game game;
-                if (BoDService.PlayerIngame.TryRemove(endPoint.PlayerId, out game))
+                // If any PlayerEndPoint, other than the one that was just removed, 
+                // references PlayerId, the player must be connected on another PlayerEndPoint.
+                if (_playerEndPoints.Values.All(p => p.PlayerId != endPoint.PlayerId))
                 {
-                    game.RemovePlayer(endPoint.PlayerId);
-                    Console.WriteLine($"Player: {endPoint.PlayerId} quit game: {game.Id}.");
+                    Game game;
+                    if (BoDService.PlayerIngame.TryRemove(endPoint.PlayerId, out game))
+                    {
+                        game.RemovePlayer(endPoint.PlayerId);
+                        Console.WriteLine($"Player: {endPoint.PlayerId} quit game: {game.Id}.");
+                    }
                 }
             }
             socket.Dispose();
@@ -167,7 +185,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 return;
             }
 
-            _connectedClients.TryAdd(s, true);
+            _connectedClients.TryAdd(s, new LightEvent(10000, () => { RemoveTarget(s); }));
             Console.WriteLine($"Client connected: {s.IpEndPoint.Address.MapToIPv4()}");
 
             try
@@ -176,7 +194,15 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 {
                     Task<AsyncSocket.ReadResult> receive = s.ReceiveAsync();
                     await receive;
-                    ReceiveTcp(receive.Result);
+
+                    LightEvent e;
+                    if (_connectedClients.TryGetValue(s, out e))
+                    {
+                        // Reset the LightEvent's timer to prevent timeout.
+                        e.Reset();
+                    }
+
+                    Read(receive.Result.Buffer);
                 }
             }
             catch (SocketException)
@@ -200,11 +226,6 @@ namespace Ball_of_Duty_Server.Domain.Communication
 
                 _udpEndPoints.TryUpdate(ipEp, true, false);
             }
-        }
-
-        public void ReceiveTcp(AsyncSocket.ReadResult rr)
-        {
-            Read(rr.Buffer);
         }
 
         public void SendTcp(byte[] b)

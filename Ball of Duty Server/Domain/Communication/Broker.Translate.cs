@@ -20,6 +20,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
         {
             _opcodeMapping.Add(Opcodes.POSITION_UPDATE, this.ReadPositionUpdate);
             _opcodeMapping.Add(Opcodes.REQUEST_BULLET, this.BulletCreationRequest);
+            _opcodeMapping.Add(Opcodes.PING, br => { br.ReadByte(); }); // just read ASCII.EOT
         }
 
         private void Read(byte[] buffer)
@@ -33,9 +34,18 @@ namespace Ball_of_Duty_Server.Domain.Communication
                     br.ReadByte();
 
                     Action<BinaryReader> readMethod;
-                    if (_opcodeMapping.TryGetValue(opcode, out readMethod))
+                    if (!_opcodeMapping.TryGetValue(opcode, out readMethod))
                     {
-                        readMethod(br);
+                        // Malformed packet or malformed read structures.
+                        return;
+                    }
+
+                    readMethod(br);
+
+                    // Should be quite a lot cheaper than throwing exceptions all the time.
+                    if (br.BaseStream.Position == buffer.Length)
+                    {
+                        break;
                     }
                 }
             }
@@ -57,7 +67,8 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 double y = reader.ReadDouble();
 
                 Map.UpdatePosition(new Point(x, y), id); // TODO preferably call this method once per positionupdate.
-            } while (reader.ReadByte() == (byte)ASCII.US);
+            }
+            while (reader.ReadByte() == (byte)ASCII.US);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
