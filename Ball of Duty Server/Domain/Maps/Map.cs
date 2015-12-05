@@ -15,22 +15,18 @@ namespace Ball_of_Duty_Server.Domain.Maps
 {
     public class Map
     {
-        private ConcurrentDictionary<int, bool> _gameObjectsActive;
-
         private Thread _updateThread;
         private long _lastUpdate;
         // The precision of DateTime.Ticks is given in 100's of nanoseconds as stated here:
         // https://msdn.microsoft.com/en-us/library/system.datetime.ticks(v=vs.110).aspx
         private const long DATETIME_TICKS_TO_MILLISECONDS = 10000;
-        private LightEvent characterUpdateEvent;
-        private LightEvent timeoutEvent;
+        private LightEvent _characterStatUpdateEvent;
 
         public int Width { get; set; }
 
         public int Height { get; set; }
 
-        public ConcurrentDictionary<int, GameObject> GameObjects { get; set; } =
-            new ConcurrentDictionary<int, GameObject>();
+        public ConcurrentDictionary<int, GameObject> GameObjects { get; set; } = new ConcurrentDictionary<int, GameObject>();
 
         public Broker Broker { get; set; }
 
@@ -48,10 +44,9 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
         public void Activate()
         {
-            timeoutEvent = new LightEvent(10000, CheckTimeouts);
-            characterUpdateEvent = new LightEvent(300, CharacterStatUpdate); // every 300ms.
+            _characterStatUpdateEvent = new LightEvent(300, CharacterStatUpdate); // every 300ms.
             _lastUpdate = DateTime.Now.Ticks;
-            _gameObjectsActive = new ConcurrentDictionary<int, bool>();
+
             while (true)
             {
                 Update();
@@ -83,8 +78,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
             }
             Broker.WritePositionUpdate(GetPositions());
 
-            characterUpdateEvent.Update(deltaTime);
-            timeoutEvent.Update(deltaTime);
+            _characterStatUpdateEvent.Update(deltaTime);
         }
 
         private List<GameObjectDAO> GetHealthObjects()
@@ -185,42 +179,6 @@ namespace Ball_of_Duty_Server.Domain.Maps
                 }).ToList();
         }
 
-        private void CheckTimeouts()
-        {
-            if (_gameObjectsActive.Count == 0)
-                return;
-
-            var removeTimeoutObjects = new List<int>();
-
-            foreach (var go in GameObjects.Values)
-            {
-                if (!(go is Character))
-                {
-                    continue;
-                }
-                if (!_gameObjectsActive.Keys.Contains(go.Id))
-                {
-                    removeTimeoutObjects.Add(go.Id);
-                    Console.WriteLine(go.Id + " Hasnt send messages for atleast 10 seconds");
-                }
-            }
-
-            foreach (var rto in removeTimeoutObjects)
-            {
-                Console.WriteLine("removing " + rto);
-                GameObject go;
-                if (GameObjects.TryGetValue(rto, out go))
-                {
-                    if (go.Destroy())
-                    {
-                        RemoveObject(go.Id);
-                    }
-                }
-            }
-
-            _gameObjectsActive.Clear();
-        }
-
         public void ExterminationNotification(Observable observable, object data)
         {
             GameObject victim = (GameObject)observable;
@@ -252,7 +210,6 @@ namespace Ball_of_Duty_Server.Domain.Maps
             GameObject go;
             if (GameObjects.TryGetValue(goId, out go))
             {
-                _gameObjectsActive.TryAdd(go.Id, true);
                 go.Body.Position = position;
             }
         }
