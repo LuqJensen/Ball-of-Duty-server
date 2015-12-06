@@ -11,6 +11,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
         public Health Health { get; set; }
         public Physics.Physics Physics { get; set; }
         public int Id { get; private set; }
+        public EntityType Type { get; protected set; }
         public bool Destroyed { get; private set; } = false;
 
         public GameObject()

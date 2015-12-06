@@ -27,12 +27,16 @@ namespace Ball_of_Duty_Server.Domain.Entities
 
         public Character(double baseSize, int health, Specializations specialization, int baseHealthRegen)
         {
-            Body = new Body(this, new Point(150, 150), baseSize, baseSize) { Type = Body.Geometry.CIRCLE };
+            Body = new Body(this, new Point(150, 150), baseSize, baseSize)
+            {
+                Type = Body.Geometry.CIRCLE
+            };
             // TODO should be dynamic
             Health = new Health(this, health, baseHealthRegen);
             Specialization = specialization;
             _decayScoreEvent = new LightEvent(DECAY_SCORE_INTERVAL, DecayScore);
             _regenEvent = new LightEvent(REGEN_INTERVAL, Health.RegenHealth);
+            Type = EntityType.CHARACTER;
         }
 
         /// <summary>

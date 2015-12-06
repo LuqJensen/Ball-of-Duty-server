@@ -100,13 +100,13 @@ namespace Ball_of_Duty_Server.Domain.Maps
             }).ToList();
         }
 
-        public int AddBullet(double x, double y, double velocityX, double velocityY, double radius, int damage,
+        public int AddBullet(double x, double y, double velocityX, double velocityY, double radius, int damage, int bulletType,
             int ownerId)
         {
             GameObject owner;
             if (GameObjects.TryGetValue(ownerId, out owner))
             {
-                Bullet bullet = new Bullet(new Point(x, y), new Vector(velocityX, velocityY), radius, damage, owner);
+                Bullet bullet = new Bullet(new Point(x, y), new Vector(velocityX, velocityY), radius, damage, bulletType, owner);
                 if (!GameObjects.TryAdd(bullet.Id, bullet))
                 {
                     Console.WriteLine($"Bullet {bullet.Id} dongoofed");
@@ -158,11 +158,19 @@ namespace Ball_of_Duty_Server.Domain.Maps
                     Height = b.Height,
                     Type = (int)b.Type
                 }
+                let physics = new PhysicsDTO
+                {
+                    VelX = go.Physics?.Velocity.X ?? 0,
+                    VelY = go.Physics?.Velocity.Y ?? 0,
+                }
                 select new GameObjectDTO
                 {
                     Id = go.Id,
                     Body = body,
-                    Specialization = go is Character ? (int)((Character)go).Specialization : 0
+                    Specialization = go is Character ? (int)((Character)go).Specialization : 0,
+                    Type = (int)go.Type,
+                    Physics = physics,
+                    BulletType = (go as Bullet)?.BulletType ?? -1
                 }).ToArray();
         }
 

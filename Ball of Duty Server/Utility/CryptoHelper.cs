@@ -15,11 +15,7 @@ namespace Ball_of_Duty_Server.Utility
             {
                 csprng.GetBytes(buffer);
             }
-            foreach (var v in buffer)
-            {
-                Console.Write(v);
-            }
-            Console.WriteLine();
+
             return buffer;
         }
     }
