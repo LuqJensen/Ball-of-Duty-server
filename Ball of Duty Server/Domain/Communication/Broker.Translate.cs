@@ -163,21 +163,21 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
-        public void WriteObjectDestruction(int objectId)
-        {
-            using (MemoryStream ms = new MemoryStream())
-            using (BinaryWriter bw = new BinaryWriter(ms))
-            {
-                bw.Write((byte)ASCII.SOH);
-                bw.Write((byte)Opcodes.OBJECT_DESTRUCTION);
-                bw.Write((byte)ASCII.STX);
-                bw.Write(objectId);
-
-                bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
-            }
-        }
+//        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
+//        public void WriteObjectDestruction(int objectId)
+//        {
+//            using (MemoryStream ms = new MemoryStream())
+//            using (BinaryWriter bw = new BinaryWriter(ms))
+//            {
+//                bw.Write((byte)ASCII.SOH);
+//                bw.Write((byte)Opcodes.OBJECT_DESTRUCTION);
+//                bw.Write((byte)ASCII.STX);
+//                bw.Write(objectId);
+//
+//                bw.Write((byte)ASCII.EOT);
+//                SendTcp(ms.ToArray());
+//            }
+//        }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         public void WriteCreateCharacter(string nickname, GameObjectDAO charData)
