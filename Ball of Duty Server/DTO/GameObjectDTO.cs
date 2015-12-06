@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ball_of_Duty_Server.Domain.Entities;
 
 namespace Ball_of_Duty_Server.DTO
 {
@@ -11,6 +12,9 @@ namespace Ball_of_Duty_Server.DTO
     {
         public int Id;
         public BodyDTO Body;
+        public PhysicsDTO Physics;
+        public int Type;
+        public int BulletType;
         public int Specialization;
     }
 }

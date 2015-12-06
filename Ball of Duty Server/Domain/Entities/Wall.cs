@@ -7,12 +7,15 @@ namespace Ball_of_Duty_Server.Domain.Entities
     {
         public Wall(Point position, int size)
         {
-            Body = new Body(this, position, size, size) { Type = Body.Geometry.RECTANGLE };
+            Body = new Body(this, position, size, size)
+            {
+                Type = Body.Geometry.RECTANGLE
+            };
+            Type = EntityType.WALL;
         }
 
         public void CollideWith(ICollidable other)
         {
-            
         }
     }
 }

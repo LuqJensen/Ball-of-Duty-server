@@ -15,13 +15,20 @@ namespace Ball_of_Duty_Server.Domain.Entities
         public int Damage { get; set; }
         public GameObject Owner { get; set; }
 
-        public Bullet(Point position, Vector velocity, double radius, int damage, GameObject owner)
+        public int BulletType { get; set; }
+
+        public Bullet(Point position, Vector velocity, double radius, int damage, int bulletType, GameObject owner)
         {
+            BulletType = bulletType;
             Owner = owner;
             Damage = damage;
-            Body = new Body(this, position, radius, radius) { Type = Body.Geometry.RECTANGLE };
+            Body = new Body(this, position, radius, radius)
+            {
+                Type = Body.Geometry.CIRCLE
+            };
             Physics = new Physics.Physics(this, 200, velocity);
             _lifeTimeEvent = new LightEvent(5000, DestroyEvent);
+            Type = EntityType.BULLET;
         }
 
         private void DestroyEvent()

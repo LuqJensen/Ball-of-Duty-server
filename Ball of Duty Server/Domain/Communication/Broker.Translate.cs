@@ -233,7 +233,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             int ownerId = reader.ReadInt32();
             int entityType = reader.ReadInt32();
             reader.ReadByte(); // ASCII.EOT
-            int bulletId = Map.AddBullet(x, y, velocityX, velocityY, radius, damage, ownerId);
+            int bulletId = Map.AddBullet(x, y, velocityX, velocityY, radius, damage, bulletType, ownerId);
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
