@@ -38,16 +38,15 @@ namespace Ball_of_Duty_Server.Domain.Physics.Collision
 
         private static bool CollisionCircleCircle(GameObject o1, GameObject o2)
         {
-            double c1x = o1.Body.Position.X;
-            double c2x = o2.Body.Position.X;
-            double c1y = o1.Body.Position.Y;
-            double c2y = o2.Body.Position.Y;
+            double c1x = o1.Body.Center.X;
+            double c2x = o2.Body.Center.X;
+            double c1y = o1.Body.Center.Y;
+            double c2y = o2.Body.Center.Y;
 
             double dx = c1x - c2x;
             double dy = c1y - c2y;
             double c1r = o1.Body.Height / 2;
             double c2r = o2.Body.Height / 2;
-
             return Math.Sqrt((dx * dx) + (dy * dy)) <= (c1r + c2r);
         }
 

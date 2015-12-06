@@ -15,8 +15,8 @@ namespace Ball_of_Duty_Server.Domain.Entities
         public abstract int BaseHealth { get; }
         public abstract double HealthIncreaseFactor { get; }
 
-        private const double SCORE_UP = 100;
-        private const double SCORE_UP_FACTOR = 0.1;
+        private const double SCORE_UP = 60;
+        private const double SCORE_UP_FACTOR = 0.4;
         private const double SCORE_DECAY_FACTOR = 0.01;
         private const double ALLOWED_SCORE_BEFORE_DECAY = 400;
         private int _killCount = 0;
@@ -27,7 +27,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
 
         public Character(double baseSize, int health, Specializations specialization, int baseHealthRegen)
         {
-            Body = new Body(this, new Point(150, 150), baseSize, baseSize)
+            Body = new Body(this, new Point(-500, -500), baseSize, baseSize)
             {
                 Type = Body.Geometry.CIRCLE
             };

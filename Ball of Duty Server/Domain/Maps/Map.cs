@@ -194,21 +194,20 @@ namespace Ball_of_Duty_Server.Domain.Maps
             GameObject killer = data as GameObject;
             if (killer != null)
             {
-                Broker.KillNotification(victim.Id, killer.Id);
+                RemoveObject(victim.Id, killer.Id);
             }
             else
             {
-//                Console.WriteLine($"Gameobject {victim.Id} died a natural death.");
+                RemoveObject(victim.Id, 0); // if no killer killerId is 0
             }
-            RemoveObject(victim.Id);
         }
 
-        public void RemoveObject(int id)
+        public void RemoveObject(int id, int killerId)
         {
             GameObject go;
             if (GameObjects.TryRemove(id, out go))
             {
-                Broker.WriteObjectDestruction(go.Id);
+                Broker.KillNotification(go.Id, killerId); // No killer
                 go.UnregisterAll(this);
             }
         }
