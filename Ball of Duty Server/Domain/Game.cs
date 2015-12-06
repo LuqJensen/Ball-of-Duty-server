@@ -19,14 +19,12 @@ namespace Ball_of_Duty_Server.Domain
 
         public Map Map { get; } = new Map(4000, 4000);
 
-        public void AddPlayer(Player player, string clientIp, int clientUdpPort, int clientTcpPort, Specializations clientSpecialization)
+        public void AddPlayer(Player player, Specializations clientSpecialization)
         {
             if (_players.TryAdd(player.Id, player))
             {
                 player.CurrentCharacter = Map.AddCharacter(player.Nickname, clientSpecialization);
                 // TODO data to character creation should be dynamic
-
-                Map.Broker.AddTarget(player.Id, clientIp, clientUdpPort, clientTcpPort);
             }
         }
 

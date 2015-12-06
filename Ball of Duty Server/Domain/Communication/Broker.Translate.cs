@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Ball_of_Duty_Server.DAO;
-using Ball_of_Duty_Server.Domain.Entities;
-using Ball_of_Duty_Server.DTO;
 
 namespace Ball_of_Duty_Server.Domain.Communication
 {
@@ -23,7 +22,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             _opcodeMapping.Add(Opcodes.PING, br => { br.ReadByte(); }); // just read ASCII.EOT
         }
 
-        private void Read(byte[] buffer)
+        private void Read(byte[] buffer, IPEndPoint endPoint)
         {
             BinaryReader br = new BinaryReader(new MemoryStream(buffer));
             try
@@ -31,7 +30,18 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 while (br.ReadByte() == (byte)ASCII.SOH)
                 {
                     Opcodes opcode = (Opcodes)br.ReadByte();
+
                     br.ReadByte();
+
+                    if (opcode == Opcodes.UDP_CONNECT)
+                    {
+                        PlayerEndPoint playerEndPoint;
+                        if (_playerSessionTokens.TryGetValue(Convert.ToBase64String(br.ReadBytes(32)), out playerEndPoint))
+                        {
+                            playerEndPoint.UdpIpEndPoint = endPoint;
+                        }
+                        return;
+                    }
 
                     Action<BinaryReader> readMethod;
                     if (!_opcodeMapping.TryGetValue(opcode, out readMethod))

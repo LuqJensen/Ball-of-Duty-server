@@ -79,6 +79,7 @@
     <Compile Include="Domain\Health.cs" />
     <Compile Include="Domain\Maps\MapGenerator.cs" />
     <Compile Include="PlayerEndPoint.cs" />
+    <Compile Include="Utility\CryptoHelper.cs" />
     <Compile Include="Utility\LightEvent.cs" />
     <Compile Include="Utility\Observable.cs" />
     <Compile Include="Utility\ComparisonExtensions.cs" />

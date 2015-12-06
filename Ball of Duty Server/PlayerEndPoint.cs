@@ -4,18 +4,24 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using SocketExtensions;
 
 namespace Ball_of_Duty_Server
 {
     public class PlayerEndPoint
     {
         public int PlayerId { get; set; }
-        public IPEndPoint IpEndPoint { get; set; }
 
-        public PlayerEndPoint(IPEndPoint ipEndPoint, int playerId)
+        public IPEndPoint UdpIpEndPoint { get; set; }
+
+        public string SessionId { get; set; }
+
+        public AsyncSocket TCPSocket { get; set; }
+
+        public PlayerEndPoint(int playerId, string sessionId)
         {
-            IpEndPoint = ipEndPoint;
             PlayerId = playerId;
+            SessionId = sessionId;
         }
     }
 }

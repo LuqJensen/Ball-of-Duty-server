@@ -10,13 +10,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.Services;
 using Ball_of_Duty_Server.Utility;
 using SocketExtensions;
-using Timer = System.Timers.Timer;
 
 namespace Ball_of_Duty_Server.Domain.Communication
 {
@@ -32,8 +32,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
         private UdpClient _listener;
 
         private ConcurrentDictionary<IPEndPoint, PlayerEndPoint> _playerEndPoints = new ConcurrentDictionary<IPEndPoint, PlayerEndPoint>();
-
-        private ConcurrentDictionary<IPEndPoint, bool> _udpEndPoints = new ConcurrentDictionary<IPEndPoint, bool>();
+        private ConcurrentDictionary<string, PlayerEndPoint> _playerSessionTokens = new ConcurrentDictionary<string, PlayerEndPoint>();
 
         /// <summary>
         /// Pairs an AsyncSocket with a TCP read timeout LightEvent.
@@ -101,24 +100,6 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
-        public void AddTarget(int playerId, string ip, int udpPort, int tcpPort)
-        {
-            IPAddress ipAddress = IPAddress.Parse(ip);
-
-            // http://blogs.msdn.com/b/webdev/archive/2013/01/08/dual-mode-sockets-never-create-an-ipv4-socket-again.aspx
-            // Socket.RemoteEndPoint property by default returns the IP presented as IPv6
-            // So we must make sure that this TCP IP matches it.
-            IPEndPoint tcpIpEp = new IPEndPoint(ipAddress.MapToIPv6(), tcpPort);
-            // For some reason the IPEndPoint obtained through UdpClient.Receive(ref IPEndPoint)
-            // Defaults to IPv4...
-            IPEndPoint udpIpEp = new IPEndPoint(ipAddress, udpPort);
-
-            if (_playerEndPoints.TryAdd(tcpIpEp, new PlayerEndPoint(udpIpEp, playerId)))
-            {
-                _udpEndPoints.TryAdd(udpIpEp, false);
-            }
-        }
-
         public void RemoveTarget(AsyncSocket socket)
         {
             LightEvent e;
@@ -129,8 +110,6 @@ namespace Ball_of_Duty_Server.Domain.Communication
             if (_playerEndPoints.TryRemove(socket.IpEndPoint, out endPoint))
             {
                 Console.WriteLine($"Client: {socket.IpEndPoint.Address.MapToIPv4()}:{socket.IpEndPoint.Port} disconnected.");
-                bool b2;
-                _udpEndPoints.TryRemove(endPoint.IpEndPoint, out b2);
 
                 // If any PlayerEndPoint, other than the one that was just removed, 
                 // references PlayerId, the player must be connected on another PlayerEndPoint.
@@ -170,6 +149,25 @@ namespace Ball_of_Duty_Server.Domain.Communication
             });
         }
 
+        /// <summary>
+        /// Generates a cryptographically random sessionId.
+        /// And associates it with a PlayerEndPoint containing,
+        /// this sessionId and the clients playerId.
+        /// </summary>
+        /// <param name="playerId"> The playerId of the client requesting a sessionId. </param>
+        /// <param name="ip"> The IP from which the client makes the request. </param>
+        /// <returns> A cryptographically random sessionId. </returns>
+        public byte[] GenerateSessionId(int playerId, string ip)
+        {
+            IPAddress ipAddress = IPAddress.Parse(ip);
+            byte[] randomBytes = new byte[32].FillRandomly(); // TODO const size.
+            string sessionId = Convert.ToBase64String(randomBytes);
+
+            _playerSessionTokens.TryAdd(sessionId, new PlayerEndPoint(playerId, sessionId));
+
+            return randomBytes;
+        }
+
         private async Task AcceptClientAsync(Socket socket)
         {
             await Task.Yield();
@@ -185,24 +183,30 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 return;
             }
 
-            _connectedClients.TryAdd(s, new LightEvent(10000, () => { RemoveTarget(s); }));
-            Console.WriteLine($"Client connected: {s.IpEndPoint.Address.MapToIPv4()}");
+            // Cancel the attempt to communicate with the client on both TCP and UDP after 10 sec.
+            CancellationTokenSource cts = new CancellationTokenSource(10000);
+            Task timeout = new Task(async () =>
+            {
+                await Task.Delay(10000);
+                throw new SocketException();
+            });
 
             try
             {
-                while (true)
+                Task<bool> tcp = AddTCPTarget(s);
+                // Only await timeout once. If tcp finishes first we wont get an exception when timeout finishes.
+                await Task.WhenAny(tcp, timeout);
+
+                // await tcp here aswell because we want the result of it. Once we got the result of AddTCPTarget(),
+                // we await the result of AddUDPTarget.
+                if (await tcp && await AddUDPTarget(_playerEndPoints[s.IpEndPoint], cts.Token))
                 {
-                    Task<AsyncSocket.ReadResult> receive = s.ReceiveAsync();
-                    await receive;
-
-                    LightEvent e;
-                    if (_connectedClients.TryGetValue(s, out e))
-                    {
-                        // Reset the LightEvent's timer to prevent timeout.
-                        e.Reset();
-                    }
-
-                    Read(receive.Result.Buffer);
+                    // Timeout the TCP and UDP connection to a client if we dont receive a TCP message
+                    // at least once per 10 sec.
+                    _connectedClients.TryAdd(s, new LightEvent(10000, () => { RemoveTarget(s); }));
+                    Console.WriteLine($"Client connected: {s.IpEndPoint.Address.MapToIPv4()}");
+                    // Start reading actual game related messages from the client.
+                    await ReceiveFromClientAsync(s);
                 }
             }
             catch (SocketException)
@@ -213,7 +217,91 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
             finally
             {
+                cts.Dispose();
                 RemoveTarget(s);
+            }
+        }
+
+        /// <summary>
+        /// Awaits a message from the client containing a sessionId.
+        /// If the sessionId matches any we have given out. Assign the found PlayerEndPoint
+        /// to the client. We write back the sessionId again as a signal that the client should
+        /// begin attempting to "connect" with UDP.
+        /// </summary>
+        /// <param name="socket"> The TCP socket for the client. </param>
+        /// <returns> true if the client succesfully verified through TCP. false otherwise. </returns>
+        private async Task<bool> AddTCPTarget(AsyncSocket socket)
+        {
+            AsyncSocket.ReadResult result = await socket.ReceiveAsync();
+            if (result.BytesRead != 32)
+            {
+                return false;
+            }
+
+            string sessionId = Convert.ToBase64String(result.Buffer);
+            PlayerEndPoint playerEndPoint;
+            if (!_playerSessionTokens.TryGetValue(sessionId, out playerEndPoint))
+            {
+                return false;
+            }
+
+            if (sessionId != playerEndPoint.SessionId)
+                return false;
+
+            playerEndPoint.TCPSocket = socket;
+
+            foreach (var v in result.Buffer)
+            {
+                Console.Write(v);
+            }
+            Console.WriteLine();
+            await socket.SendMessage(result.Buffer);
+
+            return _playerEndPoints.TryAdd(socket.IpEndPoint, playerEndPoint);
+        }
+
+        /// <summary>
+        /// Continuously awaits a UDP message from the client,
+        /// having opcode == Opcode.UDP_CONNECT and containing a matching sessionId.
+        /// When playerEndPoint.UdpIpEndPoint != null the client has succesfully identified
+        /// with UDP. We then send the sessionId once more to tell the client to stop sending
+        /// further UDP packets.
+        /// </summary>
+        /// <param name="playerEndPoint"> A token identifying and linking the client to its UDP and TCP "connections". </param>
+        /// <param name="ct"> A CancellationToken that will expire after 10 seconds. </param>
+        /// <returns> true if the client succesfully verified through UDP. false otherwise. </returns>
+        private async Task<bool> AddUDPTarget(PlayerEndPoint playerEndPoint, CancellationToken ct)
+        {
+            while (playerEndPoint.UdpIpEndPoint == null)
+            {
+                if (ct.IsCancellationRequested)
+                {
+                    return false;
+                }
+
+                await Task.Delay(100);
+            }
+
+            await playerEndPoint.TCPSocket.SendMessage(Convert.FromBase64String(playerEndPoint.SessionId));
+
+            return (_playerSessionTokens.TryRemove(playerEndPoint.SessionId, out playerEndPoint));
+        }
+
+        private async Task ReceiveFromClientAsync(AsyncSocket s)
+        {
+            while (true)
+            {
+                Task<AsyncSocket.ReadResult> receive = s.ReceiveAsync();
+                await receive;
+
+                LightEvent e;
+                if (_connectedClients.TryGetValue(s, out e))
+                {
+                    // Reset the LightEvent's timer to prevent timeout.
+                    e.Reset();
+                }
+
+                Read(receive.Result.Buffer, s.IpEndPoint);
             }
         }
 
@@ -222,9 +310,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             while (true)
             {
                 IPEndPoint ipEp = null;
-                Read(_listener.Receive(ref ipEp));
-
-                _udpEndPoints.TryUpdate(ipEp, true, false);
+                Read(_listener.Receive(ref ipEp), ipEp);
             }
         }
 
@@ -235,11 +321,11 @@ namespace Ball_of_Duty_Server.Domain.Communication
 
         public void SendUdp(byte[] b)
         {
-            foreach (var targetEndPoint in _udpEndPoints)
+            foreach (var targetEndPoint in _playerEndPoints.Values)
             {
-                if (targetEndPoint.Value)
+                if (targetEndPoint.UdpIpEndPoint != null)
                 {
-                    _listener.Send(b, b.Length, targetEndPoint.Key);
+                    _listener.Send(b, b.Length, targetEndPoint.UdpIpEndPoint);
                 }
             }
         }

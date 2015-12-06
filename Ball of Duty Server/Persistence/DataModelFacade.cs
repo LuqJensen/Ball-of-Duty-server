@@ -37,8 +37,8 @@ namespace Ball_of_Duty_Server.Persistence
                 {
                     Username = username,
                     Player = player,
-                    Salt = Encoding.ASCII.GetString(salt),
-                    Hash = Encoding.ASCII.GetString(hash)
+                    Salt = Convert.ToBase64String(salt),
+                    Hash = Convert.ToBase64String(hash)
                 };
 
                 player.Account = account;
@@ -54,7 +54,7 @@ namespace Ball_of_Duty_Server.Persistence
             using (DatabaseContainer dc = new DatabaseContainer())
             {
                 return dc.Players.Select(p => p).OrderByDescending(p => p.HighScore).Take(100).ToArray();
-                    // TODO maybe let the quantity be a parameter
+                // TODO maybe let the quantity be a parameter
             }
         }
     }

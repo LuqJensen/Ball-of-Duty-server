@@ -115,9 +115,9 @@ namespace Ball_of_Duty_Server.Services
             Specializations spec = (Specializations)clientSpecializations;
 
             return game.Respawn(clientPlayerId, spec);
-        } 
+        }
 
-        public GameDTO JoinGame(int clientPlayerId, int clientUdpPort, int clientTcpPort, int clientSpecialization)
+        public GameDTO JoinGame(int clientPlayerId, int clientSpecialization)
         {
             Player player;
             if (!OnlinePlayers.TryGetValue(clientPlayerId, out player))
@@ -152,7 +152,7 @@ namespace Ball_of_Duty_Server.Services
             // http://stackoverflow.com/questions/1758321/casting-ints-to-enums-in-c-sharp
             Specializations spec = (Specializations)clientSpecialization;
 
-            game.AddPlayer(player, clientIp, clientUdpPort, clientTcpPort, spec);
+            game.AddPlayer(player, spec);
             if (!PlayerIngame.ContainsKey(player.Id)) //TODO: brug OnlinePlayers istedet
             {
                 PlayerIngame.TryAdd(player.Id, game);
@@ -160,14 +160,15 @@ namespace Ball_of_Duty_Server.Services
 
             return new GameDTO
             {
+                SessionId = map.Broker.GenerateSessionId(player.Id, clientIp),
                 Players = game.ExportPlayers(),
                 GameObjects = map.ExportGameObjects(),
                 CharacterId = player.CurrentCharacter.Id,
                 GameId = game.Id,
                 MapWidth = map.Width,
                 MapHeight = map.Height
+                //TODO: Add servers IP here
             };
-            //TODO: Add servers IP here
         }
 
         public void QuitGame(int clientPlayerId /*, int gameId*/) //TODO: brug OnlinePlayers istedet
