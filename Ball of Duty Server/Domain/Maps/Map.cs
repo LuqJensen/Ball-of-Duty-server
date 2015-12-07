@@ -61,8 +61,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
         private void CharacterStatUpdate()
         {
-            Broker.WriteHealthUpdate(GetHealthObjects());
-            Broker.WriteScoreUpdate(GetScoreObjects());
+            Broker.WriteCharacterStatUpdate(GetCharacterStats());
         }
 
         public void Update()
@@ -79,29 +78,21 @@ namespace Ball_of_Duty_Server.Domain.Maps
             Broker.WritePositionUpdate(GetPositions());
 
             _characterStatUpdateEvent.Update(deltaTime);
+            Broker.Update(deltaTime);
         }
 
-        private List<GameObjectDAO> GetHealthObjects()
+        private List<GameObjectDAO> GetCharacterStats()
         {
             return GameObjects.Values.OfType<Character>().Select(character => new GameObjectDAO()
             {
                 MaxHealth = character.Health.Max, // Yes max health can/should change as you get higher score.
                 Health = character.Health.Value,
-                Id = character.Id
-            }).ToList();
-        }
-
-        private List<GameObjectDAO> GetScoreObjects()
-        {
-            return GameObjects.Values.OfType<Character>().Select(character => new GameObjectDAO()
-            {
                 Score = character.Score,
                 Id = character.Id
             }).ToList();
         }
 
-        public int AddBullet(double x, double y, double velocityX, double velocityY, double radius, int damage, int bulletType,
-            int ownerId)
+        public int AddBullet(double x, double y, double velocityX, double velocityY, double radius, int damage, int bulletType, int ownerId)
         {
             GameObject owner;
             if (GameObjects.TryGetValue(ownerId, out owner))
@@ -109,6 +100,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
                 Bullet bullet = new Bullet(new Point(x, y), new Vector(velocityX, velocityY), radius, damage, bulletType, owner);
                 if (!GameObjects.TryAdd(bullet.Id, bullet))
                 {
+                    Console.WriteLine($"Could not add {bullet.Id} an existing gameobject has type {GameObjects[bullet.Id].Type}");
                     Console.WriteLine($"Bullet {bullet.Id} dongoofed");
                     return 0;
                 }
@@ -135,7 +127,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
                     Width = b.Width,
                     Height = b.Height,
                     Id = c.Id,
-                    Specialization = (int)c.Specialization
+                    Specialization = (int)c.Specialization,
+                    Type = (int)c.Type
                 };
 
                 Broker.WriteCreateCharacter(nickname, data);
@@ -147,6 +140,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
         {
             return (from go in GameObjects.Values
                 let b = go.Body
+                let velocity = go.Physics?.Velocity
                 let body = new BodyDTO
                 {
                     Position = new PointDTO
@@ -158,19 +152,18 @@ namespace Ball_of_Duty_Server.Domain.Maps
                     Height = b.Height,
                     Type = (int)b.Type
                 }
-                let physics = new PhysicsDTO
-                {
-                    VelX = go.Physics?.Velocity.X ?? 0,
-                    VelY = go.Physics?.Velocity.Y ?? 0,
-                }
                 select new GameObjectDTO
                 {
                     Id = go.Id,
                     Body = body,
                     Specialization = go is Character ? (int)((Character)go).Specialization : 0,
                     Type = (int)go.Type,
-                    Physics = physics,
-                    BulletType = (go as Bullet)?.BulletType ?? -1
+                    Physics = new PhysicsDTO
+                    {
+                        VelocityX = velocity?.X ?? 0,
+                        VelocityY = velocity?.Y ?? 0
+                    },
+                    BulletType = (go as Bullet)?.BulletType ?? 0
                 }).ToArray();
         }
 
@@ -190,24 +183,25 @@ namespace Ball_of_Duty_Server.Domain.Maps
         public void ExterminationNotification(Observable observable, object data)
         {
             GameObject victim = (GameObject)observable;
-
             GameObject killer = data as GameObject;
+
             if (killer != null)
             {
-                RemoveObject(victim.Id, killer.Id);
+                Broker.KillNotification(victim.Id, killer.Id);
             }
             else
             {
-                RemoveObject(victim.Id, 0); // if no killer killerId is 0
+//                Console.WriteLine($"Gameobject {victim.Id} died a natural death.");
             }
+            RemoveObject(victim.Id);
         }
 
-        public void RemoveObject(int id, int killerId)
+        public void RemoveObject(int id)
         {
             GameObject go;
             if (GameObjects.TryRemove(id, out go))
             {
-                Broker.KillNotification(go.Id, killerId); // No killer
+                Broker.WriteObjectDestruction(go.Id);
                 go.UnregisterAll(this);
             }
         }

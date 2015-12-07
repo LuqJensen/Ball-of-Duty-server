@@ -25,13 +25,12 @@ namespace Ball_of_Duty_Server.Domain.Entities
         private readonly LightEvent _decayScoreEvent;
         private readonly LightEvent _regenEvent;
 
-        public Character(double baseSize, int health, Specializations specialization, int baseHealthRegen)
+        protected Character(double baseSize, int health, Specializations specialization, int baseHealthRegen)
         {
             Body = new Body(this, new Point(-500, -500), baseSize, baseSize)
             {
                 Type = Body.Geometry.CIRCLE
             };
-            // TODO should be dynamic
             Health = new Health(this, health, baseHealthRegen);
             Specialization = specialization;
             _decayScoreEvent = new LightEvent(DECAY_SCORE_INTERVAL, DecayScore);

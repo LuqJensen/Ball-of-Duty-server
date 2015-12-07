@@ -29,7 +29,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             {
                 while (br.ReadByte() == (byte)ASCII.SOH)
                 {
-                    Opcodes opcode = (Opcodes)br.ReadByte();
+                    Opcodes opcode = (Opcodes)br.ReadUInt32();
 
                     br.ReadByte();
 
@@ -41,6 +41,15 @@ namespace Ball_of_Duty_Server.Domain.Communication
                             playerEndPoint.UdpIpEndPoint = endPoint;
                         }
                         return;
+                    }
+
+                    if (Opcodes.TCP_ACTIVITY_OPCODE.HasFlag(opcode))
+                    {
+                        PlayerEndPoint playerEndPoint;
+                        if (_playerEndPoints.TryGetValue(endPoint, out playerEndPoint))
+                        {
+                            playerEndPoint.InactivityEvent?.Reset();
+                        }
                     }
 
                     Action<BinaryReader> readMethod;
@@ -55,7 +64,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                     // Should be quite a lot cheaper than throwing exceptions all the time.
                     if (br.BaseStream.Position == buffer.Length)
                     {
-                        break;
+                        return;
                     }
                 }
             }
@@ -70,15 +79,13 @@ namespace Ball_of_Duty_Server.Domain.Communication
 
         private void ReadPositionUpdate(BinaryReader reader)
         {
-            do
-            {
-                int id = reader.ReadInt32();
-                double x = reader.ReadDouble();
-                double y = reader.ReadDouble();
+            int id = reader.ReadInt32();
+            double x = reader.ReadDouble();
+            double y = reader.ReadDouble();
 
-                Map.UpdatePosition(new Point(x, y), id); // TODO preferably call this method once per positionupdate.
-            }
-            while (reader.ReadByte() == (byte)ASCII.US);
+            reader.ReadByte();
+
+            Map.UpdatePosition(new Point(x, y), id);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
@@ -92,7 +99,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
                 bw.Write((byte)ASCII.SOH);
-                bw.Write((byte)Opcodes.BROADCAST_POSITION_UPDATE);
+                bw.Write((uint)Opcodes.BROADCAST_POSITION_UPDATE);
                 bw.Write((byte)ASCII.STX);
                 for (int i = 0; i < positions.Count; ++i)
                 {
@@ -111,44 +118,20 @@ namespace Ball_of_Duty_Server.Domain.Communication
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
-        public void WriteScoreUpdate(List<GameObjectDAO> characters)
+        public void WriteCharacterStatUpdate(List<GameObjectDAO> characters)
         {
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
                 bw.Write((byte)ASCII.SOH);
-                bw.Write((byte)Opcodes.BROADCAST_SCORE_UPDATE);
+                bw.Write((uint)Opcodes.BROADCAST_CHARACTER_STAT_UPDATE);
                 bw.Write((byte)ASCII.STX);
+
                 for (int i = 0; i < characters.Count; i++)
                 {
                     GameObjectDAO character = characters[i];
                     bw.Write(character.Id);
                     bw.Write(character.Score);
-                    if (i != characters.Count - 1)
-                    {
-                        bw.Write((byte)ASCII.US);
-                    }
-                }
-
-                bw.Write((byte)ASCII.EOT);
-
-                SendUdp(ms.ToArray());
-            }
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
-        public void WriteHealthUpdate(List<GameObjectDAO> characters)
-        {
-            using (MemoryStream ms = new MemoryStream())
-            using (BinaryWriter bw = new BinaryWriter(ms))
-            {
-                bw.Write((byte)ASCII.SOH);
-                bw.Write((byte)Opcodes.BROADCAST_HEALTH_UPDATE);
-                bw.Write((byte)ASCII.STX);
-                for (int i = 0; i < characters.Count; i++)
-                {
-                    GameObjectDAO character = characters[i];
-                    bw.Write(character.Id);
                     bw.Write(character.MaxHealth);
                     bw.Write(character.Health);
                     if (i != characters.Count - 1)
@@ -163,21 +146,21 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
-//        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
-//        public void WriteObjectDestruction(int objectId)
-//        {
-//            using (MemoryStream ms = new MemoryStream())
-//            using (BinaryWriter bw = new BinaryWriter(ms))
-//            {
-//                bw.Write((byte)ASCII.SOH);
-//                bw.Write((byte)Opcodes.OBJECT_DESTRUCTION);
-//                bw.Write((byte)ASCII.STX);
-//                bw.Write(objectId);
-//
-//                bw.Write((byte)ASCII.EOT);
-//                SendTcp(ms.ToArray());
-//            }
-//        }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
+        public void WriteObjectDestruction(int objectId)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.Write((byte)ASCII.SOH);
+                bw.Write((uint)Opcodes.OBJECT_DESTRUCTION);
+                bw.Write((byte)ASCII.STX);
+                bw.Write(objectId);
+
+                bw.Write((byte)ASCII.EOT);
+                SendTcp(ms.ToArray());
+            }
+        }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         public void WriteCreateCharacter(string nickname, GameObjectDAO charData)
@@ -186,7 +169,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
                 bw.Write((byte)ASCII.SOH);
-                bw.Write((byte)Opcodes.NEW_PLAYER);
+                bw.Write((uint)Opcodes.NEW_PLAYER);
                 bw.Write((byte)ASCII.STX);
                 bw.Write(nickname);
                 bw.Write(charData.Id);
@@ -195,7 +178,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(charData.Width);
                 bw.Write(charData.Height);
                 bw.Write(charData.Specialization);
-                bw.Write(0); // Temporary till EntityType enum is implemented on server.
+                bw.Write(charData.Type);
 
                 bw.Write((byte)ASCII.EOT);
                 SendTcp(ms.ToArray());
@@ -209,7 +192,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
                 bw.Write((byte)ASCII.SOH);
-                bw.Write((byte)Opcodes.DISCONNECTED_PLAYER);
+                bw.Write((uint)Opcodes.DISCONNECTED_PLAYER);
                 bw.Write((byte)ASCII.STX);
                 bw.Write(playerId);
                 bw.Write(characterId);
@@ -232,13 +215,15 @@ namespace Ball_of_Duty_Server.Domain.Communication
             int damage = reader.ReadInt32();
             int ownerId = reader.ReadInt32();
             int entityType = reader.ReadInt32();
+
             reader.ReadByte(); // ASCII.EOT
+
             int bulletId = Map.AddBullet(x, y, velocityX, velocityY, radius, damage, bulletType, ownerId);
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
                 bw.Write((byte)ASCII.SOH);
-                bw.Write((byte)Opcodes.REQUEST_BULLET);
+                bw.Write((uint)Opcodes.REQUEST_BULLET);
                 bw.Write((byte)ASCII.STX);
                 bw.Write(x);
                 bw.Write(y);
@@ -263,7 +248,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
                 bw.Write((byte)ASCII.SOH);
-                bw.Write((byte)Opcodes.KILL_NOTIFICATION);
+                bw.Write((uint)Opcodes.KILL_NOTIFICATION);
                 bw.Write((byte)ASCII.STX);
                 bw.Write(victimId);
                 bw.Write(killerId);

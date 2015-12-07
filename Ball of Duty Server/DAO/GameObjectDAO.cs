@@ -15,6 +15,7 @@ namespace Ball_of_Duty_Server.DAO
         public double Width { get; set; }
         public double Height { get; set; }
         public int Id { get; set; }
+        public int Type { get; set; }
 
         public int Specialization { get; set; }
         public int MaxHealth { get; set; }

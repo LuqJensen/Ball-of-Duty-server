@@ -27,6 +27,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
         private const int SIO_UDP_CONNRESET = -1744830452;
 
         private const int TCP_TIMEOUT = 10000;
+        private const int SESSIONID_LENGTH = 32;
 
         private IPEndPoint _ip; // Needs new port for each game
         private UdpClient _listener;
@@ -66,9 +67,14 @@ namespace Ball_of_Duty_Server.Domain.Communication
 
         public void Update(long deltaTime)
         {
-            foreach (var v in _connectedClients.Values)
+            foreach (var v in _connectedClients)
             {
-                v.Update(deltaTime);
+                v.Value.Update(deltaTime);
+                PlayerEndPoint playerEndPoint;
+                if (_playerEndPoints.TryGetValue(v.Key.IpEndPoint, out playerEndPoint))
+                {
+                    playerEndPoint.InactivityEvent?.Update(deltaTime);
+                }
             }
         }
 
@@ -160,7 +166,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
         public byte[] GenerateSessionId(int playerId, string ip)
         {
             IPAddress ipAddress = IPAddress.Parse(ip);
-            byte[] randomBytes = new byte[32].FillRandomly(); // TODO const size.
+            byte[] randomBytes = new byte[SESSIONID_LENGTH].FillRandomly();
             string sessionId = Convert.ToBase64String(randomBytes);
 
             _playerSessionTokens.TryAdd(sessionId, new PlayerEndPoint(playerId, sessionId));
@@ -184,10 +190,10 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
 
             // Cancel the attempt to communicate with the client on both TCP and UDP after 10 sec.
-            CancellationTokenSource cts = new CancellationTokenSource(10000);
+            CancellationTokenSource cts = new CancellationTokenSource(TCP_TIMEOUT);
             Task timeout = new Task(async () =>
             {
-                await Task.Delay(10000);
+                await Task.Delay(TCP_TIMEOUT);
                 throw new SocketException();
             });
 
@@ -199,11 +205,13 @@ namespace Ball_of_Duty_Server.Domain.Communication
 
                 // await tcp here aswell because we want the result of it. Once we got the result of AddTCPTarget(),
                 // we await the result of AddUDPTarget.
-                if (await tcp && await AddUDPTarget(_playerEndPoints[s.IpEndPoint], cts.Token))
+                PlayerEndPoint playerEndPoint;
+                if (await tcp && _playerEndPoints.TryGetValue(s.IpEndPoint, out playerEndPoint) && await AddUDPTarget(playerEndPoint, cts.Token))
                 {
                     // Timeout the TCP and UDP connection to a client if we dont receive a TCP message
                     // at least once per 10 sec.
-                    _connectedClients.TryAdd(s, new LightEvent(10000, () => { RemoveTarget(s); }));
+                    _connectedClients.TryAdd(s, new LightEvent(TCP_TIMEOUT, () => { RemoveTarget(s); }));
+                    playerEndPoint.InactivityEvent = new LightEvent(60000, () => { RemoveTarget(s); });
                     Console.WriteLine($"Client connected: {s.IpEndPoint.Address.MapToIPv4()}");
                     // Start reading actual game related messages from the client.
                     await ReceiveFromClientAsync(s);
@@ -233,7 +241,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
         private async Task<bool> AddTCPTarget(AsyncSocket socket)
         {
             AsyncSocket.ReadResult result = await socket.ReceiveAsync();
-            if (result.BytesRead != 32)
+            if (result.BytesRead != SESSIONID_LENGTH)
             {
                 return false;
             }
@@ -250,11 +258,6 @@ namespace Ball_of_Duty_Server.Domain.Communication
 
             playerEndPoint.TCPSocket = socket;
 
-            foreach (var v in result.Buffer)
-            {
-                Console.Write(v);
-            }
-            Console.WriteLine();
             await socket.SendMessage(result.Buffer);
 
             return _playerEndPoints.TryAdd(socket.IpEndPoint, playerEndPoint);

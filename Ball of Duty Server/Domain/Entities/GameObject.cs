@@ -1,23 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Ball_of_Duty_Server.Utility;
 
 namespace Ball_of_Duty_Server.Domain.Entities
 {
     public class GameObject : Observable
     {
-        private static volatile int _gameObjectsCreated;
+        private static int _gameObjectsCreated;
         public Body Body { get; set; }
         public Health Health { get; set; }
         public Physics.Physics Physics { get; set; }
-        public int Id { get; private set; }
+        public int Id { get; } = Interlocked.Increment(ref _gameObjectsCreated);
         public EntityType Type { get; protected set; }
         public bool Destroyed { get; private set; } = false;
-
-        public GameObject()
-        {
-            Id = ++_gameObjectsCreated; // Important to start at 1. 0 will be used as default value.
-        }
 
         public virtual void Update(long deltaTime, ICollection<GameObject> values)
         {

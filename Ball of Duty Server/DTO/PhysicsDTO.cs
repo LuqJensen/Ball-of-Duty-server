@@ -9,7 +9,7 @@ namespace Ball_of_Duty_Server.DTO
     [Serializable]
     public class PhysicsDTO
     {
-        public double VelX;
-        public double VelY;
+        public double VelocityX;
+        public double VelocityY;
     }
 }
