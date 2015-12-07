@@ -36,6 +36,82 @@ namespace Ball_of_Duty_Server.Domain.Physics.Collision
             return retval;
         }
 
+        public static bool CollisionLineSquare(double x1, double x2, double y1, double y2, GameObject o2)
+        {
+            double xR = o2.Body.Position.X + o2.Body.Width;
+            double xL = o2.Body.Position.X;
+            double yB = o2.Body.Position.Y + o2.Body.Height;
+            double yT = o2.Body.Position.Y;
+
+
+            double minX = x1;
+            double maxX = x2;
+
+            if (x1 > x2)
+            {
+                minX = x2;
+                maxX = x1;
+            }
+
+            // Find the intersection of the segment's and rectangle's x-projections
+
+            if (maxX > xR)
+            {
+                maxX = xR;
+            }
+
+            if (minX < xL)
+            {
+                minX = xL;
+            }
+
+            if (minX > maxX) // If their projections do not intersect return false
+            {
+                return false;
+            }
+
+            // Find corresponding min and max Y for min and max X we found before
+
+            double minY = y1;
+            double maxY = y2;
+
+            double dx = x2 - x1;
+
+            if (Math.Abs(dx) > 0.0000001)
+            {
+                double a = (y2 - y1) / dx;
+                double b = y1 - a * x1;
+                minY = a * minX + b;
+                maxY = a * maxX + b;
+            }
+
+            if (minY > maxY)
+            {
+                double tmp = maxY;
+                maxY = minY;
+                minY = tmp;
+            }
+
+            // Find the intersection of the segment's and rectangle's y-projections
+
+            if (maxY > yB)
+            {
+                maxY = yB;
+            }
+
+            if (minY < yT)
+            {
+                minY = yT;
+            }
+
+            if (minY > maxY) // If Y-projections do not intersect return false
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         private static bool CollisionCircleCircle(GameObject o1, GameObject o2)
         {
             double c1x = o1.Body.Center.X;
@@ -49,6 +125,53 @@ namespace Ball_of_Duty_Server.Domain.Physics.Collision
             double c2r = o2.Body.Height / 2;
             return Math.Sqrt((dx * dx) + (dy * dy)) <= (c1r + c2r);
         }
+
+
+        public static int GetFirstLineIntersectingObject<T>(ICollection<GameObject> gameObjects, double x1,
+            double deltaX,
+            double y1, double deltaY, double diameter)
+        {
+            double closestDistance = -1;
+            int wallId = -1;
+
+            deltaX *= 4000;
+            deltaY *= 4000;
+
+            double x2 = x1 + deltaX;
+            double y2 = y1 + deltaY;
+
+            foreach (GameObject go in gameObjects)
+            {
+                if (go is T)
+                {
+                    if (CollisionHandler.CollisionLineSquare(x1, x2, y1, y2, go))
+                    {
+                        double dx = Math.Abs(x1 - (go.Body.Center.X));
+                        double dy = Math.Abs(y1 - (go.Body.Center.Y));
+                        double distance = Math.Sqrt((dx * dx) + (dy * dy));
+                        if (distance < closestDistance || closestDistance < 0)
+                        {
+                            wallId = go.Id;
+                            closestDistance = distance;
+                        }
+                    }
+                    if (CollisionHandler.CollisionLineSquare(x1 + diameter, x2 + diameter, y1 + diameter, y2 + diameter,
+                        go))
+                    {
+                        double dx = Math.Abs(x1 + diameter - (go.Body.Center.X));
+                        double dy = Math.Abs(y1 + diameter - (go.Body.Center.Y));
+                        double distance = Math.Sqrt((dx * dx) + (dy * dy));
+                        if (distance < closestDistance || closestDistance < 0)
+                        {
+                            wallId = go.Id;
+                            closestDistance = distance;
+                        }
+                    }
+                }
+            }
+            return wallId;
+        }
+
 
         public static bool CollisionCircleRectangle(GameObject circle, GameObject rect)
         {
