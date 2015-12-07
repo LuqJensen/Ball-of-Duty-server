@@ -9,5 +9,7 @@ namespace Ball_of_Duty_Server.Domain.Physics.Collision
     public interface ICollidable
     {
         void CollideWith(ICollidable other);
+
+        bool CollisionCriteria(ICollidable other);
     }
 }

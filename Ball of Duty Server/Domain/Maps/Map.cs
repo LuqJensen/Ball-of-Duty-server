@@ -10,6 +10,7 @@ using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Utility;
 using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
+using Ball_of_Duty_Server.Domain.Physics.Collision;
 
 namespace Ball_of_Duty_Server.Domain.Maps
 {
@@ -22,9 +23,11 @@ namespace Ball_of_Duty_Server.Domain.Maps
         private const long DATETIME_TICKS_TO_MILLISECONDS = 10000;
         private LightEvent _characterStatUpdateEvent;
 
+
         public int Width { get; set; }
 
         public int Height { get; set; }
+
 
         public ConcurrentDictionary<int, GameObject> GameObjects { get; set; } = new ConcurrentDictionary<int, GameObject>();
 
@@ -105,6 +108,10 @@ namespace Ball_of_Duty_Server.Domain.Maps
                     return 0;
                 }
                 bullet.Register(Observation.EXTERMINATION, this, ExterminationNotification);
+
+                bullet.WallId = CollisionHandler.GetFirstLineIntersectingObject<Wall>(GameObjects.Values,
+                    bullet.Body.Position.X, velocityX, bullet.Body.Position.Y, velocityY, bullet.Body.Width);
+
                 return bullet.Id;
             }
             return 0;

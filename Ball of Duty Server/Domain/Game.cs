@@ -19,7 +19,7 @@ namespace Ball_of_Duty_Server.Domain
 
         public int Id { get; } = Interlocked.Increment(ref _createdGames);
 
-        public Map Map { get; } = new Map(4000, 4000);
+        public Map Map { get; } = new Map(3300, 3300);
 
         public void AddPlayer(Player player, Specializations clientSpecialization)
         {
@@ -82,7 +82,7 @@ namespace Ball_of_Duty_Server.Domain
 
         public bool IsFull()
         {
-            return _players.Count >= 10;
+            return false;
         }
     }
 }

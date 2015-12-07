@@ -17,6 +17,8 @@ namespace Ball_of_Duty_Server.Domain.Entities
 
         public int BulletType { get; set; }
 
+        public int WallId { get; set; }
+
         public Bullet(Point position, Vector velocity, double radius, int damage, int bulletType, GameObject owner)
         {
             BulletType = bulletType;
@@ -44,8 +46,9 @@ namespace Ball_of_Duty_Server.Domain.Entities
                 return;
 
             Physics.Update(deltaTime);
-            Physics.UpdateWithCollision(values);
+            Physics.UpdateWithCollision(values, WallId);
         }
+
 
         public void CollideWith(ICollidable other)
         {
