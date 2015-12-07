@@ -23,11 +23,9 @@ namespace Ball_of_Duty_Server.Domain.Maps
         private const long DATETIME_TICKS_TO_MILLISECONDS = 10000;
         private LightEvent _characterStatUpdateEvent;
 
-
         public int Width { get; set; }
 
         public int Height { get; set; }
-
 
         public ConcurrentDictionary<int, GameObject> GameObjects { get; set; } = new ConcurrentDictionary<int, GameObject>();
 

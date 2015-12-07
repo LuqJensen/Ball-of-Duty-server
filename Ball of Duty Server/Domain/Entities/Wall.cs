@@ -17,5 +17,15 @@ namespace Ball_of_Duty_Server.Domain.Entities
         public void CollideWith(ICollidable other)
         {
         }
+
+        public bool CollisionCriteria(ICollidable other)
+        {
+            return false;
+        }
+
+        public bool IsCollidingSpecial(ICollidable other)
+        {
+            return false;
+        }
     }
 }

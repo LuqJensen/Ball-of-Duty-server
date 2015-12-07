@@ -13,13 +13,14 @@ namespace Ball_of_Duty_Server.Domain
 {
     public class Game
     {
+        public const int MAP_SIZE = 3300;
         private static int _createdGames = 0;
 
         private ConcurrentDictionary<int, Player> _players = new ConcurrentDictionary<int, Player>();
 
         public int Id { get; } = Interlocked.Increment(ref _createdGames);
 
-        public Map Map { get; } = new Map(3300, 3300);
+        public Map Map { get; } = new Map(MAP_SIZE, MAP_SIZE);
 
         public void AddPlayer(Player player, Specializations clientSpecialization)
         {

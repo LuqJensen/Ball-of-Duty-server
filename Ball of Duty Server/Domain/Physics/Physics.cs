@@ -37,7 +37,7 @@ namespace Ball_of_Duty_Server.Domain.Physics
             GameObject.Body.Position = p;
         }
 
-        public void UpdateWithCollision(ICollection<GameObject> gameObjects, int wallId)
+        public void UpdateWithCollision(ICollection<GameObject> gameObjects)
         {
             if (!(GameObject is ICollidable))
                 return;
@@ -62,29 +62,9 @@ namespace Ball_of_Duty_Server.Domain.Physics
                     continue;
                 }
 
-                if (CollisionHandler.IsColliding(GameObject, other))
+                if (CollisionHandler.IsColliding(GameObject.Body, other.Body) || go1.IsCollidingSpecial(go2))
                 {
-                    ((ICollidable)GameObject).CollideWith((ICollidable)other);
-                }
-
-                if (wallId == other.Id) // Optimization.
-                {
-                    Point center1 = GameObject.Body.Center;
-                    Point center2 = other.Body.Center;
-                    double dx = Math.Abs(center1.X - center2.X);
-                    double dy = Math.Abs(center1.Y - center2.Y);
-                    double distanceBefore = Math.Sqrt((dx * dx) + (dy * dy));
-
-                    int xPlus = Velocity.X < 0 ? -1 : 1;
-                    int yPlus = Velocity.Y < 0 ? -1 : 1;
-                    dx = Math.Abs((center1.X + xPlus) - (center2.X));
-                    dy = Math.Abs((center1.Y + yPlus) - (center2.Y));
-                    double distanceAfter = Math.Sqrt((dx * dx) + (dy * dy));
-
-                    if (distanceAfter > distanceBefore)
-                    {
-                        ((ICollidable)GameObject).CollideWith((ICollidable)other);
-                    }
+                    (go1).CollideWith(go2);
                 }
             }
         }

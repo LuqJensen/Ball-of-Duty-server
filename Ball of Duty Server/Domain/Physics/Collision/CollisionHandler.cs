@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Ball_of_Duty_Server.Domain;
+using System.Windows;
 using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.Utility;
 
@@ -11,59 +11,43 @@ namespace Ball_of_Duty_Server.Domain.Physics.Collision
 {
     public class CollisionHandler
     {
-        public static bool IsColliding(GameObject o1, GameObject o2)
+        public static bool IsColliding(Body b1, Body b2)
         {
             bool retval = false;
-            if (o1.Body.Type == Body.Geometry.CIRCLE && o2.Body.Type == Body.Geometry.CIRCLE)
+            if (b1.Type == Body.Geometry.CIRCLE && b2.Type == Body.Geometry.CIRCLE)
             {
-                retval = CollisionCircleCircle(o1, o2);
+                retval = CollisionCircleCircle(b1, b2);
             }
-            else if (o1.Body.Type == Body.Geometry.CIRCLE && o2.Body.Type == Body.Geometry.RECTANGLE)
+            else if (b1.Type == Body.Geometry.CIRCLE && b2.Type == Body.Geometry.RECTANGLE)
             {
-                retval = CollisionCircleRectangle(o1, o2);
+                retval = CollisionCircleRectangle(b1, b2);
             }
-            else if (o1.Body.Type == Body.Geometry.RECTANGLE &&
-                     o2.Body.Type == Body.Geometry.CIRCLE)
+            else if (b1.Type == Body.Geometry.RECTANGLE && b2.Type == Body.Geometry.CIRCLE)
             {
-                retval = CollisionCircleRectangle(o2, o1);
+                retval = CollisionCircleRectangle(b2, b1);
             }
-            else if (o1.Body.Type == Body.Geometry.RECTANGLE &&
-                     o2.Body.Type == Body.Geometry.RECTANGLE)
+            else if (b1.Type == Body.Geometry.RECTANGLE && b2.Type == Body.Geometry.RECTANGLE)
             {
-                retval = CollisionRectangleRectangle(o1, o2);
+                retval = CollisionRectangleRectangle(b1, b2);
             }
 
             return retval;
         }
 
-        public static bool CollisionLineSquare(double x1, double x2, double y1, double y2, GameObject o2)
+        public static bool CollisionLineSquare(double x1, double x2, double y1, double y2, Body b2)
         {
-            double xR = o2.Body.Position.X + o2.Body.Width;
-            double xL = o2.Body.Position.X;
-            double yB = o2.Body.Position.Y + o2.Body.Height;
-            double yT = o2.Body.Position.Y;
+            Point position = b2.Position;
+            double xR = position.X + b2.Width;
+            double xL = position.X;
+            double yB = position.Y + b2.Height;
+            double yT = position.Y;
 
-
-            double minX = x1;
-            double maxX = x2;
-
-            if (x1 > x2)
-            {
-                minX = x2;
-                maxX = x1;
-            }
+            double minX = Math.Min(x1, x2);
+            double maxX = Math.Max(x1, x2);
 
             // Find the intersection of the segment's and rectangle's x-projections
-
-            if (maxX > xR)
-            {
-                maxX = xR;
-            }
-
-            if (minX < xL)
-            {
-                minX = xL;
-            }
+            maxX = Math.Min(maxX, xR);
+            minX = Math.Max(minX, xL);
 
             if (minX > maxX) // If their projections do not intersect return false
             {
@@ -71,7 +55,6 @@ namespace Ball_of_Duty_Server.Domain.Physics.Collision
             }
 
             // Find corresponding min and max Y for min and max X we found before
-
             double minY = y1;
             double maxY = y2;
 
@@ -93,126 +76,127 @@ namespace Ball_of_Duty_Server.Domain.Physics.Collision
             }
 
             // Find the intersection of the segment's and rectangle's y-projections
+            maxY = Math.Min(maxY, yB);
+            minY = Math.Max(minY, yT);
 
-            if (maxY > yB)
-            {
-                maxY = yB;
-            }
-
-            if (minY < yT)
-            {
-                minY = yT;
-            }
-
-            if (minY > maxY) // If Y-projections do not intersect return false
-            {
-                return false;
-            }
-
-            return true;
+            return !(minY > maxY);
         }
 
-        private static bool CollisionCircleCircle(GameObject o1, GameObject o2)
+        private static bool CollisionCircleCircle(Body b1, Body b2)
         {
-            double c1x = o1.Body.Center.X;
-            double c2x = o2.Body.Center.X;
-            double c1y = o1.Body.Center.Y;
-            double c2y = o2.Body.Center.Y;
+            Point center1 = b1.Center;
+            double c1X = center1.X;
+            double c1Y = center1.Y;
 
-            double dx = c1x - c2x;
-            double dy = c1y - c2y;
-            double c1r = o1.Body.Height / 2;
-            double c2r = o2.Body.Height / 2;
-            return Math.Sqrt((dx * dx) + (dy * dy)) <= (c1r + c2r);
+            Point center2 = b2.Center;
+            double c2X = center2.X;
+            double c2Y = center2.Y;
+
+            double dx = c1X - c2X;
+            double dy = c1Y - c2Y;
+            double c1R = b1.Height / 2;
+            double c2R = b2.Height / 2;
+            return Math.Sqrt((dx * dx) + (dy * dy)) <= (c1R + c2R);
         }
 
 
-        public static int GetFirstLineIntersectingObject<T>(ICollection<GameObject> gameObjects, double x1,
-            double deltaX,
-            double y1, double deltaY, double diameter)
+        public static int GetFirstLineIntersectingObject<T>(ICollection<GameObject> gameobjects, double x1,
+            double deltaX, double y1, double deltaY, double diameter)
         {
             double closestDistance = -1;
-            int wallId = -1;
+            int wallId = 0;
 
-            deltaX *= 4000;
-            deltaY *= 4000;
+            deltaX *= Game.MAP_SIZE;
+            deltaY *= Game.MAP_SIZE;
 
             double x2 = x1 + deltaX;
             double y2 = y1 + deltaY;
 
-            foreach (GameObject go in gameObjects)
+            foreach (GameObject go in gameobjects)
             {
-                if (go is T)
+                if (!(go is T))
                 {
-                    if (CollisionHandler.CollisionLineSquare(x1, x2, y1, y2, go))
+                    continue;
+                }
+
+                Point center = go.Body.Center;
+                if (CollisionLineSquare(x1, x2, y1, y2, go.Body))
+                {
+                    double dx = Math.Abs(x1 - (center.X));
+                    double dy = Math.Abs(y1 - (center.Y));
+                    double distance = Math.Sqrt((dx * dx) + (dy * dy));
+                    if (distance < closestDistance || closestDistance < 0)
                     {
-                        double dx = Math.Abs(x1 - (go.Body.Center.X));
-                        double dy = Math.Abs(y1 - (go.Body.Center.Y));
-                        double distance = Math.Sqrt((dx * dx) + (dy * dy));
-                        if (distance < closestDistance || closestDistance < 0)
-                        {
-                            wallId = go.Id;
-                            closestDistance = distance;
-                        }
+                        wallId = go.Id;
+                        closestDistance = distance;
                     }
-                    if (CollisionHandler.CollisionLineSquare(x1 + diameter, x2 + diameter, y1 + diameter, y2 + diameter,
-                        go))
+                }
+                if (CollisionLineSquare(x1 + diameter, x2 + diameter, y1 + diameter, y2 + diameter, go.Body))
+                {
+                    double dx = Math.Abs(x1 + diameter - (center.X));
+                    double dy = Math.Abs(y1 + diameter - (center.Y));
+                    double distance = Math.Sqrt((dx * dx) + (dy * dy));
+                    if (distance < closestDistance || closestDistance < 0)
                     {
-                        double dx = Math.Abs(x1 + diameter - (go.Body.Center.X));
-                        double dy = Math.Abs(y1 + diameter - (go.Body.Center.Y));
-                        double distance = Math.Sqrt((dx * dx) + (dy * dy));
-                        if (distance < closestDistance || closestDistance < 0)
-                        {
-                            wallId = go.Id;
-                            closestDistance = distance;
-                        }
+                        wallId = go.Id;
+                        closestDistance = distance;
                     }
                 }
             }
             return wallId;
         }
 
-
-        public static bool CollisionCircleRectangle(GameObject circle, GameObject rect)
+        public static bool CollisionCircleRectangle(Body circle, Body rect)
         {
-            double circleDistanceX = Math.Abs(rect.Body.Center.X - circle.Body.Center.X);
-            double circleDistanceY = Math.Abs(rect.Body.Center.Y - circle.Body.Center.Y);
+            Point centerCircle = circle.Center;
+            double circleRadius = circle.Height / 2;
 
-            if (circleDistanceY >= (rect.Body.Height / 2 + circle.Body.Height / 2))
+            Point rectangleCenter = rect.Center;
+            double halfRectangleWidth = rect.Width / 2;
+            double halfRectangleHeight = rect.Height / 2;
+
+            double circleDistanceX = Math.Abs(rectangleCenter.X - centerCircle.X);
+            double circleDistanceY = Math.Abs(rectangleCenter.Y - centerCircle.Y);
+
+            if (circleDistanceY >= (halfRectangleHeight + circleRadius))
             {
                 return false;
             }
-            if (circleDistanceX >= (rect.Body.Width / 2 + circle.Body.Width / 2))
+            if (circleDistanceX >= (halfRectangleWidth + circleRadius))
             {
                 return false;
             }
-            if (circleDistanceY < (rect.Body.Height / 2))
+            if (circleDistanceY < halfRectangleHeight)
             {
                 return true;
             }
-            if (circleDistanceX < (rect.Body.Width / 2))
+            if (circleDistanceX < halfRectangleWidth)
             {
                 return true;
             }
+
             double cornerDistanceSq = Math.Sqrt(
-                Math.Pow((circleDistanceX - (rect.Body.Width / 2)), 2) +
-                Math.Pow((circleDistanceY - (rect.Body.Height / 2)), 2));
+                Math.Pow((circleDistanceX - halfRectangleWidth), 2) +
+                Math.Pow((circleDistanceY - halfRectangleHeight), 2));
 
-            return (cornerDistanceSq < circle.Body.Height / 2);
+            return (cornerDistanceSq < circleRadius);
         }
 
-        public static bool CollisionRectangleRectangle(GameObject rect1, GameObject rect2)
+        public static bool CollisionRectangleRectangle(Body rect1, Body rect2)
         {
-            double r1X = rect1.Body.Position.X;
-            double r1Y = rect1.Body.Position.Y;
-            double r1H = rect1.Body.Width;
-            double r1L = rect1.Body.Height;
-            double r2X = rect2.Body.Position.X;
-            double r2Y = rect2.Body.Position.Y;
-            double r2H = rect2.Body.Width;
-            double r2L = rect2.Body.Height;
+            Point r1 = rect1.Position;
+            double r1X = r1.X;
+            double r1Y = r1.Y;
+            double r1W = rect1.Width;
+            double r1H = rect1.Height;
 
-            bool xOverlap = r1X.IsInRange(r2X, r2X + r2L) || r2X.IsInRange(r1X, r1X + r1L);
+            Point r2 = rect2.Position;
+            double r2X = r2.X;
+            double r2Y = r2.Y;
+            double r2W = rect2.Width;
+            double r2H = rect2.Height;
+
+            bool xOverlap = r1X.IsInRange(r2X, r2X + r2W) || r2X.IsInRange(r1X, r1X + r1W);
             bool yOverlap = r1Y.IsInRange(r2Y, r2Y + r2H) || r2Y.IsInRange(r1Y, r1Y + r1H);
             return xOverlap && yOverlap;
         }

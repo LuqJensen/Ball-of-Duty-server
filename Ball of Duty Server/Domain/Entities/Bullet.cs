@@ -46,7 +46,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
                 return;
 
             Physics.Update(deltaTime);
-            Physics.UpdateWithCollision(values, WallId);
+            Physics.UpdateWithCollision(values);
         }
 
 
@@ -65,6 +65,48 @@ namespace Ball_of_Duty_Server.Domain.Entities
             {
                 Destroy();
             }
+        }
+
+        public bool CollisionCriteria(ICollidable other)
+        {
+            if (other is Wall)
+            {
+                return ((Wall)other).Id == WallId;
+            }
+            if (other is Character)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool IsCollidingSpecial(ICollidable other)
+        {
+            if (!(other is Wall))
+            {
+                return false;
+            }
+
+            // TODO move below logic somewhere else...
+            Wall wall = (Wall)other;
+
+            Point center1 = Body.Center;
+            Vector velocity = Physics.Velocity;
+            double xPlus = velocity.X < 0 ? -1 : 1;
+            double yPlus = velocity.Y < 0 ? -1 : 1;
+
+            Point center2 = wall.Body.Center;
+            double dx = Math.Abs(center1.X - center2.X);
+            double dy = Math.Abs(center1.Y - center2.Y);
+
+            double distanceBefore = Math.Sqrt((dx * dx) + (dy * dy));
+
+            dx = Math.Abs((center1.X + xPlus) - (center2.X));
+            dy = Math.Abs((center1.Y + yPlus) - (center2.Y));
+
+            double distanceAfter = Math.Sqrt((dx * dx) + (dy * dy));
+
+            return distanceAfter > distanceBefore;
         }
 
         public override string ToString()

@@ -75,6 +75,16 @@ namespace Ball_of_Duty_Server.Domain.Entities
         {
         }
 
+        public bool CollisionCriteria(ICollidable other)
+        {
+            return false;
+        }
+
+        public bool IsCollidingSpecial(ICollidable other)
+        {
+            return false;
+        }
+
         public override void Update(long deltaTime, ICollection<GameObject> values)
         {
             _decayScoreEvent.Update(deltaTime);
