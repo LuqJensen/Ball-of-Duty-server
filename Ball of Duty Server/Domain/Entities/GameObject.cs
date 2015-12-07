@@ -19,7 +19,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
             Id = ++_gameObjectsCreated; // Important to start at 1. 0 will be used as default value.
         }
 
-        public virtual void Update(long deltaTime, ICollection<GameObject> values)
+        public virtual void Update(long deltaTime, ICollection<GameObject> value)
         {
         }
 

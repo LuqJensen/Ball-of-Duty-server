@@ -17,7 +17,7 @@ namespace Ball_of_Duty_Server.Domain
 
         public int Id { get; } = ++_createdGames;
 
-        public Map Map { get; } = new Map(4000, 4000);
+        public Map Map { get; } = new Map(3300, 3300);
 
         public void AddPlayer(Player player, Specializations clientSpecialization)
         {
@@ -34,7 +34,8 @@ namespace Ball_of_Duty_Server.Domain
             {
                 Id = p.Id,
                 Nickname = p.Nickname,
-                CharacterId = p.CurrentCharacter?.Id ?? 0, // TODO: look into some kind of assurance that CurrentCharacter is never null.
+                CharacterId = p.CurrentCharacter?.Id ?? 0,
+                // TODO: look into some kind of assurance that CurrentCharacter is never null.
                 Gold = p.Gold,
                 HighScore = p.HighScore
             }).ToArray();
@@ -79,7 +80,7 @@ namespace Ball_of_Duty_Server.Domain
 
         public bool IsFull()
         {
-            return _players.Count >= 10;
+            return false;
         }
     }
 }

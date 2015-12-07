@@ -16,7 +16,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
         public abstract double HealthIncreaseFactor { get; }
 
         private const double SCORE_UP = 60;
-        private const double SCORE_UP_FACTOR = 0.4;
+        private const double SCORE_UP_FACTOR = 0.5;
         private const double SCORE_DECAY_FACTOR = 0.01;
         private const double ALLOWED_SCORE_BEFORE_DECAY = 400;
         private int _killCount = 0;

@@ -37,7 +37,7 @@ namespace Ball_of_Duty_Server.Domain.Physics
             GameObject.Body.Position = p;
         }
 
-        public void UpdateWithCollision(ICollection<GameObject> gameObjects)
+        public void UpdateWithCollision(ICollection<GameObject> gameObjects, int wallId)
         {
             if (!(GameObject is ICollidable))
                 return;
@@ -49,7 +49,8 @@ namespace Ball_of_Duty_Server.Domain.Physics
                     return;
                 }
 
-                if (other.Destroyed || !(other is ICollidable) || other.Id == GameObject.Id)
+                if (other.Destroyed || !(other is ICollidable) || other.Id == GameObject.Id ||
+                    (wallId != other.Id && !(other is Character)))
                 {
                     continue;
                 }
@@ -57,6 +58,23 @@ namespace Ball_of_Duty_Server.Domain.Physics
                 if (CollisionHandler.IsColliding(GameObject, other))
                 {
                     ((ICollidable)GameObject).CollideWith((ICollidable)other);
+                }
+                if (wallId == other.Id) // Optimization.
+                {
+                    double dx = Math.Abs(GameObject.Body.Center.X - (other.Body.Center.X));
+                    double dy = Math.Abs(GameObject.Body.Center.Y - (other.Body.Center.Y));
+                    double distanceBefore = Math.Sqrt((dx * dx) + (dy * dy));
+
+                    int xPlus = Velocity.X < 0 ? -1 : 1;
+                    int yPlus = Velocity.Y < 0 ? -1 : 1;
+                    dx = Math.Abs((GameObject.Body.Center.X + xPlus) - (other.Body.Center.X));
+                    dy = Math.Abs((GameObject.Body.Center.Y + yPlus) - (other.Body.Center.Y));
+                    double distanceAfter = Math.Sqrt((dx * dx) + (dy * dy));
+
+                    if (distanceAfter > distanceBefore)
+                    {
+                        ((ICollidable)GameObject).CollideWith((ICollidable)other);
+                    }
                 }
             }
         }

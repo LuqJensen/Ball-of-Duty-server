@@ -10,6 +10,7 @@ using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Utility;
 using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
+using Ball_of_Duty_Server.Domain.Physics.Collision;
 
 namespace Ball_of_Duty_Server.Domain.Maps
 {
@@ -22,11 +23,14 @@ namespace Ball_of_Duty_Server.Domain.Maps
         private const long DATETIME_TICKS_TO_MILLISECONDS = 10000;
         private LightEvent _characterStatUpdateEvent;
 
+
         public int Width { get; set; }
 
         public int Height { get; set; }
 
-        public ConcurrentDictionary<int, GameObject> GameObjects { get; set; } = new ConcurrentDictionary<int, GameObject>();
+
+        public ConcurrentDictionary<int, GameObject> GameObjects { get; set; } =
+            new ConcurrentDictionary<int, GameObject>();
 
         public Broker Broker { get; set; }
 
@@ -100,19 +104,28 @@ namespace Ball_of_Duty_Server.Domain.Maps
             }).ToList();
         }
 
-        public int AddBullet(double x, double y, double velocityX, double velocityY, double radius, int damage, int bulletType,
+        public int AddBullet(double x, double y, double velocityX, double velocityY, double radius, int damage,
+            int bulletType,
             int ownerId)
         {
             GameObject owner;
             if (GameObjects.TryGetValue(ownerId, out owner))
             {
-                Bullet bullet = new Bullet(new Point(x, y), new Vector(velocityX, velocityY), radius, damage, bulletType, owner);
+                Bullet bullet = new Bullet(new Point(x, y), new Vector(velocityX, velocityY), radius, damage, bulletType,
+                    owner);
                 if (!GameObjects.TryAdd(bullet.Id, bullet))
                 {
                     Console.WriteLine($"Bullet {bullet.Id} dongoofed");
                     return 0;
                 }
                 bullet.Register(Observation.EXTERMINATION, this, ExterminationNotification);
+
+                bullet.WallId = CollisionHandler.GetFirstLineIntersectingObject<Wall>(GameObjects.Values,
+                    bullet.Body.Position.X,
+                    velocityX,
+                    bullet.Body.Position.Y,
+                    velocityY, bullet.Body.Width);
+                Console.WriteLine("id: " + bullet.WallId);
                 return bullet.Id;
             }
             return 0;
@@ -205,6 +218,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
         public void RemoveObject(int id, int killerId)
         {
             GameObject go;
+
             if (GameObjects.TryRemove(id, out go))
             {
                 Broker.KillNotification(go.Id, killerId); // No killer
