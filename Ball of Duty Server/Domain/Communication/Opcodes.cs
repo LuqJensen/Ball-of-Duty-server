@@ -15,6 +15,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
         OBJECT_DESTRUCTION = 128,
         PING = 256,
         UDP_CONNECT = 512,
+        SERVER_MESSAGE = 1024,
         TCP_ACTIVITY_OPCODE = REQUEST_BULLET
     }
 }

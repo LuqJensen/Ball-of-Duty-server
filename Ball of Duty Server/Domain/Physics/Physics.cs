@@ -11,7 +11,6 @@ namespace Ball_of_Duty_Server.Domain.Physics
     public class Physics
     {
         private double _topSpeed;
-        private long _lastUpdate;
         private const int MILLISECOND_TO_SECOND = 1000;
 
         public Vector Velocity { get; set; }
@@ -20,7 +19,6 @@ namespace Ball_of_Duty_Server.Domain.Physics
 
         public Physics(GameObject gameObject, double topSpeed, Vector velocity)
         {
-            _lastUpdate = DateTime.Now.Ticks;
             GameObject = gameObject;
             _topSpeed = topSpeed;
             Velocity = velocity;

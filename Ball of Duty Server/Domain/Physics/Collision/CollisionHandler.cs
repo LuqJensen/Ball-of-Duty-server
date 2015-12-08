@@ -100,17 +100,37 @@ namespace Ball_of_Duty_Server.Domain.Physics.Collision
         }
 
 
-        public static int GetFirstLineIntersectingObject<T>(ICollection<GameObject> gameobjects, double x1,
-            double deltaX, double y1, double deltaY, double diameter)
+        public static int GetFirstObjectIntersectingPath<T>(ICollection<GameObject> gameobjects, GameObject gameobjectWithPath)
         {
             double closestDistance = -1;
-            int wallId = 0;
+            int gameobjectTId = 0;
+            Point center1 = gameobjectWithPath.Body.Center;
+            double cx = center1.X;
+            double cy = center1.Y;
+            double diameter = gameobjectWithPath.Body.Height;
+            double radius = diameter / 2;
 
-            deltaX *= Game.MAP_SIZE;
-            deltaY *= Game.MAP_SIZE;
+            Vector velocity = gameobjectWithPath.Physics.Velocity;
+            // Rotating point1 90 deg clockwise around point2 = point1.newX = point1.deltaY+point2.X, point.newY = -point1.deltaX+point2.Y
+            // Rotating point1 90 deg counterclockwise around point2 = point1.newX = -point1.deltaY+point2.X, point.newY = point1.deltaX +point2.Y
+            // Delta in our case is always = radius.
+            Vector radiusVec = velocity;
+            radiusVec.Normalize();
 
-            double x2 = x1 + deltaX;
-            double y2 = y1 + deltaY;
+            radiusVec = Vector.Multiply(radiusVec, radius);
+
+            double deltaX = velocity.X * Game.MAP_SIZE;
+            double deltaY = velocity.Y * Game.MAP_SIZE;
+
+            double rotXClockwise = radiusVec.Y + cx; // Startpoint of a line(path) starting  at one of the gameobjects edges
+            double rotYClockwise = -radiusVec.X + cy;
+            double x2Clockwise = rotXClockwise + deltaX; // End point of a line(path) starting at one of the gameobjects edges
+            double y2Clockwise = rotYClockwise + deltaY;
+
+            double rotXCounter = -radiusVec.Y + cx; // Startpoint of a line(path) starting  at one of the gameobjects edges
+            double rotYCounter = radiusVec.X + cy;
+            double x2Counter = rotXCounter + deltaX; // End point of a line(path) starting at one of the gameobjects edges
+            double y2Counter = rotYCounter + deltaY;
 
             foreach (GameObject go in gameobjects)
             {
@@ -119,31 +139,21 @@ namespace Ball_of_Duty_Server.Domain.Physics.Collision
                     continue;
                 }
 
-                Point center = go.Body.Center;
-                if (CollisionLineSquare(x1, x2, y1, y2, go.Body))
+                if (CollisionLineSquare(rotXClockwise, x2Clockwise, rotYClockwise, y2Clockwise, go.Body) ||
+                    CollisionLineSquare(rotXCounter, x2Counter, rotYCounter, y2Counter, go.Body))
                 {
-                    double dx = Math.Abs(x1 - (center.X));
-                    double dy = Math.Abs(y1 - (center.Y));
+                    Point center = go.Body.Center;
+                    double dx = Math.Abs(cx - (center.X));
+                    double dy = Math.Abs(cy - (center.Y));
                     double distance = Math.Sqrt((dx * dx) + (dy * dy));
                     if (distance < closestDistance || closestDistance < 0)
                     {
-                        wallId = go.Id;
-                        closestDistance = distance;
-                    }
-                }
-                if (CollisionLineSquare(x1 + diameter, x2 + diameter, y1 + diameter, y2 + diameter, go.Body))
-                {
-                    double dx = Math.Abs(x1 + diameter - (center.X));
-                    double dy = Math.Abs(y1 + diameter - (center.Y));
-                    double distance = Math.Sqrt((dx * dx) + (dy * dy));
-                    if (distance < closestDistance || closestDistance < 0)
-                    {
-                        wallId = go.Id;
+                        gameobjectTId = go.Id;
                         closestDistance = distance;
                     }
                 }
             }
-            return wallId;
+            return gameobjectTId;
         }
 
         public static bool CollisionCircleRectangle(Body circle, Body rect)

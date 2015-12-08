@@ -30,6 +30,11 @@ namespace Ball_of_Duty_Server.Domain
             }
         }
 
+        public void WriteServerMessage(String message)
+        {
+            Map.Broker.WriteServerMessage(message);
+        }
+
         public PlayerDTO[] ExportPlayers()
         {
             return _players.Values.Select(p => new PlayerDTO

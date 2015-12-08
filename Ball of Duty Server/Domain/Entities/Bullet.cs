@@ -19,12 +19,12 @@ namespace Ball_of_Duty_Server.Domain.Entities
 
         public int WallId { get; set; }
 
-        public Bullet(Point position, Vector velocity, double radius, int damage, int bulletType, GameObject owner)
+        public Bullet(Point position, Vector velocity, double diameter, int damage, int bulletType, GameObject owner)
         {
             BulletType = bulletType;
             Owner = owner;
             Damage = damage;
-            Body = new Body(this, position, radius, radius)
+            Body = new Body(this, position, diameter, diameter)
             {
                 Type = Body.Geometry.CIRCLE
             };

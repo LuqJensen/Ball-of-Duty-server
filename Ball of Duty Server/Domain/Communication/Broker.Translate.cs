@@ -12,15 +12,30 @@ namespace Ball_of_Duty_Server.Domain.Communication
 {
     public partial class Broker
     {
-        private readonly Dictionary<Opcodes, Action<BinaryReader>> _opcodeMapping =
-            new Dictionary<Opcodes, Action<BinaryReader>>();
+        private readonly Dictionary<Opcodes, Action<BinaryReader>> _opcodeMapping = new Dictionary<Opcodes, Action<BinaryReader>>();
 
         private void AddOpcodeMapping()
         {
             _opcodeMapping.Add(Opcodes.POSITION_UPDATE, this.ReadPositionUpdate);
             _opcodeMapping.Add(Opcodes.REQUEST_BULLET, this.BulletCreationRequest);
-            _opcodeMapping.Add(Opcodes.PING, br => { br.ReadByte(); }); // just read ASCII.EOT
         }
+
+        private void HandlePing(BinaryReader br, IPEndPoint endPoint)
+        {
+            br.ReadByte(); // ASCII.EOT
+
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.Write((byte)ASCII.SOH);
+                bw.Write((uint)Opcodes.PING);
+                bw.Write((byte)ASCII.STX);
+
+                bw.Write((byte)ASCII.EOT);
+                SendTcpTo(ms.ToArray(), endPoint);
+            }
+        }
+
 
         private void Read(byte[] buffer, IPEndPoint endPoint)
         {
@@ -53,13 +68,22 @@ namespace Ball_of_Duty_Server.Domain.Communication
                     }
 
                     Action<BinaryReader> readMethod;
-                    if (!_opcodeMapping.TryGetValue(opcode, out readMethod))
+                    if (_opcodeMapping.TryGetValue(opcode, out readMethod))
                     {
-                        // Malformed packet or malformed read structures.
-                        return;
+                        readMethod(br);
                     }
-
-                    readMethod(br);
+                    else
+                    {
+                        if (opcode == Opcodes.PING)
+                        {
+                            HandlePing(br, endPoint);
+                        }
+                        else
+                        {
+                            // Malformed packet or malformed read structures.
+                            return;
+                        }
+                    }
 
                     // Should be quite a lot cheaper than throwing exceptions all the time.
                     if (br.BaseStream.Position == buffer.Length)
@@ -83,7 +107,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             double x = reader.ReadDouble();
             double y = reader.ReadDouble();
 
-            reader.ReadByte();
+            reader.ReadByte(); // ASCII.EOT
 
             Map.UpdatePosition(new Point(x, y), id);
         }
@@ -158,7 +182,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(objectId);
 
                 bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
+                BroadcastTcp(ms.ToArray());
             }
         }
 
@@ -181,7 +205,22 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(charData.Type);
 
                 bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
+                BroadcastTcp(ms.ToArray());
+            }
+        }
+
+        public void WriteServerMessage(String message)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.Write((byte)ASCII.SOH);
+                bw.Write((uint)Opcodes.SERVER_MESSAGE);
+                bw.Write((byte)ASCII.STX);
+                bw.Write(message);
+
+                bw.Write((byte)ASCII.EOT);
+                BroadcastTcp(ms.ToArray());
             }
         }
 
@@ -198,7 +237,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(characterId);
 
                 bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
+                BroadcastTcp(ms.ToArray());
             }
         }
 
@@ -208,7 +247,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
         {
             double x = reader.ReadDouble();
             double y = reader.ReadDouble();
-            double radius = reader.ReadDouble();
+            double diameter = reader.ReadDouble();
             double velocityX = reader.ReadDouble();
             double velocityY = reader.ReadDouble();
             int bulletType = reader.ReadInt32();
@@ -218,7 +257,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
 
             reader.ReadByte(); // ASCII.EOT
 
-            int bulletId = Map.AddBullet(x, y, velocityX, velocityY, radius, damage, bulletType, ownerId);
+            int bulletId = Map.AddBullet(x, y, velocityX, velocityY, diameter, damage, bulletType, ownerId);
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
@@ -227,7 +266,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write((byte)ASCII.STX);
                 bw.Write(x);
                 bw.Write(y);
-                bw.Write(radius);
+                bw.Write(diameter);
                 bw.Write(velocityX);
                 bw.Write(velocityY);
                 bw.Write(bulletType);
@@ -237,7 +276,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(entityType);
 
                 bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
+                BroadcastTcp(ms.ToArray());
             }
         }
 
@@ -254,7 +293,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(killerId);
 
                 bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
+                BroadcastTcp(ms.ToArray());
             }
         }
     }

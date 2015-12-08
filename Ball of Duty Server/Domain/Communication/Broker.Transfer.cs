@@ -73,38 +73,11 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 PlayerEndPoint playerEndPoint;
                 if (_playerEndPoints.TryGetValue(v.Key.IpEndPoint, out playerEndPoint))
                 {
-                    playerEndPoint.InactivityEvent?.Update(deltaTime);
+//                    playerEndPoint.InactivityEvent?.Update(deltaTime);
                 }
             }
         }
 
-        private void BroadcastTcpAsync()
-        {
-            while (true)
-            {
-                byte[] message;
-                if (_tcpQueue.TryTake(out message, Timeout.Infinite))
-                {
-                    foreach (var v in _connectedClients.Keys)
-                    {
-                        Task.Run(async () =>
-                        {
-                            try
-                            {
-                                await v.SendMessage(message);
-                            }
-                            catch (SocketException)
-                            {
-                                RemoveTarget(v);
-                            }
-                            catch (ObjectDisposedException)
-                            {
-                            }
-                        });
-                    }
-                }
-            }
-        }
 
         public void RemoveTarget(AsyncSocket socket)
         {
@@ -115,7 +88,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             // perhaps add socket to PlayerEndPoint so we can always efficiently remove the player from _connectedClients
             if (_playerEndPoints.TryRemove(socket.IpEndPoint, out endPoint))
             {
-                Console.WriteLine($"Client: {socket.IpEndPoint.Address.MapToIPv4()}:{socket.IpEndPoint.Port} disconnected.");
+                BoDConsole.WriteLine($"Client: {socket.IpEndPoint.Address.MapToIPv4()}:{socket.IpEndPoint.Port} disconnected.");
 
                 // If any PlayerEndPoint, other than the one that was just removed, 
                 // references PlayerId, the player must be connected on another PlayerEndPoint.
@@ -125,7 +98,6 @@ namespace Ball_of_Duty_Server.Domain.Communication
                     if (BoDService.PlayerIngame.TryRemove(endPoint.PlayerId, out game))
                     {
                         game.RemovePlayer(endPoint.PlayerId);
-                        Console.WriteLine($"Player: {endPoint.PlayerId} quit game: {game.Id}.");
                     }
                 }
             }
@@ -212,7 +184,8 @@ namespace Ball_of_Duty_Server.Domain.Communication
                     // at least once per 10 sec.
                     _connectedClients.TryAdd(s, new LightEvent(TCP_TIMEOUT, () => { RemoveTarget(s); }));
                     playerEndPoint.InactivityEvent = new LightEvent(60000, () => { RemoveTarget(s); });
-                    Console.WriteLine($"Client connected: {s.IpEndPoint.Address.MapToIPv4()}");
+
+                    BoDConsole.WriteLine($"Client connected: {s.IpEndPoint.Address.MapToIPv4()}");
                     // Start reading actual game related messages from the client.
                     await ReceiveFromClientAsync(s);
                 }
@@ -294,8 +267,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
         {
             while (true)
             {
-                Task<AsyncSocket.ReadResult> receive = s.ReceiveAsync();
-                await receive;
+                AsyncSocket.ReadResult result = await s.ReceiveAsync();
 
                 LightEvent e;
                 if (_connectedClients.TryGetValue(s, out e))
@@ -304,7 +276,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                     e.Reset();
                 }
 
-                Read(receive.Result.Buffer, s.IpEndPoint);
+                Read(result.Buffer, s.IpEndPoint);
             }
         }
 
@@ -317,9 +289,62 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
-        public void SendTcp(byte[] b)
+        public void BroadcastTcp(byte[] b)
         {
             _tcpQueue.TryAdd(b);
+        }
+
+        private void SendTcpTo(byte[] b, IPEndPoint endPoint)
+        {
+            PlayerEndPoint playerEndPoint;
+            if (!_playerEndPoints.TryGetValue(endPoint, out playerEndPoint))
+            {
+                return;
+            }
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await playerEndPoint.TCPSocket.SendMessage(b);
+                }
+                catch (SocketException)
+                {
+                    RemoveTarget(playerEndPoint.TCPSocket);
+                }
+                catch (ObjectDisposedException)
+                {
+                }
+            });
+        }
+
+        private void BroadcastTcpAsync()
+        {
+            while (true)
+            {
+                byte[] message;
+
+                if (!_tcpQueue.TryTake(out message, Timeout.Infinite))
+                    continue;
+
+                foreach (var v in _connectedClients.Keys)
+                {
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await v.SendMessage(message);
+                        }
+                        catch (SocketException)
+                        {
+                            RemoveTarget(v);
+                        }
+                        catch (ObjectDisposedException)
+                        {
+                        }
+                    });
+                }
+            }
         }
 
         public void SendUdp(byte[] b)
