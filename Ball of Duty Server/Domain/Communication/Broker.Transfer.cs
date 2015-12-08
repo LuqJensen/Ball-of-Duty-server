@@ -29,10 +29,18 @@ namespace Ball_of_Duty_Server.Domain.Communication
         private const int TCP_TIMEOUT = 10000;
         private const int SESSIONID_LENGTH = 32;
 
-        private IPEndPoint _ip; // Needs new port for each game
-        private UdpClient _listener;
+        private UdpClient _udpListener;
 
+        /// <summary>
+        /// Pairs the IPEndPoint of a TCP AsyncSocket with a PlayerEndPoint containing sessionId, 
+        /// AsyncSocket, UdpIpEndPoint, InactivityEvent, and PlayerId
+        /// </summary>
         private ConcurrentDictionary<IPEndPoint, PlayerEndPoint> _playerEndPoints = new ConcurrentDictionary<IPEndPoint, PlayerEndPoint>();
+
+        /// <summary>
+        /// Pairs a sessionId with a PlayerEndPoint containing sessionId, 
+        /// AsyncSocket, UdpIpEndPoint, InactivityEvent, and PlayerId
+        /// </summary>
         private ConcurrentDictionary<string, PlayerEndPoint> _playerSessionTokens = new ConcurrentDictionary<string, PlayerEndPoint>();
 
         /// <summary>
@@ -40,22 +48,29 @@ namespace Ball_of_Duty_Server.Domain.Communication
         /// </summary>
         private ConcurrentDictionary<AsyncSocket, LightEvent> _connectedClients = new ConcurrentDictionary<AsyncSocket, LightEvent>();
 
-        private TcpListener _tcpListener = TcpListener.Create(SERVER_TCP_PORT); // TODO dynamic port
+        private TcpListener _tcpListener;
 
         private BlockingCollection<byte[]> _tcpQueue = new BlockingCollection<byte[]>();
 
-        private static int portIncrement = 0;
-        public Map Map { get; set; }
+        public Map Map { get; }
+
+        public int UdpPort { get; }
+
+        public int TcpPort { get; }
 
         public Broker(Map map)
         {
             Map = map;
+            UdpPort = SERVER_UDP_PORT + Map.Game.Id - 1;
+            TcpPort = SERVER_TCP_PORT + Map.Game.Id - 1;
             AddOpcodeMapping();
+
+            _tcpListener = TcpListener.Create(TcpPort);
             _tcpListener.Start();
-            _ip = new IPEndPoint(IPAddress.Any, SERVER_UDP_PORT);
-            _listener = new UdpClient(_ip);
+
+            _udpListener = new UdpClient(new IPEndPoint(IPAddress.Any, UdpPort));
             // http://stackoverflow.com/questions/5199026/c-sharp-async-udp-listener-socketexception
-            _listener.Client.IOControl((IOControlCode)SIO_UDP_CONNRESET, new byte[] { 0, 0, 0, 0 }, null);
+            _udpListener.Client.IOControl((IOControlCode)SIO_UDP_CONNRESET, new byte[] { 0, 0, 0, 0 }, null);
 
             Thread t = new Thread(ReceiveUdp);
             t.Start();
@@ -285,7 +300,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             while (true)
             {
                 IPEndPoint ipEp = null;
-                Read(_listener.Receive(ref ipEp), ipEp);
+                Read(_udpListener.Receive(ref ipEp), ipEp);
             }
         }
 
@@ -353,7 +368,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             {
                 if (targetEndPoint.UdpIpEndPoint != null)
                 {
-                    _listener.Send(b, b.Length, targetEndPoint.UdpIpEndPoint);
+                    _udpListener.Send(b, b.Length, targetEndPoint.UdpIpEndPoint);
                 }
             }
         }

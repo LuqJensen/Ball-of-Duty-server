@@ -29,12 +29,13 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
         public ConcurrentDictionary<int, GameObject> GameObjects { get; set; } = new ConcurrentDictionary<int, GameObject>();
 
-        public Broker Broker { get; set; }
+        public Broker Broker { get; }
 
-        public Game Game { get; set; }
+        public Game Game { get; }
 
-        public Map(int width, int height)
+        public Map(Game game, int width, int height)
         {
+            Game = game;
             Width = width;
             Height = height;
             MapGenerator.GenerateMap(this);

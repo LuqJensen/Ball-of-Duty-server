@@ -20,7 +20,12 @@ namespace Ball_of_Duty_Server.Domain
 
         public int Id { get; } = Interlocked.Increment(ref _createdGames);
 
-        public Map Map { get; } = new Map(MAP_SIZE, MAP_SIZE);
+        public Map Map { get; }
+
+        public Game()
+        {
+            Map = new Map(this, MAP_SIZE, MAP_SIZE);
+        }
 
         public void AddPlayer(Player player, Specializations clientSpecialization)
         {

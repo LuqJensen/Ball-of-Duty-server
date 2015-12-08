@@ -16,5 +16,7 @@ namespace Ball_of_Duty_Server.DTO
         public int MapWidth;
         public int MapHeight;
         public string IpAddress;
+        public int UdpPort;
+        public int TcpPort;
     }
 }

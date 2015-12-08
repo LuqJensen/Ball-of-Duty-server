@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -24,6 +25,8 @@ namespace Ball_of_Duty_Server.Services
         public static ConcurrentDictionary<int, Game> PlayerIngame { get; set; } = new ConcurrentDictionary<int, Game>(); // midlertidig
 
         public static ConcurrentDictionary<int, Player> OnlinePlayers { get; set; } = new ConcurrentDictionary<int, Player>();
+
+        public static string IpAddress { get; } = ConfigurationManager.AppSettings["serverIp"];
 
         /*private static string localIPAddress;
 
@@ -174,8 +177,10 @@ namespace Ball_of_Duty_Server.Services
                 CharacterId = player.CurrentCharacter.Id,
                 GameId = game.Id,
                 MapWidth = map.Width,
-                MapHeight = map.Height
-                //TODO: Add servers IP here
+                MapHeight = map.Height,
+                IpAddress = IpAddress,
+                TcpPort = map.Broker.TcpPort,
+                UdpPort = map.Broker.UdpPort
             };
         }
 
