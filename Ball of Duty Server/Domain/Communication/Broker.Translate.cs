@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Ball_of_Duty_Server.DAO;
+using SocketExtensions;
 
 namespace Ball_of_Duty_Server.Domain.Communication
 {
@@ -19,10 +20,26 @@ namespace Ball_of_Duty_Server.Domain.Communication
         {
             _opcodeMapping.Add(Opcodes.POSITION_UPDATE, this.ReadPositionUpdate);
             _opcodeMapping.Add(Opcodes.REQUEST_BULLET, this.BulletCreationRequest);
-            _opcodeMapping.Add(Opcodes.PING, br => { br.ReadByte(); }); // just read ASCII.EOT
         }
 
-        private void Read(byte[] buffer, IPEndPoint endPoint)
+        private void HandlePing(BinaryReader br, AsyncSocket s)
+        {
+            br.ReadByte(); // ASCII.EOT
+
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.Write((byte)ASCII.SOH);
+                bw.Write((uint)Opcodes.PING);
+                bw.Write((byte)ASCII.STX);
+
+                bw.Write((byte)ASCII.EOT);
+                SendTcpTo(ms.ToArray(), s);
+            }
+        }
+
+
+        private void Read(byte[] buffer, IPEndPoint endPoint, AsyncSocket s)
         {
             BinaryReader br = new BinaryReader(new MemoryStream(buffer));
             try
@@ -42,7 +59,11 @@ namespace Ball_of_Duty_Server.Domain.Communication
                         }
                         return;
                     }
-
+                    if (opcode == Opcodes.PING)
+                    {
+                        HandlePing(br, s);
+                        return;
+                    }
                     if (Opcodes.TCP_ACTIVITY_OPCODE.HasFlag(opcode))
                     {
                         PlayerEndPoint playerEndPoint;
@@ -158,7 +179,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(objectId);
 
                 bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
+                BroadcastTcp(ms.ToArray());
             }
         }
 
@@ -181,9 +202,25 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(charData.Type);
 
                 bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
+                BroadcastTcp(ms.ToArray());
             }
         }
+
+        public void WriteServerMessage(String message)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.Write((byte)ASCII.SOH);
+                bw.Write((uint)Opcodes.SERVER_MESSAGE);
+                bw.Write((byte)ASCII.STX);
+                bw.Write(message);
+
+                bw.Write((byte)ASCII.EOT);
+                BroadcastTcp(ms.ToArray());
+            }
+        }
+
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         public void WriteRemoveCharacter(int playerId, int characterId)
@@ -198,7 +235,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(characterId);
 
                 bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
+                BroadcastTcp(ms.ToArray());
             }
         }
 
@@ -208,7 +245,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
         {
             double x = reader.ReadDouble();
             double y = reader.ReadDouble();
-            double radius = reader.ReadDouble();
+            double diameter = reader.ReadDouble();
             double velocityX = reader.ReadDouble();
             double velocityY = reader.ReadDouble();
             int bulletType = reader.ReadInt32();
@@ -218,7 +255,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
 
             reader.ReadByte(); // ASCII.EOT
 
-            int bulletId = Map.AddBullet(x, y, velocityX, velocityY, radius, damage, bulletType, ownerId);
+            int bulletId = Map.AddBullet(x, y, velocityX, velocityY, diameter, damage, bulletType, ownerId);
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
@@ -227,7 +264,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write((byte)ASCII.STX);
                 bw.Write(x);
                 bw.Write(y);
-                bw.Write(radius);
+                bw.Write(diameter);
                 bw.Write(velocityX);
                 bw.Write(velocityY);
                 bw.Write(bulletType);
@@ -237,7 +274,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(entityType);
 
                 bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
+                BroadcastTcp(ms.ToArray());
             }
         }
 
@@ -254,7 +291,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(killerId);
 
                 bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
+                BroadcastTcp(ms.ToArray());
             }
         }
     }
