@@ -31,6 +31,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
         public Broker Broker { get; set; }
 
+
         public Game Game { get; set; }
 
         public Map(int width, int height)
@@ -93,12 +94,12 @@ namespace Ball_of_Duty_Server.Domain.Maps
             }).ToList();
         }
 
-        public int AddBullet(double x, double y, double velocityX, double velocityY, double radius, int damage, int bulletType, int ownerId)
+        public int AddBullet(double x, double y, double velocityX, double velocityY, double diameter, int damage, int bulletType, int ownerId)
         {
             GameObject owner;
             if (GameObjects.TryGetValue(ownerId, out owner))
             {
-                Bullet bullet = new Bullet(new Point(x, y), new Vector(velocityX, velocityY), radius, damage, bulletType, owner);
+                Bullet bullet = new Bullet(new Point(x, y), new Vector(velocityX, velocityY), diameter, damage, bulletType, owner);
                 if (!GameObjects.TryAdd(bullet.Id, bullet))
                 {
                     Console.WriteLine($"Could not add {bullet.Id} an existing gameobject has type {GameObjects[bullet.Id].Type}");
@@ -107,8 +108,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
                 }
                 bullet.Register(Observation.EXTERMINATION, this, ExterminationNotification);
 
-                bullet.WallId = CollisionHandler.GetFirstLineIntersectingObject<Wall>(GameObjects.Values,
-                    bullet.Body.Position.X, velocityX, bullet.Body.Position.Y, velocityY, bullet.Body.Width);
+                bullet.WallId = CollisionHandler.GetFirstObjectIntersectingPath<Wall>(GameObjects.Values,
+                    bullet);
 
                 return bullet.Id;
             }

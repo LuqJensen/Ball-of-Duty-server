@@ -19,7 +19,6 @@ namespace Ball_of_Duty_Server
 
         public AsyncSocket TCPSocket { get; set; }
 
-        public LightEvent InactivityEvent { get; set; }
 
         public PlayerEndPoint(int playerId, string sessionId)
         {

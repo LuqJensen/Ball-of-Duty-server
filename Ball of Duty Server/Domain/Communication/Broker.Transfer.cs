@@ -70,11 +70,6 @@ namespace Ball_of_Duty_Server.Domain.Communication
             foreach (var v in _connectedClients)
             {
                 v.Value.Update(deltaTime);
-                PlayerEndPoint playerEndPoint;
-                if (_playerEndPoints.TryGetValue(v.Key.IpEndPoint, out playerEndPoint))
-                {
-                    playerEndPoint.InactivityEvent?.Update(deltaTime);
-                }
             }
         }
 
@@ -211,7 +206,6 @@ namespace Ball_of_Duty_Server.Domain.Communication
                     // Timeout the TCP and UDP connection to a client if we dont receive a TCP message
                     // at least once per 10 sec.
                     _connectedClients.TryAdd(s, new LightEvent(TCP_TIMEOUT, () => { RemoveTarget(s); }));
-                    playerEndPoint.InactivityEvent = new LightEvent(60000, () => { RemoveTarget(s); });
                     Console.WriteLine($"Client connected: {s.IpEndPoint.Address.MapToIPv4()}");
                     // Start reading actual game related messages from the client.
                     await ReceiveFromClientAsync(s);
@@ -296,7 +290,6 @@ namespace Ball_of_Duty_Server.Domain.Communication
             {
                 Task<AsyncSocket.ReadResult> receive = s.ReceiveAsync();
                 await receive;
-
                 LightEvent e;
                 if (_connectedClients.TryGetValue(s, out e))
                 {

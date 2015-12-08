@@ -19,8 +19,9 @@ namespace Ball_of_Duty_Server.Domain.Communication
         {
             _opcodeMapping.Add(Opcodes.POSITION_UPDATE, this.ReadPositionUpdate);
             _opcodeMapping.Add(Opcodes.REQUEST_BULLET, this.BulletCreationRequest);
-            _opcodeMapping.Add(Opcodes.PING, br => { br.ReadByte(); }); // just read ASCII.EOT
+            _opcodeMapping.Add(Opcodes.PING, br => { br.Read(); }); // just read ASCII.EOT
         }
+
 
         private void Read(byte[] buffer, IPEndPoint endPoint)
         {
@@ -43,14 +44,6 @@ namespace Ball_of_Duty_Server.Domain.Communication
                         return;
                     }
 
-                    if (Opcodes.TCP_ACTIVITY_OPCODE.HasFlag(opcode))
-                    {
-                        PlayerEndPoint playerEndPoint;
-                        if (_playerEndPoints.TryGetValue(endPoint, out playerEndPoint))
-                        {
-                            playerEndPoint.InactivityEvent?.Reset();
-                        }
-                    }
 
                     Action<BinaryReader> readMethod;
                     if (!_opcodeMapping.TryGetValue(opcode, out readMethod))
@@ -185,6 +178,22 @@ namespace Ball_of_Duty_Server.Domain.Communication
             }
         }
 
+        public void WriteServerMessage(String message)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.Write((byte)ASCII.SOH);
+                bw.Write((uint)Opcodes.SERVER_MESSAGE);
+                bw.Write((byte)ASCII.STX);
+                bw.Write(message);
+
+                bw.Write((byte)ASCII.EOT);
+                SendTcp(ms.ToArray());
+            }
+        }
+
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         public void WriteRemoveCharacter(int playerId, int characterId)
         {
@@ -208,7 +217,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
         {
             double x = reader.ReadDouble();
             double y = reader.ReadDouble();
-            double radius = reader.ReadDouble();
+            double diameter = reader.ReadDouble();
             double velocityX = reader.ReadDouble();
             double velocityY = reader.ReadDouble();
             int bulletType = reader.ReadInt32();
@@ -218,7 +227,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
 
             reader.ReadByte(); // ASCII.EOT
 
-            int bulletId = Map.AddBullet(x, y, velocityX, velocityY, radius, damage, bulletType, ownerId);
+            int bulletId = Map.AddBullet(x, y, velocityX, velocityY, diameter, damage, bulletType, ownerId);
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
@@ -227,7 +236,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write((byte)ASCII.STX);
                 bw.Write(x);
                 bw.Write(y);
-                bw.Write(radius);
+                bw.Write(diameter);
                 bw.Write(velocityX);
                 bw.Write(velocityY);
                 bw.Write(bulletType);

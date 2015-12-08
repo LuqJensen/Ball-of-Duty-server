@@ -61,6 +61,14 @@ namespace Ball_of_Duty_Server.Services
             };
         }
 
+        public static void WriteServerMessage(String message)
+        {
+            foreach (Game game in Games.Values)
+            {
+                game.WriteServerMessage(message);
+            }
+        }
+
         public AccountDTO NewAccount(string username, string nickname, int playerId, byte[] salt, byte[] hash)
         {
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(nickname) || salt.Length != 32 ||
