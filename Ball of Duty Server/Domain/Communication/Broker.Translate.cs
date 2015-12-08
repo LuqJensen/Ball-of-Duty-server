@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Ball_of_Duty_Server.DAO;
+using SocketExtensions;
 
 namespace Ball_of_Duty_Server.Domain.Communication
 {
@@ -19,11 +20,26 @@ namespace Ball_of_Duty_Server.Domain.Communication
         {
             _opcodeMapping.Add(Opcodes.POSITION_UPDATE, this.ReadPositionUpdate);
             _opcodeMapping.Add(Opcodes.REQUEST_BULLET, this.BulletCreationRequest);
-            _opcodeMapping.Add(Opcodes.PING, br => { br.Read(); }); // just read ASCII.EOT
+        }
+
+        private void HandlePing(BinaryReader br, AsyncSocket s)
+        {
+            br.ReadByte(); // ASCII.EOT
+
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.Write((byte)ASCII.SOH);
+                bw.Write((uint)Opcodes.PING);
+                bw.Write((byte)ASCII.STX);
+
+                bw.Write((byte)ASCII.EOT);
+                SendTcpTo(ms.ToArray(), s);
+            }
         }
 
 
-        private void Read(byte[] buffer, IPEndPoint endPoint)
+        private void Read(byte[] buffer, IPEndPoint endPoint, AsyncSocket s)
         {
             BinaryReader br = new BinaryReader(new MemoryStream(buffer));
             try
@@ -43,7 +59,19 @@ namespace Ball_of_Duty_Server.Domain.Communication
                         }
                         return;
                     }
-
+                    if (opcode == Opcodes.PING)
+                    {
+                        HandlePing(br, s);
+                        return;
+                    }
+                    if (Opcodes.TCP_ACTIVITY_OPCODE.HasFlag(opcode))
+                    {
+                        PlayerEndPoint playerEndPoint;
+                        if (_playerEndPoints.TryGetValue(endPoint, out playerEndPoint))
+                        {
+                            playerEndPoint.InactivityEvent?.Reset();
+                        }
+                    }
 
                     Action<BinaryReader> readMethod;
                     if (!_opcodeMapping.TryGetValue(opcode, out readMethod))
@@ -151,7 +179,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(objectId);
 
                 bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
+                BroadcastTcp(ms.ToArray());
             }
         }
 
@@ -174,7 +202,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(charData.Type);
 
                 bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
+                BroadcastTcp(ms.ToArray());
             }
         }
 
@@ -189,7 +217,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(message);
 
                 bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
+                BroadcastTcp(ms.ToArray());
             }
         }
 
@@ -207,7 +235,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(characterId);
 
                 bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
+                BroadcastTcp(ms.ToArray());
             }
         }
 
@@ -246,7 +274,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(entityType);
 
                 bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
+                BroadcastTcp(ms.ToArray());
             }
         }
 
@@ -263,7 +291,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                 bw.Write(killerId);
 
                 bw.Write((byte)ASCII.EOT);
-                SendTcp(ms.ToArray());
+                BroadcastTcp(ms.ToArray());
             }
         }
     }

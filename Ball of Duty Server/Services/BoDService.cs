@@ -13,6 +13,7 @@ using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
 using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Persistence;
+using Ball_of_Duty_Server.Utility;
 
 namespace Ball_of_Duty_Server.Services
 {
@@ -106,7 +107,7 @@ namespace Ball_of_Duty_Server.Services
             }
 
             Game game = new Game();
-            Console.WriteLine($"Created new game: {game.Id}");
+            BoDConsole.WriteLine($"Created new game: {game.Id}");
             Games.TryAdd(game.Id, game);
             return game;
         }
@@ -116,10 +117,10 @@ namespace Ball_of_Duty_Server.Services
             Game game;
             if (!PlayerIngame.TryGetValue(clientPlayerId, out game))
             {
-                Console.WriteLine("Coulnd't find player");
+                BoDConsole.WriteLine("Coulnd't find player");
                 return new GameObjectDTO();
             }
-            Console.WriteLine($"Player: {clientPlayerId} tried to respawn.");
+            BoDConsole.WriteLine($"Player: {clientPlayerId} tried to respawn.");
             Specializations spec = (Specializations)clientSpecializations;
 
             return game.Respawn(clientPlayerId, spec);
@@ -133,7 +134,6 @@ namespace Ball_of_Duty_Server.Services
                 return new GameDTO(); //TODO: probably not the smartest, but necessary.
             }
 
-            Console.WriteLine($"Player: {clientPlayerId} tried to join game.");
 
             Game game = GetGame();
             Map map = game.Map;
@@ -187,7 +187,6 @@ namespace Ball_of_Duty_Server.Services
                 //if (Games.TryGetValue(gameId, out game)) //TODO: brug OnlinePlayers i stedet
             {
                 game.RemovePlayer(clientPlayerId);
-                Console.WriteLine($"Player: {clientPlayerId} quit game: {game.Id}.");
             }
             else
             {

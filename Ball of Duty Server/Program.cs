@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Ball_of_Duty_Server.Persistence;
 using Ball_of_Duty_Server.Services;
+using Ball_of_Duty_Server.Utility;
 
 namespace Ball_of_Duty_Server
 {
@@ -16,6 +17,7 @@ namespace Ball_of_Duty_Server
     {
         public enum Command
         {
+            NONE,
             QUIT,
             WRITE_ACTIVE_PLAYERS,
             BAN,
@@ -23,15 +25,11 @@ namespace Ball_of_Duty_Server
         }
 
 
-        public static Command? GetCommandType(String line)
+        public static Command GetCommandType(String line)
         {
             if (line.ToLower().StartsWith("sm") || line.ToLower().StartsWith("server_message"))
             {
                 return Command.SERVER_MESSAGE;
-            }
-            else if (line.ToLower().StartsWith("quit"))
-            {
-                return Command.QUIT;
             }
             else if (line.ToLower().StartsWith("active_players"))
             {
@@ -43,7 +41,7 @@ namespace Ball_of_Duty_Server
             }
             else
             {
-                return null;
+                return Command.NONE;
             }
         }
 
@@ -96,13 +94,15 @@ namespace Ball_of_Duty_Server
 
                 sh.Open();
 
-                Console.WriteLine("Server is up and running");
-                Console.WriteLine("Write quit to terminate");
-                string lineRead = Console.ReadLine();
-                Command? commandType = GetCommandType(lineRead);
+                BoDConsole.WriteLine("Server is up and running");
+                BoDConsole.WriteLine("Write quit to terminate");
 
-                while (commandType != Command.QUIT)
+                string lineRead;
+                Command commandType;
+                while (true)
                 {
+                    lineRead = Console.ReadLine();
+                    commandType = GetCommandType(lineRead);
                     switch (commandType)
                     {
                         case Command.SERVER_MESSAGE:
@@ -119,11 +119,7 @@ namespace Ball_of_Duty_Server
                             break; // TODO
                         }
                     }
-                    lineRead = Console.ReadLine();
-                    commandType = GetCommandType(lineRead);
                 }
-
-                sh.Close();
             }
         }
     }

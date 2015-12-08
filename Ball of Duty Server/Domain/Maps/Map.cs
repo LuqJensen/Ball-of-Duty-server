@@ -102,8 +102,8 @@ namespace Ball_of_Duty_Server.Domain.Maps
                 Bullet bullet = new Bullet(new Point(x, y), new Vector(velocityX, velocityY), diameter, damage, bulletType, owner);
                 if (!GameObjects.TryAdd(bullet.Id, bullet))
                 {
-                    Console.WriteLine($"Could not add {bullet.Id} an existing gameobject has type {GameObjects[bullet.Id].Type}");
-                    Console.WriteLine($"Bullet {bullet.Id} dongoofed");
+                    BoDConsole.WriteLine($"Could not add {bullet.Id} an existing gameobject has type {GameObjects[bullet.Id].Type}");
+                    BoDConsole.WriteLine($"Bullet {bullet.Id} dongoofed");
                     return 0;
                 }
                 bullet.Register(Observation.EXTERMINATION, this, ExterminationNotification);
