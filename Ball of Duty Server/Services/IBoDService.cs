@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace Ball_of_Duty_Server.Services
         PlayerDTO NewGuest(string nickname);
 
         [OperationContract]
-        GameDTO JoinGame(int clientPlayerId, int clientSpecialization);
+        GameDTO JoinGame(int clientPlayerId, int clientSpecialization, string clientVersion);
 
         [OperationContract]
         AccountDTO NewAccount(string username, string nickname, int playerId, byte[] salt, byte[] hash);

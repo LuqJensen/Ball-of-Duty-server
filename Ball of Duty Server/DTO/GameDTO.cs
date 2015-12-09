@@ -18,5 +18,6 @@ namespace Ball_of_Duty_Server.DTO
         public string IpAddress;
         public int UdpPort;
         public int TcpPort;
+        public string Version;
     }
 }
