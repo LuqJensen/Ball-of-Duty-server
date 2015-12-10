@@ -20,6 +20,7 @@ namespace Ball_of_Duty_Server.Services
 {
     public class BoDService : IBoDService
     {
+        public const string VERSION = "0.0.1";
         public static ConcurrentDictionary<int, Game> Games { get; set; } = new ConcurrentDictionary<int, Game>();
 
         public static ConcurrentDictionary<int, Game> PlayerIngame { get; set; } = new ConcurrentDictionary<int, Game>(); // midlertidig
@@ -52,6 +53,7 @@ namespace Ball_of_Duty_Server.Services
         {
             GetGame();
         }
+
 
         public PlayerDTO NewGuest(string nickname)
         {
@@ -129,8 +131,15 @@ namespace Ball_of_Duty_Server.Services
             return game.Respawn(clientPlayerId, spec);
         }
 
-        public GameDTO JoinGame(int clientPlayerId, int clientSpecialization)
+        public GameDTO JoinGame(int clientPlayerId, int clientSpecialization, string clientVersion)
         {
+            if (!clientVersion.Equals(VERSION)) //TODO: Should maybe allow more than just the latest update later on.
+            {
+                return new GameDTO()
+                {
+                    Version = VERSION
+                };
+            }
             Player player;
             if (!OnlinePlayers.TryGetValue(clientPlayerId, out player))
             {
@@ -180,7 +189,8 @@ namespace Ball_of_Duty_Server.Services
                 MapHeight = map.Height,
                 IpAddress = IpAddress,
                 TcpPort = map.Broker.TcpPort,
-                UdpPort = map.Broker.UdpPort
+                UdpPort = map.Broker.UdpPort,
+                Version = VERSION
             };
         }
 
