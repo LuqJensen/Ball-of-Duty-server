@@ -31,5 +31,11 @@ namespace Ball_of_Duty_Server.Services
 
         [OperationContract]
         GameObjectDTO Respawn(int clientPlayerId, int clientSpecializations);
+
+        [OperationContract]
+        LoginDTO RequestAuthenticationChallenge(string username);
+
+        [OperationContract]
+        PlayerDTO CompleteAuthenticationChallenge(string username, byte[] decryptedChallenge);
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Ball_of_Duty_Server.DTO;
@@ -42,10 +44,23 @@ namespace Ball_of_Duty_Server.Persistence
                 };
 
                 player.Account = account;
-
                 dc.Accounts.Add(account);
+                dc.Entry(player).State = EntityState.Modified; // Avoid making duplicate players.
+
                 dc.SaveChanges();
                 return account;
+            }
+        }
+
+        public static Account GetAccount(Expression<Func<Account, bool>> predicate)
+        {
+            using (DatabaseContainer dc = new DatabaseContainer())
+            {
+                // TODO determine whether or not Player should be included here.
+                // If not we must load it later or it causes an objectdisposedexception.
+                // Alternatively we can remove nagivation properties from the entity and use foreign keys
+                // in form of Player.Id instead. That will require loading player by Id for every use however.
+                return dc.Accounts.Include(a => a.Player).First(predicate);
             }
         }
 

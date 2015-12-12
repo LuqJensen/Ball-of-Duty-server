@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Ball_of_Duty_Server.DTO
 {
     [Serializable]
-    public struct PlayerDTO
+    public class PlayerDTO
     {
         public int Id;
         public string Nickname;

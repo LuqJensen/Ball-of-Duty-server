@@ -72,6 +72,7 @@
     <Compile Include="Domain\Entities\EntityType.cs" />
     <Compile Include="Domain\Physics\Collision\CollisionHandler.cs" />
     <Compile Include="DAO\GameObjectDAO.cs" />
+    <Compile Include="DTO\LoginDTO.cs" />
     <Compile Include="DTO\PhysicsDTO.cs" />
     <Compile Include="Persistence\Account.Domain.cs" />
     <Compile Include="Domain\Body.cs" />

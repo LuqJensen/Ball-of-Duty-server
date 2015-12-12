@@ -153,7 +153,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
         public byte[] GenerateSessionId(int playerId, string ip)
         {
             IPAddress ipAddress = IPAddress.Parse(ip);
-            byte[] randomBytes = new byte[SESSIONID_LENGTH].FillRandomly();
+            byte[] randomBytes = CryptoHelper.FillRandomly(new byte[SESSIONID_LENGTH]);
             string sessionId = Convert.ToBase64String(randomBytes);
 
             _playerSessionTokens.TryAdd(sessionId, new PlayerEndPoint(playerId, sessionId));

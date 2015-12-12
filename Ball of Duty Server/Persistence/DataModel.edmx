@@ -21,7 +21,7 @@
     <Property Name="Username" Type="nvarchar(max)" Nullable="false" />
     <Property Name="Salt" Type="nvarchar(max)" Nullable="false" />
     <Property Name="Hash" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="Player_Id" Type="int" Nullable="true" />
+    <Property Name="Player_Id" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="Players">
     <Key>
@@ -33,7 +33,7 @@
     <Property Name="HighScore" Type="float" Nullable="false" DefaultValue="0" />
   </EntityType>
   <Association Name="PlayerAccount">
-    <End Role="Player" Type="BoDServerDataModel.Store.Players" Multiplicity="0..1" />
+    <End Role="Player" Type="BoDServerDataModel.Store.Players" Multiplicity="1" />
     <End Role="Account" Type="BoDServerDataModel.Store.Accounts" Multiplicity="*" />
     <ReferentialConstraint>
       <Principal Role="Player">
@@ -77,7 +77,7 @@
           </AssociationSet>
         </EntityContainer>
         <Association Name="PlayerAccount">
-          <End Type="BoDServerDataModel.Player" Role="Player" Multiplicity="0..1" />
+          <End Type="BoDServerDataModel.Player" Role="Player" Multiplicity="1" />
           <End Type="BoDServerDataModel.Account" Role="Account" Multiplicity="0..1" />
         </Association>
       </Schema>
@@ -113,7 +113,6 @@
       <EndProperty Name="Account">
         <ScalarProperty Name="Id" ColumnName="Id" />
       </EndProperty>
-      <Condition ColumnName="Player_Id" IsNull="false" />
     </AssociationSetMapping>
   </EntityContainerMapping>
 </Mapping></edmx:Mappings>

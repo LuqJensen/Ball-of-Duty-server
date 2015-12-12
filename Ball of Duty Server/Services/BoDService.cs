@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Windows;
@@ -26,6 +27,8 @@ namespace Ball_of_Duty_Server.Services
         public static ConcurrentDictionary<int, Game> PlayerIngame { get; set; } = new ConcurrentDictionary<int, Game>(); // midlertidig
 
         public static ConcurrentDictionary<int, Player> OnlinePlayers { get; set; } = new ConcurrentDictionary<int, Player>();
+
+        public static ConcurrentDictionary<string, Account> AccountsAuthenticating { get; } = new ConcurrentDictionary<string, Account>();
 
         public static string IpAddress { get; } = ConfigurationManager.AppSettings["serverIp"];
 
@@ -77,8 +80,8 @@ namespace Ball_of_Duty_Server.Services
 
         public AccountDTO NewAccount(string username, string nickname, int playerId, byte[] salt, byte[] hash)
         {
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(nickname) || salt.Length != 32 ||
-                hash.Length != 32)
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(nickname) || salt.Length != CryptoHelper.SALT_SIZE ||
+                hash.Length != CryptoHelper.HASH_SIZE)
             {
                 return new AccountDTO();
             }
@@ -207,6 +210,54 @@ namespace Ball_of_Duty_Server.Services
             {
                 Debug.WriteLine($"Player: {clientPlayerId} failed quitting game" /*: {gameId}."*/);
             }
+        }
+
+        public LoginDTO RequestAuthenticationChallenge(string username)
+        {
+            try
+            {
+                Account account = DataModelFacade.GetAccount(a => a.Username == username);
+                account.SessionSalt = CryptoHelper.GenerateSalt();
+                account.CryptoHelper = new CryptoHelper(account.Hash, account.SessionSalt);
+                account.AuthenticationChallenge = CryptoHelper.GenerateSalt();
+
+                AccountsAuthenticating[account.Username] = account;
+
+                return new LoginDTO
+                {
+                    PasswordSalt = Convert.FromBase64String(account.Salt),
+                    SessionSalt = account.SessionSalt,
+                    IV = account.CryptoHelper.GenerateIV(),
+                    AuthenticationChallenge = account.CryptoHelper.Encrypt(account.AuthenticationChallenge)
+                };
+            }
+            catch (InvalidOperationException)
+            {
+                // TODO throw FaultException
+                return new LoginDTO();
+            }
+        }
+
+        public PlayerDTO CompleteAuthenticationChallenge(string username, byte[] decryptedChallenge)
+        {
+            Account account;
+            if (AccountsAuthenticating.TryRemove(username, out account))
+            {
+                if (Convert.ToBase64String(account.AuthenticationChallenge) == Convert.ToBase64String(decryptedChallenge))
+                {
+                    Player p = account.Player;
+                    OnlinePlayers.TryAdd(p.Id, p);
+
+                    return new PlayerDTO
+                    {
+                        Id = p.Id,
+                        Gold = p.Gold,
+                        HighScore = p.HighScore,
+                        Nickname = p.Nickname
+                    };
+                }
+            }
+            return null;
         }
 
         public PlayerDTO[] GetLeaderboard()
