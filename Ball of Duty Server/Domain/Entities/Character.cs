@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Windows;
 using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
-using Ball_of_Duty_Server.Domain.Physics.Collision;
+using Ball_of_Duty_Server.Domain.GameObjects;
+using Ball_of_Duty_Server.Domain.GameObjects.Components;
+using Ball_of_Duty_Server.Domain.GameObjects.Components.Physics.Collision;
 using Ball_of_Duty_Server.Utility;
 
 namespace Ball_of_Duty_Server.Domain.Entities

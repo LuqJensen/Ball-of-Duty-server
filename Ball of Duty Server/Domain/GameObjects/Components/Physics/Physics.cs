@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Windows;
-using Ball_of_Duty_Server.Domain.Entities;
-using Ball_of_Duty_Server.Domain.Physics.Collision;
+using Ball_of_Duty_Server.Domain.GameObjects.Components.Physics.Collision;
 
-namespace Ball_of_Duty_Server.Domain.Physics
+namespace Ball_of_Duty_Server.Domain.GameObjects.Components.Physics
 {
     public class Physics
     {

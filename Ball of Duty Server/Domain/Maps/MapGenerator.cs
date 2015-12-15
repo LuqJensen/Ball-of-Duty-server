@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Ball_of_Duty_Server.Domain.Entities;
+using Ball_of_Duty_Server.Domain.GameObjects;
 
 namespace Ball_of_Duty_Server.Domain.Maps
 {

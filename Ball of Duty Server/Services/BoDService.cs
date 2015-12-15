@@ -12,6 +12,7 @@ using System.ServiceModel.Channels;
 using System.Windows;
 using Ball_of_Duty_Server.Domain;
 using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
+using Ball_of_Duty_Server.Domain.GameObjects.Components;
 using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Persistence;

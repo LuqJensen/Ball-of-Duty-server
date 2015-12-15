@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Ball_of_Duty_Server.Domain.Entities;
@@ -9,7 +8,7 @@ using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Persistence;
 
-namespace Ball_of_Duty_Server.Domain
+namespace Ball_of_Duty_Server.Domain.GameObjects.Components
 {
     public class Game
     {

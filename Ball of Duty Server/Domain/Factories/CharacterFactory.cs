@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
 
-namespace Ball_of_Duty_Server.Domain.Entities
+namespace Ball_of_Duty_Server.Domain.Factories
 {
     public static class CharacterFactory
     {

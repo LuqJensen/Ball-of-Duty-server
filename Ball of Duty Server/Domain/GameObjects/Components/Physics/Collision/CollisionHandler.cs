@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.Utility;
 
-namespace Ball_of_Duty_Server.Domain.Physics.Collision
+namespace Ball_of_Duty_Server.Domain.GameObjects.Components.Physics.Collision
 {
     public class CollisionHandler
     {

@@ -1,5 +1,7 @@
 ﻿using System.Windows;
-using Ball_of_Duty_Server.Domain.Physics.Collision;
+using Ball_of_Duty_Server.Domain.GameObjects;
+using Ball_of_Duty_Server.Domain.GameObjects.Components;
+using Ball_of_Duty_Server.Domain.GameObjects.Components.Physics.Collision;
 
 namespace Ball_of_Duty_Server.Domain.Entities
 {

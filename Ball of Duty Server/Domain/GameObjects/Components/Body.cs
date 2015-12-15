@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using Ball_of_Duty_Server.Domain.Entities;
+﻿using System.Windows;
 
-namespace Ball_of_Duty_Server.Domain
+namespace Ball_of_Duty_Server.Domain.GameObjects.Components
 {
     public class Body
     {

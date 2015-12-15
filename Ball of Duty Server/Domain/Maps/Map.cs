@@ -10,7 +10,10 @@ using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Utility;
 using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
-using Ball_of_Duty_Server.Domain.Physics.Collision;
+using Ball_of_Duty_Server.Domain.Factories;
+using Ball_of_Duty_Server.Domain.GameObjects;
+using Ball_of_Duty_Server.Domain.GameObjects.Components;
+using Ball_of_Duty_Server.Domain.GameObjects.Components.Physics.Collision;
 
 namespace Ball_of_Duty_Server.Domain.Maps
 {

@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
 using Ball_of_Duty_Server.Utility;
 using SocketExtensions;
 
-namespace Ball_of_Duty_Server
+namespace Ball_of_Duty_Server.Domain.Communication
 {
     public class PlayerEndPoint
     {

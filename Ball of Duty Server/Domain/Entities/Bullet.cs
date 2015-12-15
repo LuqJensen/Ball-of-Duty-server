@@ -4,7 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using Ball_of_Duty_Server.Domain.Physics.Collision;
+using Ball_of_Duty_Server.Domain.GameObjects;
+using Ball_of_Duty_Server.Domain.GameObjects.Components;
+using Ball_of_Duty_Server.Domain.GameObjects.Components.Physics;
+using Ball_of_Duty_Server.Domain.GameObjects.Components.Physics.Collision;
 using Ball_of_Duty_Server.Utility;
 
 namespace Ball_of_Duty_Server.Domain.Entities
@@ -28,7 +31,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
             {
                 Type = Body.Geometry.CIRCLE
             };
-            Physics = new Physics.Physics(this, 200, velocity);
+            Physics = new Physics(this, 200, velocity);
             _lifeTimeEvent = new LightEvent(5000, DestroyEvent);
             Type = EntityType.BULLET;
         }
