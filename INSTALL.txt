@@ -1,20 +1,21 @@
 Important note: If you plan on exposing the server to networks outside of your home network. Make sure you have a static IP address and have properly port forwarded port 8733 for TCP,
 port 15001 for UDP and port 15010 for TCP. For multiple games you should port forward 15001 through 150010+x, where x is amount of games for UDP and TCP respectively. 
 Furthermore even when testing on local network, make sure that the firewall is OFF or has a rule allowing BoDServer.exe through. Otherwise clients will not be able to connect.
-Only if running on localhost, none of these changes must be made. We recommend testing the server on localhost due to this. 
+By default Windows should ask if you want to allow BoDServer.exe through the firewall when running it the first time.
+If only running on localhost, none of these changes must be made. We recommend testing the server on localhost due to this. 
 
-This guide will assist in setting up an environment from which to develop on the Ball of Duty server.
+This guide will assist in setting up an environment from which to host the Ball of Duty server.
 For requirements see README.md.
 1.  Install .NET Framework.
 2.  Install Microsoft SQL Server.
-3.  Open Microsoft SQL Server Management Studio.
+3.  Run Microsoft SQL Server Management Studio.
 4.  Click "New Query" on the toolbar.
-5.  Copy the text from "BodServer.sql" found in the "Project Ball of Duty/Executables" folder.
+5.  Copy the text from "BodServer.sql" found in the "Project Ball of Duty/Executables/Server" folder.
 6.  Paste the sql code into the query window and click the red exclamation mark "Execute" on the toolbar.
 7.  The window should now show a pane in which it says "Command(s) completed succesfully.".
 8.  Open "Ball of Duty Server.exe.config" found in the "Project Ball of Duty/Executables/Server/Release".
 9.  Refer to steps 14 through 18 in the setup for development below.
-10. Run "Ball of Duty.exe".
+10. Run "Ball of Duty.exe" as administrator.
 
 
 This guide will assist in setting up an environment from which to develop on the Ball of Duty server.
@@ -22,7 +23,7 @@ For requirements see README.md.
 
 1.  Install Visual Studio and .NET Framework.
 2.  Install Microsoft SQL Server.
-3.  Open Microsoft SQL Server Management Studio.
+3.  Run Microsoft SQL Server Management Studio.
 4.  Setup a database named BoDServer or choose a name of your liking. Note this must be set in the connectionString later on, the default is BoDServer.
 5.  Run Visual Studio as administrator.
 6.  Open "Ball of Duty Server.sln".
