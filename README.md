@@ -2,7 +2,8 @@
 [![Issue Stats](http://www.issuestats.com/github/LuqJensen/BOD-Server/badge/pr)](http://www.issuestats.com/github/LuqJensen/BOD-Server)
 
 ## Introduction
-
+This project is owned by project group 6 on third semester of Software Engineering at University of Southern Denmark.
+BoD - Ball of Duty is a simple 2D multiplayer shooter. This repository represents the backend of Ball of Duty.
 
 
 ## Requirements
@@ -29,3 +30,4 @@ Fixes are submitted as pull requests via Github.
 
 
 ## Links
+
