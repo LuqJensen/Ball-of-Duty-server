@@ -91,7 +91,6 @@ namespace Ball_of_Duty_Server
                 sh.Open();
 
                 BoDConsole.WriteLine("Server is up and running");
-                BoDConsole.WriteLine("Write quit to terminate");
 
                 while (true)
                 {
