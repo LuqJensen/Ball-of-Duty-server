@@ -6,8 +6,16 @@ This project is owned by project group 6 on third semester of Software Engineeri
 BoD - Ball of Duty is a simple 2D multiplayer shooter. This repository represents the backend of Ball of Duty.
 
 
-## Requirements
+## Requirements for developing
++ Microsoft Windows 7 or newer.
++ Microsoft SQL Server 2012 or newer.
++ Microsoft Visual Studio 2015 or newer.
++ .NET Framework ≥ 4.6
 
+## Requirements for hosting Ball of Duty
++ Microsoft Windows 7 or newer.
++ .NET Framework ≥ 4.6
++ Microsoft SQL Server 2012 or newer.
 
 ## Install
 
