@@ -1,36 +1,56 @@
+Important note: If you plan on exposing the server to networks outside of your home network. Make sure you have a static IP address and have properly port forwarded port 8733 for TCP,
+port 15001 for UDP and port 15010 for TCP. For multiple games you should port forward 15001 through 150010+x, where x is amount of games for UDP and TCP respectively. 
+Furthermore even when testing on local network, make sure that the firewall is OFF or has a rule allowing BoDServer.exe through. Otherwise clients will not be able to connect.
+Only if running on localhost, none of these changes must be made. We recommend testing the server on localhost due to this. 
+
+This guide will assist in setting up an environment from which to develop on the Ball of Duty server.
+For requirements see README.md.
+1.  Install .NET Framework.
+2.  Install Microsoft SQL Server.
+3.  Open Microsoft SQL Server Management Studio.
+4.  Click "New Query" on the toolbar.
+5.  Copy the text from "BodServer.sql" found in the "Project Ball of Duty/Executables" folder.
+6.  Paste the sql code into the query window and click the red exclamation mark "Execute" on the toolbar.
+7.  The window should now show a pane in which it says "Command(s) completed succesfully.".
+8.  Open "Ball of Duty Server.exe.config" found in the "Project Ball of Duty/Executables/Server/Release".
+9.  Refer to steps 14 through 18 in the setup for development below.
+10. Run "Ball of Duty.exe".
+
+
 This guide will assist in setting up an environment from which to develop on the Ball of Duty server.
 For requirements see README.md.
 
-1. Install Visual Studio and .NET Framework.
-2. Install Microsoft SQL Server.
-3. Setup a database named BoDServer or choose a name of your liking. Note this must be set in the connectionString later on, the default is BoDServer.
-4. Run Visual Studio as administrator.
-5. Open "Ball of Duty Server.sln".
-6. Find the "Persistence" folder. Open DataModel.edmx.
-7. Right click on the drawing surface and choose "Generate Database from Model...".
-8. In the pop up window type in your database server name in the "Server Name" field. In the repository owner's case it is "LUQJENSEN".
-9. If the server name is legit, a database can now be selected in the drop down menu in the "Select or enter a database name" field. Choose BoDServer or the name you picked earlier. Click Ok.
-10. A new window should pop up showing a preview of the SQL file that will be generated. Choose Finish.
-11. In the topleft corner of the newly created DataModel.edmx.sql file locate a green arrow. Click the arrow. Note you may be prompted to login to your database server.
-12. The window should now show a pane in which it says "Command(s) completed succesfully.".
-13. Find "App.config" in the "Ball of Duty Server" project.
-14. Find <appsSettings> and change the value of "serverIp" to the IP on which you want to expose the service and server.
-15. Find <identity> and set the value of "dns" to the same IP as above.
-16. Find <baseAddresses> and change the baseAddress field to match the IP set above. Eg. http://IP:8733/Ball_of_Duty_Server/Services/BoDService/
+1.  Install Visual Studio and .NET Framework.
+2.  Install Microsoft SQL Server.
+3.  Open Microsoft SQL Server Management Studio.
+4.  Setup a database named BoDServer or choose a name of your liking. Note this must be set in the connectionString later on, the default is BoDServer.
+5.  Run Visual Studio as administrator.
+6.  Open "Ball of Duty Server.sln".
+7.  Find the "Persistence" folder. Open DataModel.edmx.
+8.  Right click on the drawing surface and choose "Generate Database from Model...".
+9.  In the pop up window type in your database server name in the "Server Name" field. In the repository owner's case it is "LUQJENSEN".
+10. If the server name is legit, a database can now be selected in the drop down menu in the "Select or enter a database name" field. Choose BoDServer or the name you picked earlier. Click Ok.
+11. A new window should pop up showing a preview of the SQL file that will be generated. Choose Finish.
+12. In the topleft corner of the newly created DataModel.edmx.sql file locate a green arrow. Click the arrow. Note you may be prompted to login to your database server.
+13. The window should now show a pane in which it says "Command(s) completed succesfully.".
+14. Find "App.config" in the "Ball of Duty Server" project.
+15. Find <appsSettings> and change the value of "serverIp" to the IP on which you want to expose the service and server.
+16. Find <identity> and set the value of "dns" to the same IP as above.
+17. Find <baseAddresses> and change the baseAddress field to match the IP set above. Eg. http://IP:8733/Ball_of_Duty_Server/Services/BoDService/
 
 	The default IP is localhost. Which makes for the folliwing 3 properties:
-	16.1. <appSettings>
+	17.1. <appSettings>
            <add key="serverIp" value="localhost" />
 	      </appSettings>
-	16.2. <identity>
+	17.2. <identity>
            <dns value="localhost" />
           </identity>
-	16.3. <baseAddresses>
+	17.3. <baseAddresses>
            <add baseAddress="http://localhost:8733/Ball_of_Duty_Server/Services/BoDService/" />
           </baseAddresses>
 	   
-17. Find <connectionStrings> and change the value connectionString, so that the properties "data source" matches your database server name and "initial catalog" matches your database name.
+18. Find <connectionStrings> and change the value connectionString, so that the properties "data source" matches your database server name and "initial catalog" matches your database name.
 
 	The default connectingstring is "metadata=res://*/Persistence.DataModel.csdl|res://*/Persistence.DataModel.ssdl|res://*/Persistence.DataModel.msl;provider=System.Data.SqlClient;provider connection string=&quot;data source=LUQJENSEN;initial catalog=BoDServer;integrated security=True;MultipleActiveResultSets=True;App=EntityFramework&quot;"
 	
-18. Compile and run the server.
+19. Compile and run the server.
