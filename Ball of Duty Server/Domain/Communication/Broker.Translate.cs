@@ -144,6 +144,10 @@ namespace Ball_of_Duty_Server.Domain.Communication
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes")]
         public void WriteCharacterStatUpdate(List<GameObjectDAO> characters)
         {
+            if (characters.Count == 0)
+            {
+                return;
+            }
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
