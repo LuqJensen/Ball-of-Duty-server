@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ball of Duty Server", "Ball
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketExtensions", "SocketExtensions\SocketExtensions.csproj", "{D772F60F-61B9-46AA-8C9D-3B1FAF576D34}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ball of Duty ServerTests", "Ball of Duty ServerTests\Ball of Duty ServerTests.csproj", "{107B3D3A-4445-453D-A1FC-65917F2E57B8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{D772F60F-61B9-46AA-8C9D-3B1FAF576D34}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D772F60F-61B9-46AA-8C9D-3B1FAF576D34}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D772F60F-61B9-46AA-8C9D-3B1FAF576D34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{107B3D3A-4445-453D-A1FC-65917F2E57B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{107B3D3A-4445-453D-A1FC-65917F2E57B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{107B3D3A-4445-453D-A1FC-65917F2E57B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{107B3D3A-4445-453D-A1FC-65917F2E57B8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

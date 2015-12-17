@@ -1,65 +1,106 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Ball_of_Duty_Server.Domain.Physics.Collision;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
+using Ball_of_Duty_Server.Domain.GameObjects.Components;
+using Ball_of_Duty_Server.Domain.GameObjects.Components.Physics.Collision;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Ball_of_Duty_Server.Domain.Physics.Collision.Tests
+namespace Ball_of_Duty_ServerTests.Domain.Physics.Collision
 {
-    [TestClass()]
+    [TestClass]
     public class CollisionHandlerTests
     {
-        [TestMethod()]
-        public void IsCollidingTest()
+        [TestMethod]
+        public void IsCollidingSelfTest()
         {
             Body body1 = new Body(null, new Point(0, 0), 40, 40);
             Assert.IsTrue(CollisionHandler.IsColliding(body1, body1));
-            body1 = new Body(null, new Point(0, 0), 40, 40);
+        }
+
+        [TestMethod]
+        public void IsCollidingTest2()
+        {
+            Body body1 = new Body(null, new Point(0, 0), 40, 40);
             Body body2 = new Body(null, new Point(40, 0), 40, 40);
             Assert.IsTrue(CollisionHandler.IsColliding(body1, body2));
-            body1 = new Body(null, new Point(0, 0), 40, 40);
-            body2 = new Body(null, new Point(41, 0), 40, 40);
+        }
+
+        [TestMethod]
+        public void IsCollidingTest3()
+        {
+            Body body1 = new Body(null, new Point(0, 0), 40, 40);
+            Body body2 = new Body(null, new Point(41, 0), 40, 40);
             Assert.IsFalse(CollisionHandler.IsColliding(body1, body2));
-            body1 = new Body(null, new Point(50, 40), 20, 20);
-            body2 = new Body(null, new Point(50, 61), 40, 40);
+        }
+
+        [TestMethod]
+        public void IsCollidingTest4()
+        {
+            Body body1 = new Body(null, new Point(50, 40), 20, 20);
+            Body body2 = new Body(null, new Point(50, 61), 40, 40);
             Assert.IsFalse(CollisionHandler.IsColliding(body1, body2));
-            // Checking if it differentates properly between circle and rectangles (its circle by default)
-            body1 = new Body(null, new Point(50, 40), 20, 20);
-            body2 = new Body(null, new Point(50, 59), 40, 40);
+        }
+
+        [TestMethod]
+        public void IsCollidingCircleVsRectangleTest() // We should have a set of separate tests for each set of Body.Geometry type.
+        {
+            // Checking if it differentiates properly between circle and rectangles (its circle by default)
+            Body body1 = new Body(null, new Point(50, 40), 20, 20);
+            Body body2 = new Body(null, new Point(50, 59), 40, 40);
             Assert.IsFalse(CollisionHandler.IsColliding(body1, body2));
             body1.Type = Body.Geometry.RECTANGLE;
             body2.Type = Body.Geometry.RECTANGLE;
             Assert.IsTrue(CollisionHandler.IsColliding(body1, body2));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void CollisionLineSquareTest()
         {
             Body body = new Body(null, new Point(0, 0), 40, 40)
             {
                 Type = Body.Geometry.RECTANGLE
             };
-            Assert.IsTrue(CollisionHandler.CollisionLineSquare(-5, 50, -5, 50, body));
             // Checking if a normal line going straight across the rectangle collides.
+            Assert.IsTrue(CollisionHandler.CollisionLineSquare(-5, 50, -5, 50, body));
+        }
 
-            body = new Body(null, new Point(40, 50), 40, 20)
+        [TestMethod]
+        public void CollisionLineSquareTest2()
+        {
+            const int bodyX = 40;
+            const int bodyY = 50;
+            const int bodyWidth = 40;
+            const int bodyHeight = 20;
+            Body body = new Body(null, new Point(bodyX, bodyY), bodyWidth, bodyHeight)
             {
                 Type = Body.Geometry.RECTANGLE
             };
-            // Checking if it collides with lines just around the square, and just inside the square.
+            // Checking if it collides with lines just around the square.
             Assert.IsFalse(CollisionHandler.CollisionLineSquare(81, 81, 50, 70, body));
-            Assert.IsTrue(CollisionHandler.CollisionLineSquare(81, 80, 50, 70, body));
 
             Assert.IsFalse(CollisionHandler.CollisionLineSquare(40, 80, 71, 71, body));
-            Assert.IsTrue(CollisionHandler.CollisionLineSquare(40, 80, 71, 70, body));
 
             Assert.IsFalse(CollisionHandler.CollisionLineSquare(39, 79, 49, 49, body));
-            Assert.IsTrue(CollisionHandler.CollisionLineSquare(39, 79, 50, 50, body));
 
             Assert.IsFalse(CollisionHandler.CollisionLineSquare(39, 39, 50, 70, body));
+        }
+
+        [TestMethod]
+        public void CollisionLineSquareTest3()
+        {
+            const int bodyX = 40;
+            const int bodyY = 50;
+            const int bodyWidth = 40;
+            const int bodyHeight = 20;
+            Body body = new Body(null, new Point(bodyX, bodyY), bodyWidth, bodyHeight)
+            {
+                Type = Body.Geometry.RECTANGLE
+            };
+            // Checking if it collides with lines just inside the square.
+            Assert.IsTrue(CollisionHandler.CollisionLineSquare(81, 80, 50, 70, body));
+
+            Assert.IsTrue(CollisionHandler.CollisionLineSquare(40, 80, 71, 70, body));
+
+            Assert.IsTrue(CollisionHandler.CollisionLineSquare(39, 79, 50, 50, body));
+
             Assert.IsTrue(CollisionHandler.CollisionLineSquare(39, 40, 30, 70, body));
         }
     }

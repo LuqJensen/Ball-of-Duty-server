@@ -57,7 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ball of Duty Server\Ball of Duty Server.csproj">
-      <Project>{5BEEAB3B-977A-46A9-AAA4-D8895BC7E4C3}</Project>
+      <Project>{5beeab3b-977a-46a9-aaa4-d8895bc7e4c3}</Project>
       <Name>Ball of Duty Server</Name>
     </ProjectReference>
   </ItemGroup>
