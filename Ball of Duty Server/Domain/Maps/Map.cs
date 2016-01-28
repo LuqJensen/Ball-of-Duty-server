@@ -26,11 +26,11 @@ namespace Ball_of_Duty_Server.Domain.Maps
         private const long DATETIME_TICKS_TO_MILLISECONDS = 10000;
         private LightEvent _characterStatUpdateEvent;
 
-        public int Width { get; set; }
+        public int Width { get; }
 
-        public int Height { get; set; }
+        public int Height { get; }
 
-        public ConcurrentDictionary<int, GameObject> GameObjects { get; set; } = new ConcurrentDictionary<int, GameObject>();
+        public ConcurrentDictionary<int, GameObject> GameObjects { get; } = new ConcurrentDictionary<int, GameObject>();
 
         public Broker Broker { get; }
 
@@ -49,7 +49,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
         public void Activate()
         {
-            _characterStatUpdateEvent = new LightEvent(300, CharacterStatUpdate); // every 300ms.
+            _characterStatUpdateEvent = new LightEvent(300, () => { Broker.WriteCharacterStatUpdate(GetCharacterStats()); }); // every 300ms.
             _lastUpdate = DateTime.Now.Ticks;
 
             while (true)
@@ -62,11 +62,6 @@ namespace Ball_of_Duty_Server.Domain.Maps
         public void Deactivate()
         {
             _updateThread.Interrupt();
-        }
-
-        private void CharacterStatUpdate()
-        {
-            Broker.WriteCharacterStatUpdate(GetCharacterStats());
         }
 
         public void Update()
@@ -119,7 +114,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
             return 0;
         }
 
-        public Character AddCharacter(string nickname, Specializations specialization)
+        public Character AddCharacter(string nickname, int specialization)
         {
             Character c = CharacterFactory.CreateCharacter(specialization);
 

@@ -101,7 +101,6 @@ namespace Ball_of_Duty_Server.Domain.Communication
             _connectedClients.TryRemove(socket, out e);
 
             PlayerEndPoint endPoint;
-            // perhaps add socket to PlayerEndPoint so we can always efficiently remove the player from _connectedClients
             if (_playerEndPoints.TryRemove(socket.IpEndPoint, out endPoint))
             {
                 BoDConsole.WriteLine($"Client: {socket.IpEndPoint.Address.MapToIPv4()}:{socket.IpEndPoint.Port} disconnected.");
@@ -149,11 +148,9 @@ namespace Ball_of_Duty_Server.Domain.Communication
         /// this sessionId and the clients playerId.
         /// </summary>
         /// <param name="playerId"> The playerId of the client requesting a sessionId. </param>
-        /// <param name="ip"> The IP from which the client makes the request. </param>
         /// <returns> A cryptographically random sessionId. </returns>
-        public byte[] GenerateSessionId(int playerId, string ip)
+        public byte[] GenerateSessionId(int playerId)
         {
-            IPAddress ipAddress = IPAddress.Parse(ip);
             byte[] randomBytes = CryptoHelper.FillRandomly(new byte[SESSIONID_LENGTH]);
             string sessionId = Convert.ToBase64String(randomBytes);
 

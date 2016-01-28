@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Ball_of_Duty_Server.Domain;
 using Ball_of_Duty_Server.DTO;
+using Ball_of_Duty_Server.Exceptions;
 using Ball_of_Duty_Server.Persistence;
 
 namespace Ball_of_Duty_Server.Services
@@ -18,6 +19,7 @@ namespace Ball_of_Duty_Server.Services
         PlayerDTO NewGuest(string nickname);
 
         [OperationContract]
+        [FaultContract(typeof (VersionOutdatedFault))]
         GameDTO JoinGame(int clientPlayerId, int clientSpecialization, string clientVersion);
 
         [OperationContract]

@@ -80,6 +80,8 @@
     <Compile Include="Domain\Factories\CharacterFactory.cs" />
     <Compile Include="DTO\LoginDTO.cs" />
     <Compile Include="DTO\PhysicsDTO.cs" />
+    <Compile Include="Exceptions\InvalidAuthenticationFault.cs" />
+    <Compile Include="Exceptions\VersionOutdatedFault.cs" />
     <Compile Include="Persistence\Account.Domain.cs" />
     <Compile Include="Domain\Entities\Bullet.cs" />
     <Compile Include="Domain\GameObjects\GameObject.cs" />

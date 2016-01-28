@@ -26,7 +26,7 @@ namespace Ball_of_Duty_Server.Domain.GameObjects.Components
             Map = new Map(this, MAP_SIZE, MAP_SIZE);
         }
 
-        public void AddPlayer(Player player, Specializations clientSpecialization)
+        public void AddPlayer(Player player, int clientSpecialization)
         {
             if (_players.TryAdd(player.Id, player))
             {
@@ -34,7 +34,7 @@ namespace Ball_of_Duty_Server.Domain.GameObjects.Components
             }
         }
 
-        public void WriteServerMessage(String message)
+        public void WriteServerMessage(string message)
         {
             Map.Broker.WriteServerMessage(message);
         }

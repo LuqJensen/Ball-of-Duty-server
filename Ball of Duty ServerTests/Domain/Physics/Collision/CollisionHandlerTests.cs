@@ -11,6 +11,7 @@ namespace Ball_of_Duty_ServerTests.Domain.Physics.Collision
         [TestMethod]
         public void IsCollidingSelfTest()
         {
+            // An object collides with itself.
             Body body1 = new Body(null, new Point(0, 0), 40, 40);
             Assert.IsTrue(CollisionHandler.IsColliding(body1, body1));
         }
@@ -18,6 +19,7 @@ namespace Ball_of_Duty_ServerTests.Domain.Physics.Collision
         [TestMethod]
         public void IsCollidingTest2()
         {
+            // The bodies collide in (20, 0).
             Body body1 = new Body(null, new Point(0, 0), 40, 40);
             Body body2 = new Body(null, new Point(40, 0), 40, 40);
             Assert.IsTrue(CollisionHandler.IsColliding(body1, body2));
@@ -26,6 +28,7 @@ namespace Ball_of_Duty_ServerTests.Domain.Physics.Collision
         [TestMethod]
         public void IsCollidingTest3()
         {
+            // The bodies are next to each other.
             Body body1 = new Body(null, new Point(0, 0), 40, 40);
             Body body2 = new Body(null, new Point(41, 0), 40, 40);
             Assert.IsFalse(CollisionHandler.IsColliding(body1, body2));
@@ -58,18 +61,18 @@ namespace Ball_of_Duty_ServerTests.Domain.Physics.Collision
             {
                 Type = Body.Geometry.RECTANGLE
             };
-            // Checking if a normal line going straight across the rectangle collides.
+            // Checking if a normal line, going straight across the rectangle, collides.
             Assert.IsTrue(CollisionHandler.CollisionLineSquare(-5, 50, -5, 50, body));
         }
 
         [TestMethod]
         public void CollisionLineSquareTest2()
         {
-            const int bodyX = 40;
-            const int bodyY = 50;
-            const int bodyWidth = 40;
-            const int bodyHeight = 20;
-            Body body = new Body(null, new Point(bodyX, bodyY), bodyWidth, bodyHeight)
+            const int BODY_X = 40;
+            const int BODY_Y = 50;
+            const int BODY_WIDTH = 40;
+            const int BODY_HEIGHT = 20;
+            Body body = new Body(null, new Point(BODY_X, BODY_Y), BODY_WIDTH, BODY_HEIGHT)
             {
                 Type = Body.Geometry.RECTANGLE
             };
@@ -86,11 +89,11 @@ namespace Ball_of_Duty_ServerTests.Domain.Physics.Collision
         [TestMethod]
         public void CollisionLineSquareTest3()
         {
-            const int bodyX = 40;
-            const int bodyY = 50;
-            const int bodyWidth = 40;
-            const int bodyHeight = 20;
-            Body body = new Body(null, new Point(bodyX, bodyY), bodyWidth, bodyHeight)
+            const int BODY_X = 40;
+            const int BODY_Y = 50;
+            const int BODY_WIDTH = 40;
+            const int BODY_HEIGHT = 20;
+            Body body = new Body(null, new Point(BODY_X, BODY_Y), BODY_WIDTH, BODY_HEIGHT)
             {
                 Type = Body.Geometry.RECTANGLE
             };

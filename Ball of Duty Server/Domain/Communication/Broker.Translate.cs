@@ -51,7 +51,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
                     if (opcode == Opcodes.UDP_CONNECT)
                     {
                         PlayerEndPoint playerEndPoint;
-                        if (_playerSessionTokens.TryGetValue(Convert.ToBase64String(br.ReadBytes(32)), out playerEndPoint))
+                        if (_playerSessionTokens.TryGetValue(Convert.ToBase64String(br.ReadBytes(SESSIONID_LENGTH)), out playerEndPoint))
                         {
                             playerEndPoint.UdpIpEndPoint = endPoint;
                         }

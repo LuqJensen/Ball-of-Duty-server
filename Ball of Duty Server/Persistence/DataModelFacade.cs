@@ -18,7 +18,7 @@ namespace Ball_of_Duty_Server.Persistence
                 Player player = new Player()
                 {
                     Nickname = nickname
-                }; // TODO: dynamic account.
+                };
                 dc.Players.Add(player);
                 dc.SaveChanges();
                 return player;

@@ -32,13 +32,8 @@ namespace Ball_of_Duty_Server.Domain.Entities
                 Type = Body.Geometry.CIRCLE
             };
             Physics = new Physics(this, 200, velocity);
-            _lifeTimeEvent = new LightEvent(5000, DestroyEvent);
+            _lifeTimeEvent = new LightEvent(5000, () => { Destroy(); });
             Type = EntityType.BULLET;
-        }
-
-        private void DestroyEvent()
-        {
-            Destroy();
         }
 
         public override void Update(long deltaTime, ICollection<GameObject> values)

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ball_of_Duty_Server.DTO
 {
+    [Serializable]
     public class GameDTO
     {
         public byte[] SessionId;

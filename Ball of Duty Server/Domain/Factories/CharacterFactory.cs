@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
+using Ball_of_Duty_Server.DTO;
 
 namespace Ball_of_Duty_Server.Domain.Factories
 {
@@ -18,9 +19,15 @@ namespace Ball_of_Duty_Server.Domain.Factories
             _specializations.Add(Specializations.HEAVY, CreateHeavy);
         }
 
-        public static Character CreateCharacter(Specializations specialization)
+        public static Character CreateCharacter(int specialization)
         {
-            return _specializations[specialization]();
+            if (!Enum.IsDefined(typeof (Specializations), specialization))
+            {
+                throw new ArgumentException($"Could not resolve {specialization} to a valid {typeof (Specializations)}");
+            }
+            // C# int to enum casts never throw an exception, this is due to bitfields.
+            // http://stackoverflow.com/questions/1758321/casting-ints-to-enums-in-c-sharp
+            return _specializations[(Specializations)specialization]();
         }
 
         private static Character CreateRoller()

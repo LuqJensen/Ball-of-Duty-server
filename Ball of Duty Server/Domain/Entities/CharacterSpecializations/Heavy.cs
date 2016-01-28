@@ -9,15 +9,9 @@ namespace Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations
         private const double HP_INCREASE_FACTOR = 0.2;
         private const int HP_REGEN = 7;
 
-        public override int BaseHealth
-        {
-            get { return HP; }
-        }
+        protected override sealed int BaseHealth => HP;
 
-        public override double HealthIncreaseFactor
-        {
-            get { return HP_INCREASE_FACTOR; }
-        }
+        protected override sealed double HealthIncreaseFactor => HP_INCREASE_FACTOR;
 
         public Heavy() : base(SIZE, HP, Specializations.HEAVY, HP_REGEN)
         {

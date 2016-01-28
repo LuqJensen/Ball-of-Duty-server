@@ -68,7 +68,7 @@ namespace Ball_of_Duty_Server
 
             using (var sh = new ServiceHost(typeof (BoDService)))
             {
-                ServiceDebugBehavior debug = sh.Description.Behaviors.Find<ServiceDebugBehavior>();
+                /*ServiceDebugBehavior debug = sh.Description.Behaviors.Find<ServiceDebugBehavior>();
 
                 // if not found - add behavior with setting turned on 
                 if (debug == null)
@@ -86,7 +86,7 @@ namespace Ball_of_Duty_Server
                     {
                         debug.IncludeExceptionDetailInFaults = true;
                     }
-                }
+                }*/
 
                 sh.Open();
 

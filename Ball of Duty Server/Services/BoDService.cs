@@ -15,6 +15,7 @@ using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
 using Ball_of_Duty_Server.Domain.GameObjects.Components;
 using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.DTO;
+using Ball_of_Duty_Server.Exceptions;
 using Ball_of_Duty_Server.Persistence;
 using Ball_of_Duty_Server.Utility;
 
@@ -23,35 +24,15 @@ namespace Ball_of_Duty_Server.Services
     public class BoDService : IBoDService
     {
         public const string VERSION = "0.0.1";
-        public static ConcurrentDictionary<int, Game> Games { get; set; } = new ConcurrentDictionary<int, Game>();
+        public static ConcurrentDictionary<int, Game> Games { get; } = new ConcurrentDictionary<int, Game>();
 
-        public static ConcurrentDictionary<int, Game> PlayerIngame { get; set; } = new ConcurrentDictionary<int, Game>(); // midlertidig
+        public static ConcurrentDictionary<int, Game> PlayerIngame { get; } = new ConcurrentDictionary<int, Game>(); // midlertidig
 
-        public static ConcurrentDictionary<int, Player> OnlinePlayers { get; set; } = new ConcurrentDictionary<int, Player>();
+        public static ConcurrentDictionary<int, Player> OnlinePlayers { get; } = new ConcurrentDictionary<int, Player>();
 
         public static ConcurrentDictionary<string, Account> AccountsAuthenticating { get; } = new ConcurrentDictionary<string, Account>();
 
-        public static string IpAddress { get; } = ConfigurationManager.AppSettings["serverIp"];
-
-        /*private static string localIPAddress;
-
-        public static string LocalIPAddress
-        {
-            get
-            {
-                if (localIPAddress == null)
-                {
-                    //  http://stackoverflow.com/a/27376368
-                    using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
-                    {
-                        socket.Connect("10.0.2.4", 65530);
-                        IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
-                        localIPAddress = endPoint?.Address.ToString();
-                    }
-                }
-                return localIPAddress;
-            }
-        }*/
+        private static string IpAddress { get; } = ConfigurationManager.AppSettings["serverIp"];
 
         static BoDService()
         {
@@ -71,7 +52,7 @@ namespace Ball_of_Duty_Server.Services
             };
         }
 
-        public static void WriteServerMessage(String message)
+        public static void WriteServerMessage(string message)
         {
             foreach (Game game in Games.Values)
             {
@@ -139,10 +120,10 @@ namespace Ball_of_Duty_Server.Services
         {
             if (!clientVersion.Equals(VERSION)) //TODO: Should maybe allow more than just the latest update later on.
             {
-                return new GameDTO()
+                throw new FaultException<VersionOutdatedFault>(new VersionOutdatedFault
                 {
-                    Version = VERSION
-                };
+                    Message = $"Required version is {VERSION}, but the version found was {clientVersion}"
+                });
             }
             Player player;
             if (!OnlinePlayers.TryGetValue(clientPlayerId, out player))
@@ -154,37 +135,29 @@ namespace Ball_of_Duty_Server.Services
             Game game = GetGame();
             Map map = game.Map;
 
-            #region GetClientIp
+            /* #region GetClientIp
 
             OperationContext context = OperationContext.Current;
             MessageProperties properties = context.IncomingMessageProperties;
             RemoteEndpointMessageProperty endpoint = properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
             string clientIp = endpoint?.Address;
 
-            if (clientIp == null) //TODO: probably not the smartest, but necessary.
+            if (clientIp == null)
             {
-                return new GameDTO();
+                throw new FaultException("There were issues establishing a connection, please try again later.");
             }
 
-            #endregion
+            #endregion*/
 
-            if (!Enum.IsDefined(typeof (Specializations), clientSpecialization)) // TODO: maybe move this validation to CharacterFactory
+            game.AddPlayer(player, clientSpecialization);
+            if (!PlayerIngame.TryAdd(player.Id, game)) //TODO: brug OnlinePlayers istedet
             {
-                return new GameDTO();
-            }
-            // C# int to enum casts never throw an exception, this is due to bitfields.
-            // http://stackoverflow.com/questions/1758321/casting-ints-to-enums-in-c-sharp
-            Specializations spec = (Specializations)clientSpecialization;
-
-            game.AddPlayer(player, spec);
-            if (!PlayerIngame.ContainsKey(player.Id)) //TODO: brug OnlinePlayers istedet
-            {
-                PlayerIngame.TryAdd(player.Id, game);
+                Console.WriteLine("shit nigga");
             }
 
             return new GameDTO
             {
-                SessionId = map.Broker.GenerateSessionId(player.Id, clientIp),
+                SessionId = map.Broker.GenerateSessionId(player.Id),
                 Players = game.ExportPlayers(),
                 GameObjects = map.ExportGameObjects(),
                 CharacterId = player.CurrentCharacter.Id,
@@ -234,21 +207,22 @@ namespace Ball_of_Duty_Server.Services
             }
             catch (InvalidOperationException)
             {
-                // TODO throw FaultException
-                return new LoginDTO();
+                throw new FaultException<InvalidAuthenticationFault>(new InvalidAuthenticationFault
+                {
+                    Message = "Invalid username."
+                });
             }
         }
 
         public PlayerDTO CompleteAuthenticationChallenge(string username, byte[] decryptedChallenge)
         {
             Account account;
-            if (AccountsAuthenticating.TryRemove(username, out account))
+            if (AccountsAuthenticating.TryRemove(username, out account) &&
+                Convert.ToBase64String(account.AuthenticationChallenge) == Convert.ToBase64String(decryptedChallenge))
             {
-                if (Convert.ToBase64String(account.AuthenticationChallenge) == Convert.ToBase64String(decryptedChallenge))
+                Player p = account.Player;
+                if (OnlinePlayers.TryAdd(p.Id, p))
                 {
-                    Player p = account.Player;
-                    OnlinePlayers.TryAdd(p.Id, p);
-
                     return new PlayerDTO
                     {
                         Id = p.Id,
@@ -258,7 +232,10 @@ namespace Ball_of_Duty_Server.Services
                     };
                 }
             }
-            return null;
+            throw new FaultException<InvalidAuthenticationFault>(new InvalidAuthenticationFault
+            {
+                Message = "Invalid password."
+            });
         }
 
         public PlayerDTO[] GetLeaderboard()

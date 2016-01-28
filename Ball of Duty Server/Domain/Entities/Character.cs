@@ -11,21 +11,31 @@ namespace Ball_of_Duty_Server.Domain.Entities
 {
     public abstract class Character : GameObject, ICollidable
     {
-        public double Score { get; set; } = 0;
-        public Specializations Specialization { get; private set; }
-        public double HighScore { get; set; } = 0;
-        public abstract int BaseHealth { get; }
-        public abstract double HealthIncreaseFactor { get; }
-
         private const double SCORE_UP = 60;
         private const double SCORE_UP_FACTOR = 0.5;
         private const double SCORE_DECAY_FACTOR = 0.01;
         private const double ALLOWED_SCORE_BEFORE_DECAY = 400;
-        private int _killCount = 0;
         private const long DECAY_SCORE_INTERVAL = 5000;
         private const long REGEN_INTERVAL = 5000;
         private readonly LightEvent _decayScoreEvent;
         private readonly LightEvent _regenEvent;
+        private int _killCount = 0;
+        private double _score = 0;
+
+        public double Score
+        {
+            get { return _score; }
+            set
+            {
+                _score = value;
+                UpdateStats();
+            }
+        }
+
+        public Specializations Specialization { get; }
+        public double HighScore { get; private set; } = 0;
+        protected abstract int BaseHealth { get; }
+        protected abstract double HealthIncreaseFactor { get; }
 
         protected Character(double baseSize, int health, Specializations specialization, int baseHealthRegen)
         {
@@ -55,7 +65,6 @@ namespace Ball_of_Duty_Server.Domain.Entities
             {
                 HighScore = Score;
             }
-            UpdateStats();
             NotifyObservers(Observation.ACQUISITION_OF_GOLD, victim);
         }
 
@@ -69,20 +78,19 @@ namespace Ball_of_Duty_Server.Domain.Entities
             {
                 Score -= (Score * SCORE_DECAY_FACTOR);
             }
-            UpdateStats();
         }
 
 
-        public void CollideWith(ICollidable other)
+        public virtual void CollideWith(ICollidable other)
         {
         }
 
-        public bool CollisionCriteria(ICollidable other)
+        public virtual bool CollisionCriteria(ICollidable other)
         {
             return false;
         }
 
-        public bool IsCollidingSpecial(ICollidable other)
+        public virtual bool IsCollidingSpecial(ICollidable other)
         {
             return false;
         }
@@ -104,7 +112,7 @@ namespace Ball_of_Duty_Server.Domain.Entities
             return false;
         }
 
-        public void UpdateStats()
+        protected void UpdateStats()
         {
             Health.Max = BaseHealth + (int)(Score * HealthIncreaseFactor);
         }
