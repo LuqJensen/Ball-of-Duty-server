@@ -6,6 +6,7 @@ using System.ServiceModel.Description;
 using System.Threading;
 using System.Security.Cryptography;
 using System.Text;
+using Ball_of_Duty_Server.Domain.Modules;
 using Ball_of_Duty_Server.Persistence;
 using Ball_of_Duty_Server.Services;
 using Ball_of_Duty_Server.Utility;
@@ -21,7 +22,6 @@ namespace Ball_of_Duty_Server
             BAN,
             SERVER_MESSAGE
         }
-
 
         public static Command GetCommandType(string line)
         {
@@ -48,24 +48,6 @@ namespace Ball_of_Duty_Server
 
         private static void Main(string[] args)
         {
-            //            using (RSACryptoServiceProvider RSA = new RSACryptoServiceProvider())
-            //            {
-            //                //Console.WriteLine(RSA.KeySize);
-            //                var v = RSA.ExportParameters(true);
-            //                //Console.WriteLine(v.Exponent.Length); // uint16 (short) 65537
-            //                foreach (var b in v.Modulus)
-            //                {
-            //                    Console.Write(b);
-            //                }
-            //                Console.WriteLine();
-            //                foreach (var b in v.Exponent)
-            //                {
-            //                    Console.Write(b);
-            //                }
-            //                Console.WriteLine();
-            //                //Console.WriteLine(RSA.KeySize);
-            //            }
-
             using (var sh = new ServiceHost(typeof (BoDService)))
             {
                 /*ServiceDebugBehavior debug = sh.Description.Behaviors.Find<ServiceDebugBehavior>();
@@ -95,6 +77,10 @@ namespace Ball_of_Duty_Server
                 while (true)
                 {
                     var lineRead = Console.ReadLine();
+                    if (lineRead == "reload")
+                    {
+                        ModuleManager.ReloadAll();
+                    }
                     Command commandType = GetCommandType(lineRead);
                     switch (commandType)
                     {

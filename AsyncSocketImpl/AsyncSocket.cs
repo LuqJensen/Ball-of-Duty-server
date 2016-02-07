@@ -1,33 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
+using AsyncSocket;
 
-namespace SocketExtensions
+namespace AsyncSocketImpl
 {
-    public class AsyncSocket : IDisposable
+    [Serializable]
+    internal partial class AsyncSocket : IAsyncSocket
     {
         public const int BUFFER_LENGTH = 0x10000;
 
         private bool _disposed = false;
-        private Socket _socket;
-        private SocketAwaitableEventWrapper _sender, _receiver;
+        [NonSerialized] private Socket _socket;
+        [NonSerialized] private SocketAwaitableEventWrapper _sender, _receiver;
 
-        public IPEndPoint IpEndPoint { get; }
+        public IPEndPoint IpEndPoint { get; private set; }
 
         public AsyncSocket(Socket s)
         {
             this._socket = s;
             this._socket.NoDelay = true;
             this.IpEndPoint = _socket.RemoteEndPoint as IPEndPoint;
-//            this._sender = new SocketAwaitableEventWrapper();
+            //this._sender = new SocketAwaitableEventWrapper();
             this._receiver = new SocketAwaitableEventWrapper();
             this._receiver.EventArgs.SetBuffer(new byte[BUFFER_LENGTH], 0, BUFFER_LENGTH);
         }
-
 
         public async Task<ReadResult> ReceiveAsync()
         {
@@ -39,7 +37,7 @@ namespace SocketExtensions
                 throw new SocketException((int)SocketError.ConnectionAborted);
             }
 
-
+            Console.WriteLine("Hail Hydra");
             byte[] buffer = new byte[bytesRead];
             Array.Copy(_receiver.EventArgs.Buffer, buffer, bytesRead);
             return new ReadResult(bytesRead, buffer);
@@ -88,62 +86,6 @@ namespace SocketExtensions
         ~AsyncSocket()
         {
             Dispose(false);
-        }
-
-        public struct ReadResult
-        {
-            public int BytesRead;
-            public byte[] Buffer;
-
-            public ReadResult(int bytesRead, byte[] buffer)
-            {
-                this.BytesRead = bytesRead;
-                this.Buffer = buffer;
-            }
-        }
-
-        private class SocketAwaitableEventWrapper : IDisposable
-        {
-            private bool _disposed = false;
-
-            public SocketAsyncEventArgs EventArgs { get; }
-            public SocketAwaitable SocketAwaitable { get; }
-
-            public SocketAwaitableEventWrapper()
-            {
-                EventArgs = new SocketAsyncEventArgs();
-                SocketAwaitable = new SocketAwaitable(EventArgs);
-            }
-
-            public void Dispose()
-            {
-                if (!_disposed)
-                {
-                    Dispose(true);
-                    GC.SuppressFinalize(this);
-                }
-            }
-
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage",
-                "CA2213:DisposableFieldsShouldBeDisposed")]
-            protected virtual void Dispose(bool safeToFreeManaged)
-            {
-                if (!_disposed)
-                {
-                    if (safeToFreeManaged)
-                    {
-                        EventArgs?.Dispose();
-                    }
-                    // free unmanaged resources here.
-
-                    _disposed = true;
-                }
-            }
-
-            ~SocketAwaitableEventWrapper()
-            {
-                Dispose(false);
-            }
         }
     }
 }

@@ -13,11 +13,12 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncSocket;
 using Ball_of_Duty_Server.Domain.GameObjects.Components;
 using Ball_of_Duty_Server.Domain.Maps;
+using Ball_of_Duty_Server.Domain.Modules;
 using Ball_of_Duty_Server.Services;
 using Ball_of_Duty_Server.Utility;
-using SocketExtensions;
 
 namespace Ball_of_Duty_Server.Domain.Communication
 {
@@ -47,7 +48,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
         /// <summary>
         /// Pairs an AsyncSocket with a TCP read timeout LightEvent.
         /// </summary>
-        private ConcurrentDictionary<AsyncSocket, LightEvent> _connectedClients = new ConcurrentDictionary<AsyncSocket, LightEvent>();
+        private ConcurrentDictionary<IAsyncSocket, LightEvent> _connectedClients = new ConcurrentDictionary<IAsyncSocket, LightEvent>();
 
         private TcpListener _tcpListener;
 
@@ -95,7 +96,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
         }
 
 
-        public void RemoveTarget(AsyncSocket socket)
+        public void RemoveTarget(IAsyncSocket socket)
         {
             LightEvent e;
             _connectedClients.TryRemove(socket, out e);
@@ -163,10 +164,10 @@ namespace Ball_of_Duty_Server.Domain.Communication
         {
             await Task.Yield();
 
-            AsyncSocket s = null;
+            IAsyncSocket s = null;
             try
             {
-                s = new AsyncSocket(socket);
+                s = ModuleManager.AsyncSocketFactory.CreateAsyncSocket(socket);
             }
             catch (SocketException)
             {
@@ -224,9 +225,9 @@ namespace Ball_of_Duty_Server.Domain.Communication
         /// </summary>
         /// <param name="socket"> The TCP socket for the client. </param>
         /// <returns> true if the client succesfully verified through TCP. false otherwise. </returns>
-        private async Task<bool> AddTCPTarget(AsyncSocket socket)
+        private async Task<bool> AddTCPTarget(IAsyncSocket socket)
         {
-            AsyncSocket.ReadResult result = await socket.ReceiveAsync();
+            ReadResult result = await socket.ReceiveAsync();
             if (result.BytesRead != SESSIONID_LENGTH)
             {
                 return false;
@@ -276,11 +277,11 @@ namespace Ball_of_Duty_Server.Domain.Communication
             return (_playerSessionTokens.TryRemove(playerEndPoint.SessionId, out playerEndPoint));
         }
 
-        private async Task ReceiveFromClientAsync(AsyncSocket s)
+        private async Task ReceiveFromClientAsync(IAsyncSocket s)
         {
             while (true)
             {
-                AsyncSocket.ReadResult result = await s.ReceiveAsync();
+                ReadResult result = await s.ReceiveAsync();
 
                 LightEvent e;
                 if (_connectedClients.TryGetValue(s, out e))

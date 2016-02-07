@@ -59,6 +59,7 @@
     <ProjectReference Include="..\Ball of Duty Server\Ball of Duty Server.csproj">
       <Project>{5beeab3b-977a-46a9-aaa4-d8895bc7e4c3}</Project>
       <Name>Ball of Duty Server</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Choose>

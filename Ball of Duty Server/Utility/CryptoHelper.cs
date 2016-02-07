@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Ball_of_Duty_Server.Utility
 {
-    public class CryptoHelper
+    public class CryptoHelper : IDisposable
     {
         public const int SALT_SIZE = 32;
         public const int HASH_SIZE = 32;

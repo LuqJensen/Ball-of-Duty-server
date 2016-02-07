@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net.Sockets;
 
-namespace SocketExtensions
+namespace AsyncSocketImpl
 {
-    public static class SocketExtensions
+    internal static class SocketExtensions
     {
         public static SocketAwaitable ReceiveAsync(this Socket socket, SocketAwaitable awaitable)
         {

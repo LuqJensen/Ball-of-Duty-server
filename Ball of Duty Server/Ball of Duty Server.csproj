@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Ball_of_Duty_Server</RootNamespace>
     <AssemblyName>Ball of Duty Server</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <WcfConfigValidationEnabled>True</WcfConfigValidationEnabled>
@@ -19,7 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -28,7 +28,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -78,6 +78,8 @@
     <Compile Include="Domain\Entities\EntityType.cs" />
     <Compile Include="DAO\GameObjectDAO.cs" />
     <Compile Include="Domain\Factories\CharacterFactory.cs" />
+    <Compile Include="Domain\Modules\AsyncSocketModule.cs" />
+    <Compile Include="Domain\Modules\ModuleManager.cs" />
     <Compile Include="DTO\LoginDTO.cs" />
     <Compile Include="DTO\PhysicsDTO.cs" />
     <Compile Include="Exceptions\InvalidAuthenticationFault.cs" />
@@ -166,12 +168,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SocketExtensions\SocketExtensions.csproj">
-      <Project>{d772f60f-61b9-46aa-8c9d-3b1faf576d34}</Project>
-      <Name>SocketExtensions</Name>
+    <ProjectReference Include="..\AsyncSocket\AsyncSocket.csproj">
+      <Project>{4f92f9e4-66b4-4782-a128-fd4457bf4400}</Project>
+      <Name>AsyncSocket</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

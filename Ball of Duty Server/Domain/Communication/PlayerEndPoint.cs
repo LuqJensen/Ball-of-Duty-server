@@ -1,6 +1,6 @@
 ﻿using System.Net;
+using AsyncSocket;
 using Ball_of_Duty_Server.Utility;
-using SocketExtensions;
 
 namespace Ball_of_Duty_Server.Domain.Communication
 {
@@ -12,7 +12,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
 
         public string SessionId { get; set; }
 
-        public AsyncSocket TCPSocket { get; set; }
+        public IAsyncSocket TCPSocket { get; set; }
 
         public LightEvent InactivityEvent { get; set; }
 

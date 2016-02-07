@@ -111,9 +111,8 @@ namespace Ball_of_Duty_Server.Services
                 return new GameObjectDTO();
             }
             BoDConsole.WriteLine($"Player: {clientPlayerId} tried to respawn.");
-            Specializations spec = (Specializations)clientSpecializations;
 
-            return game.Respawn(clientPlayerId, spec);
+            return game.Respawn(clientPlayerId, clientSpecializations);
         }
 
         public GameDTO JoinGame(int clientPlayerId, int clientSpecialization, string clientVersion)

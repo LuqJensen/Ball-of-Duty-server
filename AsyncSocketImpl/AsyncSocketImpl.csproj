@@ -4,19 +4,19 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D772F60F-61B9-46AA-8C9D-3B1FAF576D34}</ProjectGuid>
+    <ProjectGuid>{19154E90-984C-4AB4-9FDD-8556362241E3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SocketExtensions</RootNamespace>
-    <AssemblyName>SocketExtensions</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <RootNamespace>AsyncSocketImpl</RootNamespace>
+    <AssemblyName>AsyncSocketImpl</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\ComponentImpl\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -41,9 +41,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncSocket.cs" />
+    <Compile Include="AsyncSocketFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SocketAwaitable.cs" />
+    <Compile Include="SocketAwaitableEventWrapper.cs" />
     <Compile Include="SocketExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AsyncSocket\AsyncSocket.csproj">
+      <Project>{4f92f9e4-66b4-4782-a128-fd4457bf4400}</Project>
+      <Name>AsyncSocket</Name>
+      <Private>False</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

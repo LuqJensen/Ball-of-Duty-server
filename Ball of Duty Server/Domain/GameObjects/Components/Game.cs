@@ -51,7 +51,7 @@ namespace Ball_of_Duty_Server.Domain.GameObjects.Components
             }).ToArray();
         }
 
-        public GameObjectDTO Respawn(int playerId, Specializations clientSpecialization)
+        public GameObjectDTO Respawn(int playerId, int clientSpecialization)
         {
             Player p;
             if (!_players.TryGetValue(playerId, out p))

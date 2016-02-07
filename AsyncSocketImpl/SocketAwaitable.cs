@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SocketExtensions
+namespace AsyncSocketImpl
 {
     /// <summary>
     /// @Author: Stephen Toub - Microsoft Visual Studio team MVP
@@ -18,7 +18,7 @@ namespace SocketExtensions
     /// https://social.msdn.microsoft.com/Profile/stephen%20toub%20-%20msft
     /// https://github.com/stephentoub
     /// </summary>
-    public sealed class SocketAwaitable : INotifyCompletion
+    internal sealed class SocketAwaitable : INotifyCompletion
     {
         private static readonly Action SENTINEL = () => { };
 
