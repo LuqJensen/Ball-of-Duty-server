@@ -3,11 +3,12 @@ using System.Threading;
 using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.Domain.GameObjects.Components;
 using Ball_of_Duty_Server.Domain.GameObjects.Components.Physics;
+using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Utility;
 
 namespace Ball_of_Duty_Server.Domain.GameObjects
 {
-    public class GameObject : Observable
+    public abstract class GameObject : Observable
     {
         private static int _gameObjectsCreated;
         public Body Body { get; set; }
@@ -40,5 +41,7 @@ namespace Ball_of_Duty_Server.Domain.GameObjects
             Destroyed = true;
             return Destroyed;
         }
+
+        public abstract GameObjectDTO Export();
     }
 }

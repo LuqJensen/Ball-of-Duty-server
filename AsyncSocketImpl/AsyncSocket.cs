@@ -15,7 +15,7 @@ namespace AsyncSocketImpl
         [NonSerialized] private Socket _socket;
         [NonSerialized] private SocketAwaitableEventWrapper _sender, _receiver;
 
-        public IPEndPoint IpEndPoint { get; private set; }
+        public IPEndPoint IpEndPoint { get; }
 
         public AsyncSocket(Socket s)
         {
@@ -37,7 +37,6 @@ namespace AsyncSocketImpl
                 throw new SocketException((int)SocketError.ConnectionAborted);
             }
 
-            Console.WriteLine("Hail Hydra");
             byte[] buffer = new byte[bytesRead];
             Array.Copy(_receiver.EventArgs.Buffer, buffer, bytesRead);
             return new ReadResult(bytesRead, buffer);

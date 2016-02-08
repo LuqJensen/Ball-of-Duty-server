@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using Ball_of_Duty_Server.DTO;
 
 namespace Ball_of_Duty_Server.Domain.GameObjects.Components
 {
@@ -28,6 +29,21 @@ namespace Ball_of_Duty_Server.Domain.GameObjects.Components
         public override string ToString()
         {
             return $"[[Position: {Position.X},{Position.Y}] [Height: {Height}] [Width = {Width}]]";
+        }
+
+        public BodyDTO Export()
+        {
+            return new BodyDTO
+            {
+                Height = Height,
+                Position = new PointDTO
+                {
+                    X = Position.X,
+                    Y = Position.Y
+                },
+                Type = (int)Type,
+                Width = Width
+            };
         }
     }
 }

@@ -2,6 +2,7 @@
 using Ball_of_Duty_Server.Domain.GameObjects;
 using Ball_of_Duty_Server.Domain.GameObjects.Components;
 using Ball_of_Duty_Server.Domain.GameObjects.Components.Physics.Collision;
+using Ball_of_Duty_Server.DTO;
 
 namespace Ball_of_Duty_Server.Domain.Entities
 {
@@ -28,6 +29,16 @@ namespace Ball_of_Duty_Server.Domain.Entities
         public bool IsCollidingSpecial(ICollidable other)
         {
             return false;
+        }
+
+        public override GameObjectDTO Export()
+        {
+            return new GameObjectDTO
+            {
+                Body = Body.Export(),
+                Id = Id,
+                Type = (int)Type
+            };
         }
     }
 }

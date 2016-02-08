@@ -60,11 +60,11 @@ namespace Ball_of_Duty_Server.Domain.Communication
 
         public int TcpPort { get; }
 
-        public Broker(Map map)
+        public Broker(Map map, int id)
         {
             Map = map;
-            UdpPort = SERVER_UDP_PORT + Map.Game.Id - 1;
-            TcpPort = SERVER_TCP_PORT + Map.Game.Id - 1;
+            UdpPort = SERVER_UDP_PORT + id - 1;
+            TcpPort = SERVER_TCP_PORT + id - 1;
             AddOpcodeMapping();
 
             _tcpListener = TcpListener.Create(TcpPort);

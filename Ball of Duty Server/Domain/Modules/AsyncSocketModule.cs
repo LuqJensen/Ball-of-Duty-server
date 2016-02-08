@@ -10,7 +10,7 @@ using AsyncSocket;
 
 namespace Ball_of_Duty_Server.Domain.Modules
 {
-    public class AsyncSocketModule : MarshalByRefObject
+    public class AsyncSocketModule
     {
         private AppDomain _appDomain;
         private const string ASSEMBLY_NAME = "AsyncSocketImpl";
@@ -27,12 +27,9 @@ namespace Ball_of_Duty_Server.Domain.Modules
 
         /// <summary>
         /// The loaded Assembly will be unloaded together with the AppDomain, when a new Assembly is loaded.
-        /// Requires all used types to be Serializable.
         /// </summary>
         public void Reload()
         {
-            // Requires all types to be Serializable, System.Net.Sockets.Socket is not!
-
             if (_appDomain != null)
             {
                 AppDomain.Unload(_appDomain);
@@ -41,10 +38,7 @@ namespace Ball_of_Duty_Server.Domain.Modules
             byte[] bytes = File.ReadAllBytes(_dllPath);
 
             _appDomain = AppDomain.CreateDomain(ASSEMBLY_NAME);
-            AsmLoader asm = new AsmLoader()
-            {
-                Data = bytes
-            };
+            AsmLoader asm = new AsmLoader(bytes);
             _appDomain.DoCallBack(asm.LoadAsm);
 
             AsyncSocketFactory = (IAsyncSocketFactory)asm.Assembly.CreateInstance(FULLY_QUALIFIED_TYPE_NAME);
@@ -52,8 +46,13 @@ namespace Ball_of_Duty_Server.Domain.Modules
 
         private class AsmLoader : MarshalByRefObject
         {
-            public byte[] Data { private get; set; }
+            private byte[] Data { get; }
             public Assembly Assembly { get; private set; }
+
+            public AsmLoader(byte[] asmByteCode)
+            {
+                Data = asmByteCode;
+            }
 
             public void LoadAsm()
             {

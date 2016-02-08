@@ -9,7 +9,6 @@ using Ball_of_Duty_Server.Domain.Communication;
 using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Utility;
-using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
 using Ball_of_Duty_Server.Domain.Factories;
 using Ball_of_Duty_Server.Domain.GameObjects;
 using Ball_of_Duty_Server.Domain.GameObjects.Components;
@@ -34,15 +33,12 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
         public Broker Broker { get; }
 
-        public Game Game { get; }
-
-        public Map(Game game, int width, int height)
+        public Map(int gameId, int width, int height)
         {
-            Game = game;
             Width = width;
             Height = height;
             MapGenerator.GenerateMap(this);
-            Broker = new Broker(this);
+            Broker = new Broker(this, gameId);
             _updateThread = new Thread(Activate);
             _updateThread.Start();
         }
@@ -142,40 +138,14 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
         public GameObjectDTO[] ExportGameObjects()
         {
-            return (from go in GameObjects.Values
-                let b = go.Body
-                let velocity = go.Physics?.Velocity
-                let body = new BodyDTO
-                {
-                    Position = new PointDTO
-                    {
-                        X = b.Position.X,
-                        Y = b.Position.Y
-                    },
-                    Width = b.Width,
-                    Height = b.Height,
-                    Type = (int)b.Type
-                }
-                select new GameObjectDTO
-                {
-                    Id = go.Id,
-                    Body = body,
-                    Specialization = go is Character ? (int)((Character)go).Specialization : 0,
-                    Type = (int)go.Type,
-                    Physics = new PhysicsDTO
-                    {
-                        VelocityX = velocity?.X ?? 0,
-                        VelocityY = velocity?.Y ?? 0
-                    },
-                    BulletType = (go as Bullet)?.BulletType ?? 0
-                }).ToArray();
+            return (from go in GameObjects.Values select go.Export()).ToArray();
         }
 
         private List<GameObjectDAO> GetPositions()
         {
             return (
                 from go in GameObjects.Values
-                where !(go is Bullet) && !(go is Wall)
+                where go is IInhibited
                 select new GameObjectDAO()
                 {
                     Id = go.Id,

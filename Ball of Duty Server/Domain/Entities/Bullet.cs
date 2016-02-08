@@ -8,6 +8,7 @@ using Ball_of_Duty_Server.Domain.GameObjects;
 using Ball_of_Duty_Server.Domain.GameObjects.Components;
 using Ball_of_Duty_Server.Domain.GameObjects.Components.Physics;
 using Ball_of_Duty_Server.Domain.GameObjects.Components.Physics.Collision;
+using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Utility;
 
 namespace Ball_of_Duty_Server.Domain.Entities
@@ -45,6 +46,18 @@ namespace Ball_of_Duty_Server.Domain.Entities
 
             Physics.Update(deltaTime);
             Physics.UpdateWithCollision(values);
+        }
+
+        public override GameObjectDTO Export()
+        {
+            return new GameObjectDTO
+            {
+                Body = Body.Export(),
+                BulletType = BulletType,
+                Id = Id,
+                Type = (int)Type,
+                Physics = Physics.Export()
+            };
         }
 
 

@@ -5,11 +5,12 @@ using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
 using Ball_of_Duty_Server.Domain.GameObjects;
 using Ball_of_Duty_Server.Domain.GameObjects.Components;
 using Ball_of_Duty_Server.Domain.GameObjects.Components.Physics.Collision;
+using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Utility;
 
 namespace Ball_of_Duty_Server.Domain.Entities
 {
-    public abstract class Character : GameObject, ICollidable
+    public abstract class Character : GameObject, ICollidable, IInhibited
     {
         private const double SCORE_UP = 60;
         private const double SCORE_UP_FACTOR = 0.5;
@@ -115,6 +116,18 @@ namespace Ball_of_Duty_Server.Domain.Entities
         protected void UpdateStats()
         {
             Health.Max = BaseHealth + (int)(Score * HealthIncreaseFactor);
+        }
+
+        public override GameObjectDTO Export()
+        {
+            return new GameObjectDTO
+            {
+                Body = Body.Export(),
+                Id = Id,
+                Type = (int)Type,
+                Physics = Physics.Export(),
+                Specialization = (int)Specialization
+            };
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
 using Ball_of_Duty_Server.Domain.GameObjects.Components.Physics.Collision;
+using Ball_of_Duty_Server.DTO;
 
 namespace Ball_of_Duty_Server.Domain.GameObjects.Components.Physics
 {
@@ -61,6 +62,15 @@ namespace Ball_of_Duty_Server.Domain.GameObjects.Components.Physics
                     (go1).CollideWith(go2);
                 }
             }
+        }
+
+        public PhysicsDTO Export()
+        {
+            return new PhysicsDTO
+            {
+                VelocityX = Velocity.X,
+                VelocityY = Velocity.Y
+            };
         }
     }
 }
