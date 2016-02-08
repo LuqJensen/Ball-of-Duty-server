@@ -11,13 +11,12 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Windows;
 using Ball_of_Duty_Server.Domain;
-using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
-using Ball_of_Duty_Server.Domain.GameObjects.Components;
 using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Exceptions;
 using Ball_of_Duty_Server.Persistence;
 using Ball_of_Duty_Server.Utility;
+using Entity.DTO;
 
 namespace Ball_of_Duty_Server.Services
 {

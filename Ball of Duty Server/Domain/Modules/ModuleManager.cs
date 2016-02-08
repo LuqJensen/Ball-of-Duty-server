@@ -10,12 +10,25 @@ namespace Ball_of_Duty_Server.Domain.Modules
 {
     public static class ModuleManager
     {
-        private static AsyncSocketModule _asyncSocketModule = new AsyncSocketModule();
-        public static IAsyncSocketFactory AsyncSocketFactory => _asyncSocketModule.AsyncSocketFactory;
+        private static Dictionary<Type, Module> _modules = new Dictionary<Type, Module>();
+
+        static ModuleManager()
+        {
+            _modules.Add(typeof (IAsyncSocketFactory), new AsyncSocketModule());
+            _modules.Add(typeof (EntityModule.TempClass), new EntityModule());
+        }
 
         public static void ReloadAll()
         {
-            _asyncSocketModule.Reload();
+            foreach (var v in _modules.Values)
+            {
+                v.Reload();
+            }
+        }
+
+        public static T GetModule<T>()
+        {
+            return (T)_modules[typeof (T)].Factory;
         }
     }
 }

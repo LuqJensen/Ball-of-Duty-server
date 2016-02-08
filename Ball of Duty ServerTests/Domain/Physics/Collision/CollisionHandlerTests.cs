@@ -1,6 +1,4 @@
 ﻿using System.Windows;
-using Ball_of_Duty_Server.Domain.GameObjects.Components;
-using Ball_of_Duty_Server.Domain.GameObjects.Components.Physics.Collision;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Ball_of_Duty_ServerTests.Domain.Physics.Collision

@@ -6,13 +6,15 @@ using System.Threading;
 using System.Windows;
 using Ball_of_Duty_Server.DAO;
 using Ball_of_Duty_Server.Domain.Communication;
-using Ball_of_Duty_Server.Domain.Entities;
-using Ball_of_Duty_Server.DTO;
+using Ball_of_Duty_Server.Domain.Modules;
 using Ball_of_Duty_Server.Utility;
-using Ball_of_Duty_Server.Domain.Factories;
-using Ball_of_Duty_Server.Domain.GameObjects;
-using Ball_of_Duty_Server.Domain.GameObjects.Components;
-using Ball_of_Duty_Server.Domain.GameObjects.Components.Physics.Collision;
+using Entity;
+using Entity.Components;
+using Entity.DAO;
+using Entity.DTO;
+using Entity.Entities;
+using Entity.Factories;
+using Utility;
 
 namespace Ball_of_Duty_Server.Domain.Maps
 {
@@ -29,7 +31,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
         public int Height { get; }
 
-        public ConcurrentDictionary<int, GameObject> GameObjects { get; } = new ConcurrentDictionary<int, GameObject>();
+        public ConcurrentDictionary<int, IGameObject> GameObjects { get; } = new ConcurrentDictionary<int, IGameObject>();
 
         public Broker Broker { get; }
 
@@ -67,7 +69,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
             _lastUpdate = currentTime;
 
             var gameobjects = GameObjects.Values;
-            foreach (GameObject go in gameobjects)
+            foreach (IGameObject go in gameobjects)
             {
                 go.Update(deltaTime, gameobjects);
             }
@@ -79,7 +81,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
         private List<GameObjectDAO> GetCharacterStats()
         {
-            return GameObjects.Values.OfType<Character>().Select(character => new GameObjectDAO()
+            return GameObjects.Values.OfType<ICharacter>().Select(character => new GameObjectDAO()
             {
                 MaxHealth = character.Health.Max, // Yes max health can/should change as you get higher score.
                 Health = character.Health.Value,
@@ -90,10 +92,19 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
         public int AddBullet(double x, double y, double velocityX, double velocityY, double diameter, int damage, int bulletType, int ownerId)
         {
-            GameObject owner;
+            IGameObject owner;
             if (GameObjects.TryGetValue(ownerId, out owner))
             {
-                Bullet bullet = new Bullet(new Point(x, y), new Vector(velocityX, velocityY), diameter, damage, bulletType, owner);
+                IBullet bullet = ModuleManager.GetModule<EntityModule.TempClass>().EntityFactory.CreateBullet(new BulletDAO
+                {
+                    Position = new Point(x, y),
+                    Vector = new Vector(velocityX, velocityY),
+                    Width = diameter,
+                    Damage = damage,
+                    BulletType = bulletType,
+                    Owner = owner
+                });
+
                 if (!GameObjects.TryAdd(bullet.Id, bullet))
                 {
                     BoDConsole.WriteLine($"Could not add {bullet.Id} an existing gameobject has type {GameObjects[bullet.Id].Type}");
@@ -102,24 +113,25 @@ namespace Ball_of_Duty_Server.Domain.Maps
                 }
                 bullet.Register(Observation.EXTERMINATION, this, ExterminationNotification);
 
-                bullet.WallId = CollisionHandler.GetFirstObjectIntersectingPath<Wall>(GameObjects.Values,
-                    bullet);
+                bullet.WallId =
+                    ModuleManager.GetModule<EntityModule.TempClass>().CollisionHandler.GetFirstObjectIntersectingPath<IWall>(GameObjects.Values,
+                        bullet, Game.MAP_SIZE);
 
                 return bullet.Id;
             }
             return 0;
         }
 
-        public Character AddCharacter(string nickname, int specialization)
+        public ICharacter AddCharacter(string nickname, int specialization)
         {
-            Character c = CharacterFactory.CreateCharacter(specialization);
+            ICharacter c = ModuleManager.GetModule<EntityModule.TempClass>().EntityFactory.CreateCharacter(specialization);
 
             if (GameObjects.TryAdd(c.Id, c))
             {
                 c.Register(Observation.KILLING, this, ExterminationNotification);
                 c.Register(Observation.EXTERMINATION, this, ExterminationNotification);
 
-                Body b = c.Body;
+                IBody b = c.Body;
                 GameObjectDAO data = new GameObjectDAO
                 {
                     X = b.Position.X,
@@ -138,7 +150,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
         public GameObjectDTO[] ExportGameObjects()
         {
-            return (from go in GameObjects.Values select go.Export()).ToArray();
+            return GameObjects.Values.Select(v => v.Export()).ToArray();
         }
 
         private List<GameObjectDAO> GetPositions()
@@ -154,10 +166,10 @@ namespace Ball_of_Duty_Server.Domain.Maps
                 }).ToList();
         }
 
-        public void ExterminationNotification(Observable observable, object data)
+        public void ExterminationNotification(IObservable observable, object data)
         {
-            GameObject victim = (GameObject)observable;
-            GameObject killer = data as GameObject;
+            IGameObject victim = (IGameObject)observable;
+            IGameObject killer = data as IGameObject;
 
             if (killer != null)
             {
@@ -172,7 +184,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
         public void RemoveObject(int id)
         {
-            GameObject go;
+            IGameObject go;
             if (GameObjects.TryRemove(id, out go))
             {
                 Broker.WriteObjectDestruction(go.Id);
@@ -182,7 +194,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
         public void UpdatePosition(Point position, int goId)
         {
-            GameObject go;
+            IGameObject go;
             if (GameObjects.TryGetValue(goId, out go))
             {
                 go.Body.Position = position;

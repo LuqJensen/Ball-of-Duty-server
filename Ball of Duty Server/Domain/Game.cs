@@ -1,11 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
-using Ball_of_Duty_Server.Domain.Entities;
-using Ball_of_Duty_Server.Domain.GameObjects.Components;
 using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Persistence;
+using Entity.DTO;
+using Entity.Entities;
 
 namespace Ball_of_Duty_Server.Domain
 {
@@ -58,25 +58,10 @@ namespace Ball_of_Duty_Server.Domain
                 return new GameObjectDTO();
             }
 
-            Character character = Map.AddCharacter(p.Nickname, clientSpecialization);
+            ICharacter character = Map.AddCharacter(p.Nickname, clientSpecialization);
             p.CurrentCharacter = character;
-            Body b = character.Body;
 
-            return new GameObjectDTO()
-            {
-                Id = character.Id,
-                Body = new BodyDTO
-                {
-                    Position = new PointDTO
-                    {
-                        X = b.Position.X,
-                        Y = b.Position.Y
-                    },
-                    Width = b.Width,
-                    Height = b.Height,
-                    Type = (int)b.Type
-                }
-            };
+            return character.Export();
         }
 
 

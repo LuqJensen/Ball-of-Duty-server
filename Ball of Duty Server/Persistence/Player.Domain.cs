@@ -4,17 +4,17 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Ball_of_Duty_Server.Domain;
-using Ball_of_Duty_Server.Domain.Entities;
 using Ball_of_Duty_Server.Utility;
+using Entity.Entities;
+using Utility;
 
 namespace Ball_of_Duty_Server.Persistence
 {
     public partial class Player
     {
-        private Character _currentCharacter = null;
+        private ICharacter _currentCharacter = null;
 
-        public Character CurrentCharacter
+        public ICharacter CurrentCharacter
         {
             get { return _currentCharacter; }
             set
@@ -32,7 +32,7 @@ namespace Ball_of_Duty_Server.Persistence
         /// </summary>
         /// <param name="observable"></param>
         /// <param name="data"></param>
-        private void AddGold(Observable observable, object data)
+        private void AddGold(IObservable observable, object data)
         {
             Gold += 10;
             using (DatabaseContainer dc = new DatabaseContainer())
@@ -42,7 +42,7 @@ namespace Ball_of_Duty_Server.Persistence
             }
         }
 
-        private void DestroyEvent(Observable observable, object data)
+        private void DestroyEvent(IObservable observable, object data)
         {
             if (CurrentCharacter.HighScore > this.HighScore)
             {

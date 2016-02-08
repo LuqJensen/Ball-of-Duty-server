@@ -14,11 +14,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AsyncSocket;
-using Ball_of_Duty_Server.Domain.GameObjects.Components;
 using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.Domain.Modules;
 using Ball_of_Duty_Server.Services;
 using Ball_of_Duty_Server.Utility;
+using Utility;
 
 namespace Ball_of_Duty_Server.Domain.Communication
 {
@@ -167,7 +167,7 @@ namespace Ball_of_Duty_Server.Domain.Communication
             IAsyncSocket s = null;
             try
             {
-                s = ModuleManager.AsyncSocketFactory.CreateAsyncSocket(socket);
+                s = ModuleManager.GetModule<IAsyncSocketFactory>().CreateAsyncSocket(socket);
             }
             catch (SocketException)
             {

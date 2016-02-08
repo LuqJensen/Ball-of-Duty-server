@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using Ball_of_Duty_Server.Domain.Entities;
-using Ball_of_Duty_Server.Domain.GameObjects;
+using Ball_of_Duty_Server.Domain.Modules;
+using Entity;
+using Entity.Entities;
+using Entity.Factories;
 
 namespace Ball_of_Duty_Server.Domain.Maps
 {
@@ -15,6 +17,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
         private const int WALLS_PER_MEGA_PIXEL = 70;
         private const int MEGA_PIXEL = 1000 * 1000;
         private const int WALL_SIZE = 50;
+        private static IEntityFactory EntityFactory = ModuleManager.GetModule<EntityModule.TempClass>().EntityFactory;
 
         public static void GenerateMap(Map map)
         {
@@ -28,7 +31,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
             for (int i = 0; i < mapGridX; i++)
             {
-                Wall wall = new Wall(position, WALL_SIZE);
+                IWall wall = EntityFactory.CreateWall(position, WALL_SIZE);
                 map.GameObjects.TryAdd(wall.Id, wall);
                 position.X += WALL_SIZE;
             }
@@ -37,7 +40,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
             for (int i = 0; i < mapGridX; i++)
             {
-                Wall wall = new Wall(position, WALL_SIZE);
+                IWall wall = EntityFactory.CreateWall(position, WALL_SIZE);
                 map.GameObjects.TryAdd(wall.Id, wall);
                 position.X += WALL_SIZE;
             }
@@ -46,7 +49,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
             for (int i = 0; i < mapGridY - 2; i++)
             {
-                Wall wall = new Wall(position, WALL_SIZE);
+                IWall wall = EntityFactory.CreateWall(position, WALL_SIZE);
                 map.GameObjects.TryAdd(wall.Id, wall);
                 position.Y += WALL_SIZE;
             }
@@ -55,7 +58,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
             for (int i = 0; i < mapGridY - 2; i++)
             {
-                Wall wall = new Wall(position, WALL_SIZE);
+                IWall wall = EntityFactory.CreateWall(position, WALL_SIZE);
                 map.GameObjects.TryAdd(wall.Id, wall);
                 position.Y += WALL_SIZE;
             }
@@ -64,11 +67,11 @@ namespace Ball_of_Duty_Server.Domain.Maps
 
             while (true)
             {
-                Wall tempWall;
+                IWall tempWall;
                 while (true)
                 {
                     position = new Point(_rand.Next(1, mapGridX) * WALL_SIZE, _rand.Next(1, mapGridY) * WALL_SIZE);
-                    tempWall = new Wall(position, WALL_SIZE);
+                    tempWall = EntityFactory.CreateWall(position, WALL_SIZE);
                     if (CheckValidWall(tempWall, map.GameObjects.Values))
                     {
                         map.GameObjects.TryAdd(tempWall.Id, tempWall);
@@ -103,7 +106,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
                         break;
                     }
 
-                    tempWall = new Wall(newPosition, WALL_SIZE);
+                    tempWall = EntityFactory.CreateWall(newPosition, WALL_SIZE);
                     if (CheckValidWall(tempWall, map.GameObjects.Values))
                     {
                         map.GameObjects.TryAdd(tempWall.Id, tempWall);
@@ -123,7 +126,7 @@ namespace Ball_of_Duty_Server.Domain.Maps
             }
         }
 
-        private static bool CheckValidWall(Wall newWall, ICollection<GameObject> walls)
+        private static bool CheckValidWall(IWall newWall, ICollection<IGameObject> walls)
         {
             return walls.All(wall => !newWall.Body.Position.Equals(wall.Body.Position));
         }
