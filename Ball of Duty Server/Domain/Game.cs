@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using Ball_of_Duty_Server.Domain.Entities;
-using Ball_of_Duty_Server.Domain.Entities.CharacterSpecializations;
+using Ball_of_Duty_Server.Domain.GameObjects.Components;
 using Ball_of_Duty_Server.Domain.Maps;
 using Ball_of_Duty_Server.DTO;
 using Ball_of_Duty_Server.Persistence;
 
-namespace Ball_of_Duty_Server.Domain.GameObjects.Components
+namespace Ball_of_Duty_Server.Domain
 {
     public class Game
     {
@@ -23,7 +22,7 @@ namespace Ball_of_Duty_Server.Domain.GameObjects.Components
 
         public Game()
         {
-            Map = new Map(this, MAP_SIZE, MAP_SIZE);
+            Map = new Map(Id, MAP_SIZE, MAP_SIZE);
         }
 
         public void AddPlayer(Player player, int clientSpecialization)

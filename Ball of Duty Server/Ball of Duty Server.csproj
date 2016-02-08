@@ -69,8 +69,10 @@
     <Compile Include="Domain\Entities\CharacterSpecializations\Blaster.cs" />
     <Compile Include="Domain\Entities\CharacterSpecializations\Heavy.cs" />
     <Compile Include="Domain\Entities\CharacterSpecializations\Roller.cs" />
+    <Compile Include="Domain\Factories\GameObjectFactory.cs" />
+    <Compile Include="Domain\Factories\IGameObjectFactory.cs" />
     <Compile Include="Domain\GameObjects\Components\Body.cs" />
-    <Compile Include="Domain\GameObjects\Components\Game.cs" />
+    <Compile Include="Domain\Game.cs" />
     <Compile Include="Domain\GameObjects\Components\Health.cs" />
     <Compile Include="Domain\GameObjects\Components\Physics\Collision\CollisionHandler.cs" />
     <Compile Include="Domain\GameObjects\Components\Physics\Collision\ICollidable.cs" />
@@ -78,6 +80,7 @@
     <Compile Include="Domain\Entities\EntityType.cs" />
     <Compile Include="DAO\GameObjectDAO.cs" />
     <Compile Include="Domain\Factories\CharacterFactory.cs" />
+    <Compile Include="Domain\GameObjects\IInhibited.cs" />
     <Compile Include="Domain\Modules\AsyncSocketModule.cs" />
     <Compile Include="Domain\Modules\ModuleManager.cs" />
     <Compile Include="DTO\LoginDTO.cs" />
@@ -94,7 +97,6 @@
     <Compile Include="Utility\CryptoHelper.cs" />
     <Compile Include="Utility\LightEvent.cs" />
     <Compile Include="Utility\Observable.cs" />
-    <Compile Include="Utility\ComparisonExtensions.cs" />
     <Compile Include="DTO\AccountDTO.cs" />
     <Compile Include="Persistence\DataModelFacade.cs" />
     <Compile Include="Services\BoDService.cs" />
@@ -173,6 +175,9 @@
       <Name>AsyncSocket</Name>
       <Private>False</Private>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Domain\Mutators\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
